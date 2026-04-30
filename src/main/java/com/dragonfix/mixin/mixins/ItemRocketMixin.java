@@ -4,14 +4,15 @@ import net.minecraft.item.EnumRarity;
 import net.minecraft.item.ItemStack;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import cpw.mods.fml.common.FMLCommonHandler;
-import galaxyspace.core.item.ItemRocket;
 
-@Mixin(ItemRocket.class)
+@Pseudo
+@Mixin(targets = "galaxyspace.core.item.ItemRocket")
 public abstract class ItemRocketMixin {
 
     @Inject(
