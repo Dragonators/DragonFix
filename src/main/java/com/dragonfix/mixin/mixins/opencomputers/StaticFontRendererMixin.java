@@ -1,4 +1,4 @@
-package com.dragonfix.mixin.mixins;
+package com.dragonfix.mixin.mixins.opencomputers;
 
 import net.minecraft.client.renderer.Tessellator;
 

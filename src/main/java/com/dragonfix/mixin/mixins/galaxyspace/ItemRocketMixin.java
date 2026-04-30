@@ -1,4 +1,4 @@
-package com.dragonfix.mixin.mixins;
+package com.dragonfix.mixin.mixins.galaxyspace;
 
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.ItemStack;

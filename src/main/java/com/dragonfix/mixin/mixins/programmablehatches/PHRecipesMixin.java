@@ -1,4 +1,4 @@
-package com.dragonfix.mixin.mixins;
+package com.dragonfix.mixin.mixins.programmablehatches;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;

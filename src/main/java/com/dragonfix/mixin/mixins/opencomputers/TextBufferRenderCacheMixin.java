@@ -1,4 +1,4 @@
-package com.dragonfix.mixin.mixins;
+package com.dragonfix.mixin.mixins.opencomputers;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
