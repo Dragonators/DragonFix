@@ -16,13 +16,14 @@ import scala.Tuple2;
 @Mixin(targets = "li.cil.oc.client.renderer.TextBufferRenderCache$", remap = false)
 public abstract class TextBufferRenderCacheMixin {
 
-    @Shadow
+    @Shadow(remap = false)
     public abstract TextureFontRenderer renderer();
 
     @Inject(
         method = "render(Lli/cil/oc/client/renderer/font/TextBufferRenderData;)V",
         at = @At("HEAD"),
-        cancellable = true)
+        cancellable = true,
+        remap = false)
     private void dragonfix$renderWithoutDisplayList(TextBufferRenderData buffer, CallbackInfo ci) {
         RenderState.checkError(getClass().getName() + ".render: entering (aka: wasntme)");
 

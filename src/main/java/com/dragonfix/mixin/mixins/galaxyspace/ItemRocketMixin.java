@@ -10,9 +10,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import galaxyspace.core.item.ItemRocket;
 
 @Pseudo
-@Mixin(targets = "galaxyspace.core.item.ItemRocket")
+@Mixin(ItemRocket.class)
 public abstract class ItemRocketMixin {
 
     @Inject(

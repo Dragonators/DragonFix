@@ -6,8 +6,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.Slice;
 
+import reobf.proghatches.main.registration.PHRecipes;
+
 @Pseudo
-@Mixin(targets = "reobf.proghatches.main.registration.PHRecipes")
+@Mixin(PHRecipes.class)
 public abstract class PHRecipesMixin {
 
     @ModifyArg(
@@ -16,11 +18,12 @@ public abstract class PHRecipesMixin {
         slice = @Slice(
             from = @At(value = "CONSTANT", args = "stringValue=ae2fc"),
             to = @At(
-                value = "FIELD",
-                target = "Lreobf/proghatches/main/MyMod;iohub:Lnet/minecraft/item/Item;",
+                value = "INVOKE",
+                target = "Lgregtech/api/util/GTRecipeBuilder;itemInputs([Ljava/lang/Object;)Lgregtech/api/util/GTRecipeBuilder;",
                 remap = false)),
         index = 2,
-        require = 1)
+        require = 0,
+        remap = false)
     private int dragonfix$useAe2FluidInterfaceMetaZero(int meta) {
         return 0;
     }

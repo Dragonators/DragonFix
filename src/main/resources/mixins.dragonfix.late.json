@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.dragonfix.mixin.mixins",
+  "refmap": "mixins.dragonfix.refmap.json",
+  "mixins": [
+    "galaxyspace.ItemRocketMixin",
+    "programmablehatches.PHRecipesMixin"
+  ],
+  "client": [
+    "opencomputers.CodeSegmentMixin",
+    "opencomputers.DynamicFontRendererCharIconMixin",
+    "opencomputers.StaticFontRendererMixin",
+    "opencomputers.TextBufferRenderCacheMixin",
+    "opencomputers.TextureFontRendererMixin"
+  ]
+}

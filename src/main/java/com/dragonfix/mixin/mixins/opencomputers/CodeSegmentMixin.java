@@ -17,7 +17,8 @@ public abstract class CodeSegmentMixin {
         method = "render(IIIILnet/minecraft/client/gui/FontRenderer;II)Lscala/Option;",
         at = @At(
             value = "INVOKE",
-            target = "Lli/cil/oc/client/renderer/font/TextureFontRenderer;drawString(Ljava/lang/String;II)V"))
+            target = "Lli/cil/oc/client/renderer/font/TextureFontRenderer;drawString(Ljava/lang/String;II)V"),
+        remap = false)
     private void dragonfix$drawCodeStringWithColor(TextureFontRenderer renderer, String text, int x, int y) {
         ((OpenComputersTextureFontRendererBridge) renderer).dragonfix$drawString(text, x, y, 0xBFCCFF);
     }

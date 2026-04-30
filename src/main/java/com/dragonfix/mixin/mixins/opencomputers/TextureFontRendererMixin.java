@@ -23,22 +23,22 @@ import li.cil.oc.util.TextBuffer;
 @Mixin(targets = "li.cil.oc.client.renderer.font.TextureFontRenderer", remap = false)
 public abstract class TextureFontRendererMixin implements OpenComputersTextureFontRendererBridge {
 
-    @Shadow
+    @Shadow(remap = false)
     public abstract int charWidth();
 
-    @Shadow
+    @Shadow(remap = false)
     public abstract int charHeight();
 
-    @Shadow
+    @Shadow(remap = false)
     public abstract int textureCount();
 
-    @Shadow
+    @Shadow(remap = false)
     public abstract void bindTexture(int index);
 
-    @Shadow
+    @Shadow(remap = false)
     public abstract void drawChar(float tx, float ty, int character);
 
-    @Inject(method = "drawBuffer(Lli/cil/oc/util/TextBuffer;II)V", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "drawBuffer(Lli/cil/oc/util/TextBuffer;II)V", at = @At("HEAD"), cancellable = true, remap = false)
     private void dragonfix$drawBufferWithTessellator(TextBuffer buffer, int viewportWidth, int viewportHeight,
         CallbackInfo ci) {
         ColorFormat format = buffer.format();
@@ -118,7 +118,7 @@ public abstract class TextureFontRendererMixin implements OpenComputersTextureFo
         ci.cancel();
     }
 
-    @Inject(method = "drawString(Ljava/lang/String;II)V", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "drawString(Ljava/lang/String;II)V", at = @At("HEAD"), cancellable = true, remap = false)
     private void dragonfix$drawWhiteStringWithTessellator(String text, int x, int y, CallbackInfo ci) {
         dragonfix$drawString(text, x, y, 0xFFFFFF);
         ci.cancel();

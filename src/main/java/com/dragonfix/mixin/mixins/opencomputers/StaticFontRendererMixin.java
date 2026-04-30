@@ -14,48 +14,48 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(targets = "li.cil.oc.client.renderer.font.StaticFontRenderer", remap = false)
 public abstract class StaticFontRendererMixin {
 
-    @Shadow
+    @Shadow(remap = false)
     public abstract String chars();
 
-    @Shadow
+    @Shadow(remap = false)
     public abstract int charWidth();
 
-    @Shadow
+    @Shadow(remap = false)
     public abstract int charHeight();
 
-    @Shadow
+    @Shadow(remap = false)
     @Final
     private int cols;
 
-    @Shadow
+    @Shadow(remap = false)
     @Final
     private double uStep;
 
-    @Shadow
+    @Shadow(remap = false)
     @Final
     private double uSize;
 
-    @Shadow
+    @Shadow(remap = false)
     @Final
     private double vStep;
 
-    @Shadow
+    @Shadow(remap = false)
     @Final
     private double vSize;
 
-    @Shadow
+    @Shadow(remap = false)
     @Final
     private double s;
 
-    @Shadow
+    @Shadow(remap = false)
     @Final
     private double dw;
 
-    @Shadow
+    @Shadow(remap = false)
     @Final
     private double dh;
 
-    @Inject(method = "drawChar(FFI)V", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "drawChar(FFI)V", at = @At("HEAD"), cancellable = true, remap = false)
     private void dragonfix$drawWithTessellator(float tx, float ty, int character, CallbackInfo ci) {
         int found = chars().indexOf(character);
         int index = 1 + (found == -1 ? chars().indexOf('?') : found);
