@@ -7,8 +7,9 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import com.dragonfix.mixin.OpenComputersTextureFontRendererBridge;
 
 import li.cil.oc.client.renderer.font.TextureFontRenderer;
+import li.cil.oc.client.renderer.markdown.segment.CodeSegment;
 
-@Mixin(targets = "li.cil.oc.client.renderer.markdown.segment.CodeSegment", remap = false)
+@Mixin(value = CodeSegment.class, remap = false)
 public abstract class CodeSegmentMixin {
 
     @Redirect(

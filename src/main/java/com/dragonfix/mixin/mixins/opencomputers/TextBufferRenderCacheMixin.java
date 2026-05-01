@@ -6,12 +6,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import li.cil.oc.client.renderer.TextBufferRenderCache$;
 import li.cil.oc.client.renderer.font.TextBufferRenderData;
 import li.cil.oc.client.renderer.font.TextureFontRenderer;
 import li.cil.oc.util.RenderState;
 import scala.Tuple2;
 
-@Mixin(targets = "li.cil.oc.client.renderer.TextBufferRenderCache$", remap = false)
+@Mixin(value = TextBufferRenderCache$.class, remap = false)
 public abstract class TextBufferRenderCacheMixin {
 
     @Shadow(remap = false)

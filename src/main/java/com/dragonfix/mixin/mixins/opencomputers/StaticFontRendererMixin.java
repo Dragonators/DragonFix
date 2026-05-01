@@ -9,7 +9,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(targets = "li.cil.oc.client.renderer.font.StaticFontRenderer", remap = false)
+import li.cil.oc.client.renderer.font.StaticFontRenderer;
+
+@Mixin(value = StaticFontRenderer.class, remap = false)
 public abstract class StaticFontRendererMixin {
 
     @Shadow(remap = false)

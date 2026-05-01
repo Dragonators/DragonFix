@@ -13,13 +13,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import com.dragonfix.mixin.OpenComputersTextureFontRendererBridge;
 
 import li.cil.oc.Settings;
+import li.cil.oc.client.renderer.font.TextureFontRenderer;
 import li.cil.oc.util.ExtendedUnicodeHelper;
 import li.cil.oc.util.PackedColor;
 import li.cil.oc.util.PackedColor.ColorFormat;
 import li.cil.oc.util.RenderState;
 import li.cil.oc.util.TextBuffer;
 
-@Mixin(targets = "li.cil.oc.client.renderer.font.TextureFontRenderer", remap = false)
+@Mixin(value = TextureFontRenderer.class, remap = false)
 public abstract class TextureFontRendererMixin implements OpenComputersTextureFontRendererBridge {
 
     @Shadow(remap = false)
