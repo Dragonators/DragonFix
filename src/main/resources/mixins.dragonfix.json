@@ -4,5 +4,13 @@
   "package": "com.dragonfix.mixin.mixins",
   "refmap": "mixins.dragonfix.refmap.json",
   "mixins": [],
-  "client": []
+  "client": [
+    "myctmlib.GTMultiTextureRenderMixin",
+    "myctmlib.GTRenderedTextureMixin",
+    "myctmlib.GTRendererBlockMixin",
+    "myctmlib.GTRendererCasingMixin",
+    "myctmlib.RenderBlocksOffsetMixin",
+    "myctmlib.SBRContextBaseMixin",
+    "myctmlib.TexturesMixin"
+  ]
 }
