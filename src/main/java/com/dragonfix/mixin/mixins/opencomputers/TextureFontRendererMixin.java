@@ -6,6 +6,7 @@ import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -158,6 +159,7 @@ public abstract class TextureFontRendererMixin implements OpenComputersTextureFo
         GL11.glPopMatrix();
     }
 
+    @Unique
     private void dragonfix$drawQuad(Tessellator tessellator, int color, int x, int y, int width) {
         if (color == 0 || width <= 0) {
             return;
