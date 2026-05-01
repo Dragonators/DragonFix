@@ -36,6 +36,7 @@ DragonFix 是一个独立的轻量级修复型模组，类似 RandomFix，用于
 11. 如果修改 Mixin、资源、mcmod.info 或版本配置，优先运行：
 - ./gradlew clean build
 12. 每次增加 Mixin 修复时，必须同步更新 README.md 的当前修复列表。
+13. 发布或推送修复时，必须确认目标 Git tag 指向最终提交，并同步推送 main 与 tag 到远程。
 
 代码风格：
 - 使用 Java。
