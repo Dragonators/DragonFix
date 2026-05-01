@@ -44,7 +44,7 @@ dependencies {
         transitive = false
     }
 
-    // Optional target for PHRecipesMixin.
+    // Optional target for Programmable Hatches fixes.
     compileOnly("com.github.reobf:Programmable-Hatches-Mod:v0.1.3p55-beta:dev") {
         transitive = false
     }

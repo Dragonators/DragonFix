@@ -15,6 +15,7 @@ DragonFix 是一个面向 Minecraft 1.7.10 / Forge 的轻量级修复模组。
 ## 当前修复
 
 - Programmable Hatches: 修复可编程舱室 IO Hub 无法合成的问题。
+- Programmable Hatches: 修复无线控制覆盖板从网络包读取数据时没有更新当前配置的问题。
 - MyCTMLib: 修复 CTM 连接处可能出现黑色缝隙的问题。
 - OpenComputers + Angelica: 修复新版 Angelica 下 OpenComputers 屏幕文字显示异常的兼容性问题。
 - GalaxySpace: 修复下单 GalaxySpace 火箭相关物品时可能导致服务端 AE 崩溃的问题。

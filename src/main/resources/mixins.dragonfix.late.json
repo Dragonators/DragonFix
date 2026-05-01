@@ -5,7 +5,8 @@
   "refmap": "mixins.dragonfix.refmap.json",
   "mixins": [
     "galaxyspace.ItemRocketMixin",
-    "programmablehatches.PHRecipesMixin"
+    "programmablehatches.PHRecipesMixin",
+    "programmablehatches.WirelessControlCoverDataMixin"
   ],
   "client": [
     "opencomputers.CodeSegmentMixin",
