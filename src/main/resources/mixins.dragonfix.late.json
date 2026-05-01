@@ -6,6 +6,7 @@
   "mixins": [
     "galaxyspace.ItemRocketMixin",
     "programmablehatches.PHRecipesMixin",
+    "programmablehatches.TileIOHubAnalyzableMixin",
     "programmablehatches.WirelessControlCoverDataMixin"
   ],
   "client": [
