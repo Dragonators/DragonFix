@@ -10,7 +10,6 @@
     "myctmlib.GTRendererBlockMixin",
     "myctmlib.GTRendererCasingMixin",
     "myctmlib.RenderBlocksOffsetMixin",
-    "myctmlib.SBRContextBaseMixin",
-    "myctmlib.TexturesMixin"
+    "myctmlib.SBRContextBaseMixin"
   ]
 }
