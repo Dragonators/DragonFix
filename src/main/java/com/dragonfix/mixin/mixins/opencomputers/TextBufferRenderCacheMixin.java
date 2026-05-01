@@ -36,8 +36,7 @@ public abstract class TextBufferRenderCacheMixin {
         }
 
         Tuple2<Object, Object> viewport = buffer.viewport();
-        renderer()
-            .drawBuffer(buffer.data(), (Integer) viewport._1(), (Integer) viewport._2());
+        renderer().drawBuffer(buffer.data(), (Integer) viewport._1(), (Integer) viewport._2());
 
         RenderState.checkError(getClass().getName() + ".render: leaving");
         ci.cancel();
