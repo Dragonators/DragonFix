@@ -49,6 +49,10 @@ dependencies {
         transitive = false
     }
 
+    // Optional target for AE2Things GT non-consumable recipe name fix.
+    // AE2Things v1.2.14 is published as a GitHub release asset, not a resolvable Maven/JitPack artifact.
+    compileOnly(files("libs/ae2thing-v1.2.14-dev.jar"))
+
     // Optional target for MyCTMLib GregTech CTM overlay offset fix.
     compileOnly("com.github.ABKQPO:MyCTMLib:1.2.7:dev") {
         transitive = false
@@ -59,6 +63,11 @@ dependencies {
     }
 
     compileOnly("com.github.GTNewHorizons:StructureLib:1.4.23:dev") {
+        transitive = false
+    }
+
+    // Signature dependency for AE2Things GTUtilMixin.
+    compileOnly("com.github.GTNewHorizons:NotEnoughItems:2.8.44-GTNH:dev") {
         transitive = false
     }
 }

@@ -25,6 +25,8 @@ DragonFix 是一个面向 Minecraft 1.7.10 / Forge 的轻量级修复模组。
   - 修复新版 Angelica 下 OpenComputers 屏幕文字显示异常的兼容性问题。
 - GalaxySpace
   - 修复下单 GalaxySpace 火箭相关物品时可能导致服务端 AE 崩溃的问题。
+- AE2Things
+  - 修复 GT 配方通过无线双接口终端追加非消耗品信息时，非集成电路物品只显示 damage 数字而无法区分物品名称的问题。
 
 ## 安装
 

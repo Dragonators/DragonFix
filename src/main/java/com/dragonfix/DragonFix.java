@@ -18,6 +18,7 @@ public class DragonFix {
     public static final String NAME = "DragonFix";
     public static final String DEPENDENCIES = "required-after:OpenComputers@[1.11.20-GTNH,);"
         + "required-after:GalaxySpace@[1.1.121-GTNH,);"
+        + "after:ae2thing@[v1.2.14,);"
         + "after:programmablehatches@[0.1.3p55,);"
         + "after:MyCTMLib@[v1.2.5_28x,)";
     public static final Logger LOG = LogManager.getLogger(MODID);

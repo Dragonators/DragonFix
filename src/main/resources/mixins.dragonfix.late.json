@@ -4,6 +4,7 @@
   "package": "com.dragonfix.mixin.mixins",
   "refmap": "mixins.dragonfix.refmap.json",
   "mixins": [
+    "ae2things.GTUtilMixin",
     "galaxyspace.ItemRocketMixin",
     "programmablehatches.PHRecipesMixin",
     "programmablehatches.StockingDualInputHatchMEMixin",
