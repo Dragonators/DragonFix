@@ -16,25 +16,25 @@ import com.google.common.io.ByteArrayDataInput;
 public abstract class WirelessControlCoverDataMixin {
 
     @Shadow(remap = false)
-    private boolean privateFreq;
+    boolean privateFreq;
 
     @Shadow(remap = false)
-    private boolean invert;
+    boolean invert;
 
     @Shadow(remap = false)
-    private boolean safe;
+    boolean safe;
 
     @Shadow(remap = false)
-    private boolean crashed;
+    boolean crashed;
 
     @Shadow(remap = false)
-    private boolean useMachineOwnerUUID;
+    boolean useMachineOwnerUUID;
 
     @Shadow(remap = false)
-    private int freq;
+    int freq;
 
     @Shadow(remap = false)
-    private UUID user;
+    UUID user;
 
     @Shadow(remap = false)
     public int gateMode;
