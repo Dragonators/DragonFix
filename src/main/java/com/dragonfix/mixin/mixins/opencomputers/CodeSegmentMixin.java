@@ -1,7 +1,6 @@
 package com.dragonfix.mixin.mixins.opencomputers;
 
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
@@ -9,7 +8,6 @@ import com.dragonfix.mixin.OpenComputersTextureFontRendererBridge;
 
 import li.cil.oc.client.renderer.font.TextureFontRenderer;
 
-@Pseudo
 @Mixin(targets = "li.cil.oc.client.renderer.markdown.segment.CodeSegment", remap = false)
 public abstract class CodeSegmentMixin {
 

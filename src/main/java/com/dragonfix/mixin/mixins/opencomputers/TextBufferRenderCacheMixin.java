@@ -1,7 +1,6 @@
 package com.dragonfix.mixin.mixins.opencomputers;
 
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -12,7 +11,6 @@ import li.cil.oc.client.renderer.font.TextureFontRenderer;
 import li.cil.oc.util.RenderState;
 import scala.Tuple2;
 
-@Pseudo
 @Mixin(targets = "li.cil.oc.client.renderer.TextBufferRenderCache$", remap = false)
 public abstract class TextBufferRenderCacheMixin {
 
