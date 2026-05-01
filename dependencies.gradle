@@ -49,6 +49,23 @@ dependencies {
         transitive = false
     }
 
+    // Signature dependencies needed when targeting Programmable Hatches' GT/AE2 parent classes.
+    compileOnly("com.github.GTNewHorizons:Applied-Energistics-2-Unofficial:rv3-beta-690-GTNH:dev") {
+        transitive = false
+    }
+
+    compileOnly("com.github.GTNewHorizons:GTNHLib:0.6.40:dev") {
+        transitive = false
+    }
+
+    compileOnly("com.github.GTNewHorizons:ModularUI:1.2.20:dev") {
+        transitive = false
+    }
+
+    compileOnly("com.github.GTNewHorizons:ModularUI2:2.2.18-1.7.10:dev") {
+        transitive = false
+    }
+
     // Optional target for AE2Things GT non-consumable recipe name fix.
     // AE2Things v1.2.14 is published as a GitHub release asset, not a resolvable Maven/JitPack artifact.
     compileOnly(files("libs/ae2thing-v1.2.14-dev.jar"))

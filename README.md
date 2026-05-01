@@ -18,6 +18,7 @@ DragonFix 是一个面向 Minecraft 1.7.10 / Forge 的轻量级修复模组。
   - 修复 IO Hub 无法合成的问题。
   - 修复 IO Hub 无法被 OpenComputers 分析器识别节点的问题。
   - 修复 ME Stocking Dual Input Hatch 复制/粘贴配置时读写方向错误的问题。
+  - 修复 ME Stocking Dual Input Hatch 无法通过 Data Stick 保存和加载完整配置的问题，现在允许使用潜行左键复制配置本身
   - 修复无线控制覆盖板从网络包读取数据时没有更新当前配置的问题。
 - MyCTMLib
   - 修复 CTM 连接处可能出现黑色缝隙的问题。
