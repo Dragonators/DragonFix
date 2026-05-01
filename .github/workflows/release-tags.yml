@@ -37,6 +37,7 @@ jobs:
 
       - name: Build
         run: |
+          git config core.filemode false
           chmod +x ./gradlew
           ./gradlew --build-cache --info --stacktrace clean build
 
