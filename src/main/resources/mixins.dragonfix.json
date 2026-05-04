@@ -6,6 +6,7 @@
   "refmap": "mixins.dragonfix.refmap.json",
   "mixins": [],
   "client": [
+    "gtnhlib.ModelQuadMixin",
     "myctmlib.GTMultiTextureRenderMixin",
     "myctmlib.GTRenderedTextureMixin",
     "myctmlib.GTRendererBlockMixin",

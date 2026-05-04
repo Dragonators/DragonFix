@@ -54,7 +54,8 @@ dependencies {
         transitive = false
     }
 
-    compileOnly("com.github.GTNewHorizons:GTNHLib:0.6.40:dev") {
+    // Target library for GTNHLib ModelQuad QuadView compatibility fix.
+    compileOnly("com.github.GTNewHorizons:GTNHLib:0.9.47:dev") {
         transitive = false
     }
 
