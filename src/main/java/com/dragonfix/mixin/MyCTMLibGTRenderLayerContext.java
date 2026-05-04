@@ -4,8 +4,7 @@ import java.util.ArrayDeque;
 
 public final class MyCTMLibGTRenderLayerContext {
 
-    private static final double GT_FIRST_LAYER_OFFSET = 3.0e-4D;
-    private static final double GT_ADDITIONAL_LAYER_OFFSET = 7.5e-5D;
+    private static final double GT_LAYER_OFFSET_STEP = 1.0e-3D;
     private static final ThreadLocal<Integer> CURRENT_SBR_LAYER = ThreadLocal.withInitial(() -> 0);
     private static final ThreadLocal<Integer> CURRENT_MULTI_LAYER = ThreadLocal.withInitial(() -> 0);
     private static final ThreadLocal<Integer> SBR_LAYER_BIAS = ThreadLocal.withInitial(() -> 0);
@@ -102,6 +101,6 @@ public final class MyCTMLibGTRenderLayerContext {
         if (depth <= 0) {
             return 0.0D;
         }
-        return GT_FIRST_LAYER_OFFSET + (depth - 1) * GT_ADDITIONAL_LAYER_OFFSET;
+        return depth * GT_LAYER_OFFSET_STEP;
     }
 }
