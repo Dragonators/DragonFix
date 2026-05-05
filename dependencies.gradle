@@ -69,6 +69,11 @@ dependencies {
         transitive = false
     }
 
+    // Required target for MatterManipulator ArchitectureCraft preview integration.
+    compileOnly("com.github.GTNewHorizons:ArchitectureCraft:1.11.6:dev") {
+        transitive = false
+    }
+
     compileOnly("com.github.GTNewHorizons:ModularUI:1.2.20:dev") {
         transitive = false
     }

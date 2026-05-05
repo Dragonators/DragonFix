@@ -2,6 +2,7 @@ package com.dragonfix.mattermanipulator;
 
 import java.util.List;
 
+import net.minecraft.block.Block;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 
@@ -18,6 +19,18 @@ public class LittleTilesAnalysisResult implements ITileAnalysisIntegration {
     private static final int CENTER = GRID_SIZE / 2;
 
     private NBTTagCompound tileData;
+
+    public static class RenderBox {
+
+        public Block block;
+        public int meta;
+        public int minX;
+        public int minY;
+        public int minZ;
+        public int maxX;
+        public int maxY;
+        public int maxZ;
+    }
 
     public static LittleTilesAnalysisResult analyze(TileEntity te) {
         if (!dragonfix$isLittleTilesTileEntity(te)) return null;
@@ -84,6 +97,41 @@ public class LittleTilesAnalysisResult implements ITileAnalysisIntegration {
     @Override
     public void getItemDetails(List<String> details) {
         if (tileData != null) details.add(tileData.getInteger("tilesCount") + " LT tiles");
+    }
+
+    public void getRenderBoxes(List<RenderBox> out) {
+        if (tileData == null) return;
+
+        int count = tileData.getInteger("tilesCount");
+
+        for (int i = 0; i < count; i++) {
+            String tileKey = "t" + i;
+            if (!tileData.hasKey(tileKey)) continue;
+
+            NBTTagCompound tile = tileData.getCompoundTag(tileKey);
+            Block block = Block.getBlockFromName(tile.getString("block"));
+            if (block == null) continue;
+
+            int meta = tile.getInteger("meta");
+            int boxCount = tile.getInteger("bSize");
+
+            for (int j = 0; j < boxCount; j++) {
+                String boxKey = "bBox" + j;
+                RenderBox box = new RenderBox();
+                box.block = block;
+                box.meta = meta;
+                box.minX = tile.getInteger(boxKey + "minX");
+                box.minY = tile.getInteger(boxKey + "minY");
+                box.minZ = tile.getInteger(boxKey + "minZ");
+                box.maxX = tile.getInteger(boxKey + "maxX");
+                box.maxY = tile.getInteger(boxKey + "maxY");
+                box.maxZ = tile.getInteger(boxKey + "maxZ");
+
+                if (box.maxX > box.minX && box.maxY > box.minY && box.maxZ > box.minZ) {
+                    out.add(box);
+                }
+            }
+        }
     }
 
     @Override

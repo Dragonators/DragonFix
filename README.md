@@ -36,6 +36,7 @@ DragonFix 是一个面向 Minecraft 1.7.10 / Forge 的轻量级修复模组。
   - 为 MatterManipulator 0.0.51 及以上版本补充 LittleTiles 方块复制、旋转和建造时的 tile 数据适配。
   - 修复复制带小数角度的方块属性后，旋转/镜像时 `rotation` 属性被整数解析截断或解析失败的问题。
   - 为 Carpenter's Blocks 方块补充复制、旋转和建造时的 data/covers 适配。
+  - 修复 LittleTiles 与 ArchitectureCraft 方块在 MatterManipulator 预览提示中无法按实际材料/小方块形状显示的问题。
 
 ## 安装
 

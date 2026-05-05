@@ -22,6 +22,7 @@ public class DragonFix {
         + "required-after:matter-manipulator@[0.0.51,);"
         + "required-after:CarpentersBlocks@[3.7.0-GTNH,);"
         + "after:ae2thing@[v1.2.14,);"
+        + "required-after:ArchitectureCraft@[1.11.6,);"
         + "after:programmablehatches@[0.1.3p55,);"
         + "after:MyCTMLib@[v1.2.5_28x,)";
     public static final Logger LOG = LogManager.getLogger(MODID);

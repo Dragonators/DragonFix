@@ -14,6 +14,9 @@
     "programmablehatches.WirelessControlCoverDataMixin"
   ],
   "client": [
+    "mattermanipulator.ArchitectureCraftAnalysisResultMixin",
+    "mattermanipulator.MMRendererMixin",
+    "mattermanipulator.RenderHintsHintMixin",
     "opencomputers.CodeSegmentMixin",
     "opencomputers.DynamicFontRendererCharIconMixin",
     "opencomputers.PacketHandlerMixin",
