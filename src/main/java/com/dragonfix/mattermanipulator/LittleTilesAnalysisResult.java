@@ -131,21 +131,22 @@ public class LittleTilesAnalysisResult implements ITileAnalysisIntegration {
         int outMaxY = Integer.MIN_VALUE;
         int outMaxZ = Integer.MIN_VALUE;
 
-        for (int x : new int[] { minX, maxX }) {
-            for (int y : new int[] { minY, maxY }) {
-                for (int z : new int[] { minZ, maxZ }) {
-                    Vector3i point = new Vector3i(x - CENTER, y - CENTER, z - CENTER);
-                    transform.apply(point);
-                    point.add(CENTER, CENTER, CENTER);
+        Vector3i point = new Vector3i();
 
-                    outMinX = Math.min(outMinX, point.x);
-                    outMinY = Math.min(outMinY, point.y);
-                    outMinZ = Math.min(outMinZ, point.z);
-                    outMaxX = Math.max(outMaxX, point.x);
-                    outMaxY = Math.max(outMaxY, point.y);
-                    outMaxZ = Math.max(outMaxZ, point.z);
-                }
-            }
+        for (int corner = 0; corner < 8; corner++) {
+            point.set(
+                ((corner & 1) == 0 ? minX : maxX) - CENTER,
+                ((corner & 2) == 0 ? minY : maxY) - CENTER,
+                ((corner & 4) == 0 ? minZ : maxZ) - CENTER);
+            transform.apply(point);
+            point.add(CENTER, CENTER, CENTER);
+
+            outMinX = Math.min(outMinX, point.x);
+            outMinY = Math.min(outMinY, point.y);
+            outMinZ = Math.min(outMinZ, point.z);
+            outMaxX = Math.max(outMaxX, point.x);
+            outMaxY = Math.max(outMaxY, point.y);
+            outMaxZ = Math.max(outMaxZ, point.z);
         }
 
         tag.setInteger(name + "minX", outMinX);

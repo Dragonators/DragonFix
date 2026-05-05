@@ -15,8 +15,6 @@ import com.dragonfix.mattermanipulator.PendingBlockLittleTilesBridge;
 import com.recursive_pineapple.matter_manipulator.common.building.ITileAnalysisIntegration;
 import com.recursive_pineapple.matter_manipulator.common.building.PendingBlock;
 
-import cpw.mods.fml.common.Loader;
-
 @Mixin(value = PendingBlock.class, remap = false)
 public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge {
 
@@ -52,7 +50,7 @@ public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge
 
     @Inject(method = "analyze", at = @At("RETURN"), remap = false)
     private void dragonfix$analyzeLittleTiles(TileEntity te, int flags, CallbackInfoReturnable<PendingBlock> cir) {
-        if (te != null && (flags & dragonfix$ANALYZE_LT) != 0 && Loader.isModLoaded("littletiles")) {
+        if (te != null && (flags & dragonfix$ANALYZE_LT) != 0) {
             dragonfix$littleTilesAnalysis = LittleTilesAnalysisResult.analyze(te);
         }
     }
