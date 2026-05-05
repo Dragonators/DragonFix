@@ -16,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import com.dragonfix.mattermanipulator.CarpentersBlocksAnalysisResult;
 import com.dragonfix.mattermanipulator.LittleTilesAnalysisResult;
 import com.dragonfix.mattermanipulator.PendingBlockLittleTilesBridge;
 import com.recursive_pineapple.matter_manipulator.common.building.CopyableProperty;
@@ -33,11 +34,17 @@ public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge
     @Unique
     private static final int dragonfix$ANALYZE_LT = 0b1 << 5;
 
+    @Unique
+    private static final int dragonfix$ANALYZE_CB = 0b1 << 6;
+
     @Shadow(remap = false)
     public ImmutableBlockSpec spec;
 
     @Unique
     private ITileAnalysisIntegration dragonfix$littleTilesAnalysis;
+
+    @Unique
+    private ITileAnalysisIntegration dragonfix$carpentersBlocksAnalysis;
 
     @Unique
     private String dragonfix$rotationBeforeTransform;
@@ -48,11 +55,16 @@ public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge
             cir.getReturnValue()
                 .add(dragonfix$littleTilesAnalysis);
         }
+        if (dragonfix$carpentersBlocksAnalysis != null) {
+            cir.getReturnValue()
+                .add(dragonfix$carpentersBlocksAnalysis);
+        }
     }
 
     @Inject(method = "reset", at = @At("HEAD"), remap = false)
     private void dragonfix$resetLittleTilesIntegration(CallbackInfoReturnable<PendingBlock> cir) {
         dragonfix$littleTilesAnalysis = null;
+        dragonfix$carpentersBlocksAnalysis = null;
     }
 
     @Inject(
@@ -64,12 +76,21 @@ public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge
         if (analysis != null) {
             ((PendingBlockLittleTilesBridge) cir.getReturnValue()).dragonfix$setLittleTilesAnalysis(analysis.clone());
         }
+
+        analysis = dragonfix$carpentersBlocksAnalysis;
+        if (analysis != null) {
+            ((PendingBlockLittleTilesBridge) cir.getReturnValue())
+                .dragonfix$setCarpentersBlocksAnalysis(analysis.clone());
+        }
     }
 
     @Inject(method = "analyze", at = @At("RETURN"), remap = false)
     private void dragonfix$analyzeLittleTiles(TileEntity te, int flags, CallbackInfoReturnable<PendingBlock> cir) {
         if (te != null && (flags & dragonfix$ANALYZE_LT) != 0) {
             dragonfix$littleTilesAnalysis = LittleTilesAnalysisResult.analyze(te);
+        }
+        if (te != null && (flags & dragonfix$ANALYZE_CB) != 0) {
+            dragonfix$carpentersBlocksAnalysis = CarpentersBlocksAnalysisResult.analyze(te);
         }
     }
 
@@ -121,6 +142,9 @@ public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge
         if (dragonfix$littleTilesAnalysis != null) {
             dragonfix$littleTilesAnalysis.migrate();
         }
+        if (dragonfix$carpentersBlocksAnalysis != null) {
+            dragonfix$carpentersBlocksAnalysis.migrate();
+        }
     }
 
     @Inject(method = "hashCode", at = @At("RETURN"), cancellable = true, remap = false)
@@ -128,6 +152,9 @@ public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge
         cir.setReturnValue(
             31 * cir.getReturnValue()
                 + (dragonfix$littleTilesAnalysis == null ? 0 : dragonfix$littleTilesAnalysis.hashCode()));
+        cir.setReturnValue(
+            31 * cir.getReturnValue()
+                + (dragonfix$carpentersBlocksAnalysis == null ? 0 : dragonfix$carpentersBlocksAnalysis.hashCode()));
     }
 
     @Inject(method = "equals", at = @At("RETURN"), cancellable = true, remap = false)
@@ -140,6 +167,15 @@ public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge
         } else {
             cir.setReturnValue(dragonfix$littleTilesAnalysis.equals(other));
         }
+
+        if (!cir.getReturnValueZ()) return;
+
+        other = ((PendingBlockLittleTilesBridge) obj).dragonfix$getCarpentersBlocksAnalysis();
+        if (dragonfix$carpentersBlocksAnalysis == null) {
+            cir.setReturnValue(other == null);
+        } else {
+            cir.setReturnValue(dragonfix$carpentersBlocksAnalysis.equals(other));
+        }
     }
 
     @Override
@@ -150,6 +186,16 @@ public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge
     @Override
     public void dragonfix$setLittleTilesAnalysis(ITileAnalysisIntegration analysis) {
         dragonfix$littleTilesAnalysis = analysis;
+    }
+
+    @Override
+    public ITileAnalysisIntegration dragonfix$getCarpentersBlocksAnalysis() {
+        return dragonfix$carpentersBlocksAnalysis;
+    }
+
+    @Override
+    public void dragonfix$setCarpentersBlocksAnalysis(ITileAnalysisIntegration analysis) {
+        dragonfix$carpentersBlocksAnalysis = analysis;
     }
 
     @Unique

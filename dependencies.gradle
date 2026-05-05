@@ -64,6 +64,11 @@ dependencies {
         transitive = false
     }
 
+    // Required target for MatterManipulator Carpenter's Blocks copy/build integration.
+    compileOnly("com.github.GTNewHorizons:CarpentersBlocks:3.7.0-GTNH") {
+        transitive = false
+    }
+
     compileOnly("com.github.GTNewHorizons:ModularUI:1.2.20:dev") {
         transitive = false
     }
