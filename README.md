@@ -24,6 +24,7 @@ DragonFix 是一个面向 Minecraft 1.7.10 / Forge 的轻量级修复模组。
   - 修复 CTM 连接处可能出现黑色缝隙的问题。
 - OpenComputers + Angelica
   - 修复新版 Angelica 下 OpenComputers 屏幕文字显示异常的兼容性问题。
+  - 修复客户端收到 OpenComputers 屏幕调色板颜色同步包时，因本地缓冲区仍为 1-bit 色深而记录 `color palette not supported` 坏包警告的问题。
 - GalaxySpace
   - 修复下单 GalaxySpace 火箭相关物品时可能导致服务端 AE 崩溃的问题。
 - AE2Things

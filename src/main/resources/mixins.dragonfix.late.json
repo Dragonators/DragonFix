@@ -16,6 +16,7 @@
   "client": [
     "opencomputers.CodeSegmentMixin",
     "opencomputers.DynamicFontRendererCharIconMixin",
+    "opencomputers.PacketHandlerMixin",
     "opencomputers.StaticFontRendererMixin",
     "opencomputers.TextBufferRenderCacheMixin",
     "opencomputers.TextureFontRendererMixin"
