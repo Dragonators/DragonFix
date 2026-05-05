@@ -1,0 +1,192 @@
+package com.dragonfix.mattermanipulator;
+
+import java.util.List;
+
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
+
+import org.joml.Vector3i;
+
+import com.recursive_pineapple.matter_manipulator.common.building.BlockAnalyzer.IBlockApplyContext;
+import com.recursive_pineapple.matter_manipulator.common.building.ITileAnalysisIntegration;
+import com.recursive_pineapple.matter_manipulator.common.items.manipulator.Transform;
+
+public class LittleTilesAnalysisResult implements ITileAnalysisIntegration {
+
+    private static final String TILE_ENTITY_CLASS = "com.creativemd.littletiles.common.tileentity.TileEntityLittleTiles";
+    private static final int GRID_SIZE = 16;
+    private static final int CENTER = GRID_SIZE / 2;
+
+    private NBTTagCompound tileData;
+
+    public static LittleTilesAnalysisResult analyze(TileEntity te) {
+        if (!dragonfix$isLittleTilesTileEntity(te)) return null;
+
+        LittleTilesAnalysisResult result = new LittleTilesAnalysisResult();
+        result.tileData = new NBTTagCompound();
+        te.writeToNBT(result.tileData);
+
+        return result;
+    }
+
+    private static boolean dragonfix$isLittleTilesTileEntity(TileEntity te) {
+        return te != null && TILE_ENTITY_CLASS.equals(
+            te.getClass()
+                .getName());
+    }
+
+    @Override
+    public boolean apply(IBlockApplyContext ctx) {
+        TileEntity te = ctx.getTileEntity();
+
+        if (!dragonfix$isLittleTilesTileEntity(te)) {
+            ctx.error("LittleTiles tile entity is missing");
+            return false;
+        }
+
+        if (tileData == null) return true;
+
+        if (!ctx.tryApplyAction(Math.max(1, tileData.getInteger("tilesCount")))) return false;
+
+        NBTTagCompound copy = dragonfix$copyTileData();
+        copy.setInteger("x", ctx.getX());
+        copy.setInteger("y", ctx.getY());
+        copy.setInteger("z", ctx.getZ());
+
+        try {
+            te.readFromNBT(copy);
+            ctx.getWorld()
+                .markBlockForUpdate(ctx.getX(), ctx.getY(), ctx.getZ());
+            te.markDirty();
+        } catch (Exception e) {
+            ctx.error("Could not apply LittleTiles data: " + e.getMessage());
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean getRequiredItemsForExistingBlock(IBlockApplyContext context) {
+        return true;
+    }
+
+    @Override
+    public boolean getRequiredItemsForNewBlock(IBlockApplyContext context) {
+        return true;
+    }
+
+    @Override
+    public void getItemTag(NBTTagCompound tag) {
+        if (tileData != null) tag.setTag("MatterManipulatorLittleTiles", dragonfix$copyTileData());
+    }
+
+    @Override
+    public void getItemDetails(List<String> details) {
+        if (tileData != null) details.add(tileData.getInteger("tilesCount") + " LT tiles");
+    }
+
+    @Override
+    public void transform(Transform transform) {
+        if (tileData == null) return;
+
+        int count = tileData.getInteger("tilesCount");
+
+        for (int i = 0; i < count; i++) {
+            String tileKey = "t" + i;
+            if (!tileData.hasKey(tileKey)) continue;
+
+            NBTTagCompound tile = tileData.getCompoundTag(tileKey);
+            dragonfix$transformTile(tile, transform);
+            tileData.setTag(tileKey, tile);
+        }
+    }
+
+    private void dragonfix$transformTile(NBTTagCompound tile, Transform transform) {
+        int boxCount = tile.getInteger("bSize");
+
+        for (int i = 0; i < boxCount; i++) {
+            dragonfix$transformBox(tile, "bBox" + i, transform);
+        }
+
+        if (boxCount > 0) {
+            tile.setInteger("cVecx", tile.getInteger("bBox0minX"));
+            tile.setInteger("cVecy", tile.getInteger("bBox0minY"));
+            tile.setInteger("cVecz", tile.getInteger("bBox0minZ"));
+        }
+    }
+
+    private void dragonfix$transformBox(NBTTagCompound tag, String name, Transform transform) {
+        int minX = tag.getInteger(name + "minX");
+        int minY = tag.getInteger(name + "minY");
+        int minZ = tag.getInteger(name + "minZ");
+        int maxX = tag.getInteger(name + "maxX");
+        int maxY = tag.getInteger(name + "maxY");
+        int maxZ = tag.getInteger(name + "maxZ");
+
+        int outMinX = Integer.MAX_VALUE;
+        int outMinY = Integer.MAX_VALUE;
+        int outMinZ = Integer.MAX_VALUE;
+        int outMaxX = Integer.MIN_VALUE;
+        int outMaxY = Integer.MIN_VALUE;
+        int outMaxZ = Integer.MIN_VALUE;
+
+        for (int x : new int[] { minX, maxX }) {
+            for (int y : new int[] { minY, maxY }) {
+                for (int z : new int[] { minZ, maxZ }) {
+                    Vector3i point = new Vector3i(x - CENTER, y - CENTER, z - CENTER);
+                    transform.apply(point);
+                    point.add(CENTER, CENTER, CENTER);
+
+                    outMinX = Math.min(outMinX, point.x);
+                    outMinY = Math.min(outMinY, point.y);
+                    outMinZ = Math.min(outMinZ, point.z);
+                    outMaxX = Math.max(outMaxX, point.x);
+                    outMaxY = Math.max(outMaxY, point.y);
+                    outMaxZ = Math.max(outMaxZ, point.z);
+                }
+            }
+        }
+
+        tag.setInteger(name + "minX", outMinX);
+        tag.setInteger(name + "minY", outMinY);
+        tag.setInteger(name + "minZ", outMinZ);
+        tag.setInteger(name + "maxX", outMaxX);
+        tag.setInteger(name + "maxY", outMaxY);
+        tag.setInteger(name + "maxZ", outMaxZ);
+    }
+
+    @Override
+    public LittleTilesAnalysisResult clone() {
+        LittleTilesAnalysisResult dup = new LittleTilesAnalysisResult();
+        dup.tileData = dragonfix$copyTileData();
+        return dup;
+    }
+
+    private NBTTagCompound dragonfix$copyTileData() {
+        return tileData == null ? null : (NBTTagCompound) tileData.copy();
+    }
+
+    @Override
+    public void migrate() {}
+
+    @Override
+    public int hashCode() {
+        return tileData == null ? 0 : tileData.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof LittleTilesAnalysisResult)) return false;
+
+        LittleTilesAnalysisResult other = (LittleTilesAnalysisResult) obj;
+        if (tileData == null) return other.tileData == null;
+        return tileData.equals(other.tileData);
+    }
+
+    @Override
+    public String toString() {
+        return "LittleTilesAnalysisResult [tileData=" + tileData + "]";
+    }
+}

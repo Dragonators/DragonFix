@@ -30,6 +30,8 @@ DragonFix 是一个面向 Minecraft 1.7.10 / Forge 的轻量级修复模组。
   - 修复 GT 配方通过无线双接口终端追加非消耗品信息时，非集成电路物品只显示 damage 数字而无法区分物品名称的问题。
 - GTNHLib
   - 修复使用 GTNHLib 0.9.x（Angelica 2.x 必需版本）时，物质操纵者无法渲染选区的问题。
+- MatterManipulator
+  - 为 MatterManipulator 0.0.51 及以上版本补充 LittleTiles 方块复制、旋转和建造时的 tile 数据适配。
 
 ## 安装
 

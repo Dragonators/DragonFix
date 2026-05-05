@@ -6,6 +6,8 @@
   "mixins": [
     "ae2things.GTUtilMixin",
     "galaxyspace.ItemRocketMixin",
+    "mattermanipulator.InteropConstantsMixin",
+    "mattermanipulator.PendingBlockMixin",
     "programmablehatches.PHRecipesMixin",
     "programmablehatches.StockingDualInputHatchMEMixin",
     "programmablehatches.TileIOHubAnalyzableMixin",
