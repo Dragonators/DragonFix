@@ -16,6 +16,7 @@
   "client": [
     "mattermanipulator.ArchitectureCraftAnalysisResultMixin",
     "mattermanipulator.MMRendererMixin",
+    "mattermanipulator.RenderHintsMixin",
     "mattermanipulator.RenderHintsHintMixin",
     "opencomputers.CodeSegmentMixin",
     "opencomputers.DynamicFontRendererCharIconMixin",

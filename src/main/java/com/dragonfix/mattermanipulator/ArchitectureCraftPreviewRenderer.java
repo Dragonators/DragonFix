@@ -44,7 +44,8 @@ public final class ArchitectureCraftPreviewRenderer {
                 tint,
                 eyeXint,
                 eyeYint,
-                eyeZint));
+                eyeZint),
+            dragonfix$countShapeQuads(pendingBlock, shapeId, materialBlock, materialMeta, side, turn, offsetX));
     }
 
     private static void dragonfix$drawShape(Tessellator tessellator, PendingBlock pendingBlock, int shapeId,
@@ -73,6 +74,35 @@ public final class ArchitectureCraftPreviewRenderer {
             transform,
             true,
             false);
+    }
+
+    private static int dragonfix$countShapeQuads(PendingBlock pendingBlock, int shapeId, Block materialBlock,
+        int materialMeta, int side, int turn, double offsetX) {
+        World world = Minecraft.getMinecraft().theWorld;
+        if (world == null) return 6;
+
+        TileShape tile = new TileShape(Shape.forId(shapeId), materialBlock, materialMeta);
+        tile.xCoord = pendingBlock.x;
+        tile.yCoord = pendingBlock.y;
+        tile.zCoord = pendingBlock.z;
+        tile.setWorldObj(world);
+        tile.setSide(side);
+        tile.setTurn(turn);
+        tile.setOffsetX(offsetX);
+
+        BlockPos renderPos = new BlockPos(0, 0, 0);
+        Trans3 transform = Trans3.blockCenter(renderPos)
+            .t(Trans3.sideTurn(side, turn))
+            .translate(offsetX, 0, 0);
+        CountingRenderTarget target = new CountingRenderTarget(renderPos);
+
+        try {
+            SHAPE_RENDERER.dragonfix$renderShape(tile, target, transform, true, false);
+        } catch (RuntimeException | LinkageError e) {
+            return 6;
+        }
+
+        return Math.max(6, (target.vertexCount() + 3) / 4);
     }
 
     private static final class ShapeRenderer extends ShapeRenderDispatch {
@@ -106,6 +136,25 @@ public final class ArchitectureCraftPreviewRenderer {
             tessellator.setTextureUV(u, v);
             tessellator.setBrightness(brightness);
             tessellator.addVertex(p.x, p.y, p.z);
+        }
+    }
+
+    private static final class CountingRenderTarget extends RenderTargetBase {
+
+        private int vertices;
+
+        private CountingRenderTarget(BlockPos renderPos) {
+            super(renderPos.x, renderPos.y, renderPos.z, null);
+            expandTrianglesToQuads = true;
+        }
+
+        private int vertexCount() {
+            return vertices;
+        }
+
+        @Override
+        protected void rawAddVertex(Vector3 p, double u, double v) {
+            vertices++;
         }
     }
 }

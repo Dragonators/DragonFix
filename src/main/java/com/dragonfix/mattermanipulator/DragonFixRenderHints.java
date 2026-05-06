@@ -17,6 +17,7 @@ public final class DragonFixRenderHints {
     private static final Map<Object, Bounds> BOUNDS = Collections.synchronizedMap(new WeakHashMap<>());
     private static final Map<Object, CustomRenderer> CUSTOM_RENDERERS = Collections
         .synchronizedMap(new WeakHashMap<>());
+    private static final Map<Object, Integer> CUSTOM_QUAD_COUNTS = Collections.synchronizedMap(new WeakHashMap<>());
 
     private static Constructor<?> hintConstructor;
     private static Field hintsField;
@@ -49,6 +50,11 @@ public final class DragonFixRenderHints {
 
     public static void addCustomHint(int x, int y, int z, Block block, int meta, short[] tint,
         CustomRenderer renderer) {
+        addCustomHint(x, y, z, block, meta, tint, renderer, 6);
+    }
+
+    public static void addCustomHint(int x, int y, int z, Block block, int meta, short[] tint, CustomRenderer renderer,
+        int quadCount) {
         if (reflectionFailed || !dragonfix$initReflection()) {
             RenderHints.addHint(x, y, z, block, meta, tint);
             return;
@@ -57,6 +63,7 @@ public final class DragonFixRenderHints {
         try {
             Object hint = dragonfix$newHint(x, y, z, block, meta, tint);
             CUSTOM_RENDERERS.put(hint, renderer);
+            CUSTOM_QUAD_COUNTS.put(hint, Math.max(6, quadCount));
 
             dragonfix$getHints().add(hint);
         } catch (ReflectiveOperationException | ClassCastException e) {
@@ -71,6 +78,55 @@ public final class DragonFixRenderHints {
 
     public static CustomRenderer getCustomRenderer(Object hint) {
         return CUSTOM_RENDERERS.get(hint);
+    }
+
+    public static long expandVboSize(long originalSize) {
+        if (originalSize <= 0 || reflectionFailed || !dragonfix$initReflection()) {
+            return originalSize;
+        }
+
+        try {
+            ArrayList<Object> hints = dragonfix$getHints();
+            int hintCount = hints.size();
+            if (hintCount == 0) {
+                return originalSize;
+            }
+
+            long bytesPerHint = originalSize / hintCount;
+            if (bytesPerHint <= 0) {
+                return originalSize;
+            }
+
+            long bytesPerQuad = bytesPerHint / 6;
+            if (bytesPerQuad <= 0) {
+                return originalSize;
+            }
+
+            long extraQuads = 0;
+            for (Object hint : hints) {
+                Integer quadCount = CUSTOM_QUAD_COUNTS.get(hint);
+                if (quadCount != null && quadCount > 6) {
+                    long hintExtraQuads = quadCount - 6L;
+                    if (extraQuads > Long.MAX_VALUE - hintExtraQuads) {
+                        return originalSize;
+                    }
+                    extraQuads += hintExtraQuads;
+                }
+            }
+
+            if (extraQuads <= 0) {
+                return originalSize;
+            }
+
+            if (extraQuads > (Long.MAX_VALUE - originalSize) / bytesPerQuad) {
+                return originalSize;
+            }
+
+            return originalSize + extraQuads * bytesPerQuad;
+        } catch (ReflectiveOperationException | ClassCastException e) {
+            reflectionFailed = true;
+            return originalSize;
+        }
     }
 
     private static Object dragonfix$newHint(int x, int y, int z, Block block, int meta, short[] tint)
