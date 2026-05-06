@@ -6,6 +6,7 @@
   "mixins": [
     "ae2things.GTUtilMixin",
     "galaxyspace.ItemRocketMixin",
+    "mattermanipulator.ArchitectureCraftAnalysisResultTransformMixin",
     "mattermanipulator.InteropConstantsMixin",
     "mattermanipulator.PendingBlockMixin",
     "programmablehatches.PHRecipesMixin",
