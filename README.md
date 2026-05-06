@@ -33,12 +33,16 @@ DragonFix 是一个面向 Minecraft 1.7.10 / Forge 的轻量级修复模组。
   - 修复使用 GTNHLib 0.9.x（Angelica 2.x 必需版本）时，物质操纵者无法渲染选区的问题。
   - 修复旧版 `QuadView` 调用 GTNHLib `VertexFormat.writeQuad` 时可能因 CEL 包名迁移导致的二进制兼容问题。
 - MatterManipulator
-  - 为 MatterManipulator 0.0.51 及以上版本补充 LittleTiles 方块复制、旋转和建造时的 tile 数据适配。
+  - 为 MatterManipulator 0.0.51-GTNH 补充 LittleTiles 方块复制、旋转和建造时的 tile 数据适配。
   - 修复复制带小数角度的方块属性后，旋转/镜像时 `rotation` 属性被整数解析截断或解析失败的问题。
   - 为 Carpenter's Blocks 方块补充复制、旋转和建造时的 data/covers 适配。
+  - 为 ForgeMultipart / Project Red multipart 方块补充复制、旋转、物品消耗、建造和预览适配。
+  - 修复 OpenComputers 可旋转方块复制/粘贴时朝向未按 MM 变换同步的问题。
+  - 修复 OpenComputers 组件带地址或数据 NBT 时，复制/粘贴库存可能错误要求原始带地址物品的问题。
   - 修复 LittleTiles 与 ArchitectureCraft 方块在 MatterManipulator 预览提示中无法按实际材料/小方块形状显示的问题。
   - 修复 ArchitectureCraft 真实形状预览可能超出 MatterManipulator 原始 hint VBO 预分配容量，导致整批预览不渲染的问题。
   - 修复 ArchitectureCraft 方块在 MatterManipulator 复制结构旋转/镜像后未同步更新朝向与偏移的问题。
+  - 复用 MatterManipulator 选区 BoxRenderer 的 VBO，减少每帧渲染选区时的缓冲对象创建。
 
 ## 安装
 

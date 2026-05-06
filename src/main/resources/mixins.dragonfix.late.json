@@ -7,7 +7,9 @@
     "ae2things.GTUtilMixin",
     "galaxyspace.ItemRocketMixin",
     "mattermanipulator.ArchitectureCraftAnalysisResultTransformMixin",
+    "mattermanipulator.BlockPropertyRegistryMixin",
     "mattermanipulator.InteropConstantsMixin",
+    "mattermanipulator.InventoryAnalysisMixin",
     "mattermanipulator.PendingBlockMixin",
     "programmablehatches.PHRecipesMixin",
     "programmablehatches.StockingDualInputHatchMEMixin",
@@ -16,6 +18,7 @@
   ],
   "client": [
     "mattermanipulator.ArchitectureCraftAnalysisResultMixin",
+    "mattermanipulator.BoxRendererMixin",
     "mattermanipulator.MMRendererMixin",
     "mattermanipulator.RenderHintsMixin",
     "mattermanipulator.RenderHintsHintMixin",

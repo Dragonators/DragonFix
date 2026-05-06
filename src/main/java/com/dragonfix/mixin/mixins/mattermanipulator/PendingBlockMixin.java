@@ -17,6 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.dragonfix.mattermanipulator.CarpentersBlocksAnalysisResult;
+import com.dragonfix.mattermanipulator.DragonFixMultipartAnalysisResult;
 import com.dragonfix.mattermanipulator.LittleTilesAnalysisResult;
 import com.dragonfix.mattermanipulator.PendingBlockLittleTilesBridge;
 import com.recursive_pineapple.matter_manipulator.common.building.CopyableProperty;
@@ -25,6 +26,13 @@ import com.recursive_pineapple.matter_manipulator.common.building.ImmutableBlock
 import com.recursive_pineapple.matter_manipulator.common.building.PendingBlock;
 import com.recursive_pineapple.matter_manipulator.common.items.manipulator.Transform;
 
+import cpw.mods.fml.common.Loader;
+
+/**
+ * Contains mixin hooks adapted from GTNewHorizons/MatterManipulator PR #34 by Luca-Guettinger and RecursivePineapple:
+ * https://github.com/GTNewHorizons/MatterManipulator/pull/34
+ * https://github.com/GTNewHorizons/MatterManipulator/commit/9d76ed6e8ec87da8f55404893ea3b5ebe6912759
+ */
 @Mixin(value = PendingBlock.class, remap = false)
 public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge {
 
@@ -37,8 +45,14 @@ public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge
     @Unique
     private static final int dragonfix$ANALYZE_CB = 0b1 << 6;
 
+    @Unique
+    private static final int dragonfix$ANALYZE_MP = 0b1 << 3;
+
     @Shadow(remap = false)
     public ImmutableBlockSpec spec;
+
+    @Shadow(remap = false)
+    public ITileAnalysisIntegration mp;
 
     @Unique
     private ITileAnalysisIntegration dragonfix$littleTilesAnalysis;
@@ -51,6 +65,10 @@ public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge
 
     @Inject(method = "getIntegrations", at = @At("RETURN"), remap = false)
     private void dragonfix$addLittleTilesIntegration(CallbackInfoReturnable<List<ITileAnalysisIntegration>> cir) {
+        if (mp != null) {
+            cir.getReturnValue()
+                .add(mp);
+        }
         if (dragonfix$littleTilesAnalysis != null) {
             cir.getReturnValue()
                 .add(dragonfix$littleTilesAnalysis);
@@ -63,6 +81,7 @@ public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge
 
     @Inject(method = "reset", at = @At("HEAD"), remap = false)
     private void dragonfix$resetLittleTilesIntegration(CallbackInfoReturnable<PendingBlock> cir) {
+        mp = null;
         dragonfix$littleTilesAnalysis = null;
         dragonfix$carpentersBlocksAnalysis = null;
     }
@@ -86,6 +105,9 @@ public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge
 
     @Inject(method = "analyze", at = @At("RETURN"), remap = false)
     private void dragonfix$analyzeLittleTiles(TileEntity te, int flags, CallbackInfoReturnable<PendingBlock> cir) {
+        if (te != null && (flags & dragonfix$ANALYZE_MP) != 0 && Loader.isModLoaded("ForgeMultipart")) {
+            mp = DragonFixMultipartAnalysisResult.analyze(te);
+        }
         if (te != null && (flags & dragonfix$ANALYZE_LT) != 0) {
             dragonfix$littleTilesAnalysis = LittleTilesAnalysisResult.analyze(te);
         }

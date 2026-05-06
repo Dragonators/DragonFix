@@ -5,6 +5,7 @@ import java.util.List;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 
@@ -17,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.dragonfix.mattermanipulator.ArchitectureCraftPreviewBridge;
+import com.dragonfix.mattermanipulator.DragonFixMultipartPreviewBridge;
 import com.dragonfix.mattermanipulator.DragonFixRenderHints;
 import com.dragonfix.mattermanipulator.LittleTilesAnalysisResult;
 import com.dragonfix.mattermanipulator.PendingBlockLittleTilesBridge;
@@ -34,6 +36,11 @@ import com.recursive_pineapple.matter_manipulator.common.items.manipulator.Rende
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
+/**
+ * Contains preview hooks adapted from GTNewHorizons/MatterManipulator PR #34 by Luca-Guettinger and RecursivePineapple:
+ * https://github.com/GTNewHorizons/MatterManipulator/pull/34
+ * https://github.com/GTNewHorizons/MatterManipulator/commit/9d76ed6e8ec87da8f55404893ea3b5ebe6912759
+ */
 @Mixin(value = MMRenderer.class, remap = false)
 public abstract class MMRendererMixin {
 
@@ -82,6 +89,19 @@ public abstract class MMRendererMixin {
             if (pendingBlock.spec.isAir() && world.isAirBlock(pendingBlock.x, pendingBlock.y, pendingBlock.z)) continue;
 
             Block block = pendingBlock.getBlock();
+            int meta = pendingBlock.spec.getBlockMeta();
+            boolean multipart = pendingBlock.mp instanceof DragonFixMultipartPreviewBridge;
+            if (multipart) {
+                DragonFixMultipartPreviewBridge preview = (DragonFixMultipartPreviewBridge) pendingBlock.mp;
+                Block previewBlock = preview.dragonfix$getPreviewBlock();
+                if (previewBlock != null) {
+                    block = previewBlock;
+                    meta = preview.dragonfix$getPreviewMeta();
+                } else {
+                    block = Blocks.redstone_wire;
+                    meta = 0;
+                }
+            }
             if (block == null) continue;
 
             LittleTilesAnalysisResult littleTiles = dragonfix$getLittleTilesAnalysis(pendingBlock);
@@ -95,7 +115,11 @@ public abstract class MMRendererMixin {
 
             BlockSpec.fromBlock(pooled, world, pendingBlock.x, pendingBlock.y, pendingBlock.z);
 
-            if (pooled.isEquivalent(pendingBlock.spec)) continue;
+            if (multipart) {
+                if (pooled.getBlock() == pendingBlock.getBlock()) continue;
+            } else if (pooled.isEquivalent(pendingBlock.spec)) {
+                continue;
+            }
 
             if (++i > RenderingConfig.maxHints) break;
 
@@ -115,13 +139,7 @@ public abstract class MMRendererMixin {
                     com.gtnewhorizon.structurelib.StructureLibAPI.HINT_BLOCK_META_ERROR,
                     tint);
             } else {
-                RenderHints.addHint(
-                    pendingBlock.x,
-                    pendingBlock.y,
-                    pendingBlock.z,
-                    block,
-                    pendingBlock.spec.getBlockMeta(),
-                    tint);
+                RenderHints.addHint(pendingBlock.x, pendingBlock.y, pendingBlock.z, block, meta, tint);
             }
         }
 

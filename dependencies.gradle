@@ -64,6 +64,15 @@ dependencies {
         transitive = false
     }
 
+    // Optional target for MatterManipulator ForgeMultipart / Project Red copy/build integration.
+    compileOnly("com.github.GTNewHorizons:ForgeMultipart:1.7.2:dev") {
+        transitive = false
+    }
+
+    compileOnly("com.github.GTNewHorizons:CodeChickenCore:1.4.10:dev") {
+        transitive = false
+    }
+
     // Required target for MatterManipulator Carpenter's Blocks copy/build integration.
     compileOnly("com.github.GTNewHorizons:CarpentersBlocks:3.7.0-GTNH") {
         transitive = false
