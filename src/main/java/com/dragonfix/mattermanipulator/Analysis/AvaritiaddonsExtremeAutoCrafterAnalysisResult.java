@@ -1,4 +1,4 @@
-package com.dragonfix.mattermanipulator;
+package com.dragonfix.mattermanipulator.Analysis;
 
 import java.util.Arrays;
 import java.util.List;
@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 
+import com.dragonfix.mattermanipulator.helper.SpecialInventorySlots;
 import com.google.gson.annotations.SerializedName;
 import com.recursive_pineapple.matter_manipulator.common.building.BlockAnalyzer.IBlockApplyContext;
 import com.recursive_pineapple.matter_manipulator.common.building.ITileAnalysisIntegration;
@@ -44,9 +45,7 @@ public class AvaritiaddonsExtremeAutoCrafterAnalysisResult implements ITileAnaly
     }
 
     public static boolean isExtremeAutoCrafter(IInventory inventory) {
-        return inventory != null && EXTREME_AUTO_CRAFTER_CLASS.equals(
-            inventory.getClass()
-                .getName());
+        return SpecialInventorySlots.isExactInventoryClass(inventory, EXTREME_AUTO_CRAFTER_CLASS);
     }
 
     public static boolean isGhostOrOutputSlot(IInventory inventory, int slot) {

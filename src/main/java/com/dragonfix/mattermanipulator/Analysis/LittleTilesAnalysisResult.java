@@ -1,4 +1,4 @@
-package com.dragonfix.mattermanipulator;
+package com.dragonfix.mattermanipulator.Analysis;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.dragonfix.mattermanipulator;
+package com.dragonfix.mattermanipulator.Analysis;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -9,6 +9,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 
+import com.dragonfix.mattermanipulator.helper.InventorySlotCopyHelper;
+import com.dragonfix.mattermanipulator.helper.SpecialInventorySlots;
 import com.google.gson.annotations.SerializedName;
 import com.recursive_pineapple.matter_manipulator.common.building.BlockAnalyzer.IBlockApplyContext;
 import com.recursive_pineapple.matter_manipulator.common.building.ITileAnalysisIntegration;
@@ -22,6 +24,7 @@ public class AE2CondenserAnalysisResult implements ITileAnalysisIntegration {
 
     private static final String CONDENSER_CLASS = "appeng.tile.misc.TileCondenser";
     private static final int STORAGE_COMPONENT_SLOT = 2;
+    private static final String STORAGE_COMPONENT_NAME = "AE2 condenser storage component";
 
     @SerializedName("s")
     private PortableItemStack storageComponent;
@@ -30,19 +33,17 @@ public class AE2CondenserAnalysisResult implements ITileAnalysisIntegration {
         IInventory internalInventory = dragonfix$getInternalInventory(tile);
         if (internalInventory == null) return null;
 
-        ItemStack stack = internalInventory.getStackInSlot(STORAGE_COMPONENT_SLOT);
-        if (stack == null) return null;
+        PortableItemStack storedItem = InventorySlotCopyHelper.analyzeSlot(internalInventory, STORAGE_COMPONENT_SLOT);
+        if (storedItem == null) return null;
 
         AE2CondenserAnalysisResult result = new AE2CondenserAnalysisResult();
-        result.storageComponent = PortableItemStack.withNBT(stack);
+        result.storageComponent = storedItem;
         return result;
     }
 
     public static boolean isMatterCondenserStorageSlot(IInventory inventory, int slot) {
-        return inventory != null && slot == STORAGE_COMPONENT_SLOT
-            && CONDENSER_CLASS.equals(
-                inventory.getClass()
-                    .getName());
+        return slot == STORAGE_COMPONENT_SLOT
+            && SpecialInventorySlots.isExactInventoryClass(inventory, CONDENSER_CLASS);
     }
 
     private static IInventory dragonfix$getInternalInventory(TileEntity tile) {
@@ -74,49 +75,21 @@ public class AE2CondenserAnalysisResult implements ITileAnalysisIntegration {
 
     @Override
     public boolean getRequiredItemsForNewBlock(IBlockApplyContext context) {
-        return dragonfix$consumeStorageComponent(context);
+        return InventorySlotCopyHelper.consumeItem(context, storageComponent, STORAGE_COMPONENT_NAME);
     }
 
     private boolean dragonfix$replaceStorageComponent(IBlockApplyContext context, boolean mutate) {
         IInventory internalInventory = dragonfix$getInternalInventory(context.getTileEntity());
         if (internalInventory == null) return true;
 
-        ItemStack existing = internalInventory.getStackInSlot(STORAGE_COMPONENT_SLOT);
-        if (dragonfix$isSameStoredItem(existing, storageComponent)) return true;
-
-        if (!dragonfix$consumeStorageComponent(context)) return false;
-
-        if (existing != null) {
-            context.givePlayerItems(existing.copy());
-        }
-
-        if (mutate) {
-            ItemStack restored = storageComponent == null ? null : storageComponent.toStack();
-            internalInventory.setInventorySlotContents(STORAGE_COMPONENT_SLOT, restored);
-            internalInventory.markDirty();
-            TileEntity tile = context.getTileEntity();
-            if (tile != null) tile.markDirty();
-        }
-
-        return true;
-    }
-
-    private boolean dragonfix$consumeStorageComponent(IBlockApplyContext context) {
-        ItemStack stack = storageComponent == null ? null : storageComponent.toStack();
-        if (stack == null) return true;
-
-        if (!context.tryConsumeItems(stack)) {
-            context.warn("Could not find AE2 condenser storage component: " + stack.getDisplayName());
-            return false;
-        }
-
-        return true;
-    }
-
-    private static boolean dragonfix$isSameStoredItem(ItemStack stack, PortableItemStack portable) {
-        ItemStack target = portable == null ? null : portable.toStack();
-        if (stack == null || target == null) return stack == target;
-        return ItemStack.areItemStacksEqual(stack, target);
+        return InventorySlotCopyHelper.replaceSlot(
+            context,
+            internalInventory,
+            context.getTileEntity(),
+            STORAGE_COMPONENT_SLOT,
+            storageComponent,
+            STORAGE_COMPONENT_NAME,
+            mutate);
     }
 
     @Override
@@ -126,7 +99,7 @@ public class AE2CondenserAnalysisResult implements ITileAnalysisIntegration {
 
     @Override
     public void getItemDetails(List<String> details) {
-        ItemStack stack = storageComponent == null ? null : storageComponent.toStack();
+        ItemStack stack = InventorySlotCopyHelper.toStack(storageComponent);
         if (stack != null) details.add("AE2 condenser storage: " + stack.getDisplayName());
     }
 

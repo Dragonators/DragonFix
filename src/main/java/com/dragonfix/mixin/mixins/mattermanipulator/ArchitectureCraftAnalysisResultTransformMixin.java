@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import com.dragonfix.mattermanipulator.ArchitectureCraftOrientationBridge;
+import com.dragonfix.mattermanipulator.bridge.ArchitectureCraftOrientationBridge;
 import com.recursive_pineapple.matter_manipulator.common.building.ArchitectureCraftAnalysisResult;
 import com.recursive_pineapple.matter_manipulator.common.building.BlockAnalyzer.IBlockApplyContext;
 import com.recursive_pineapple.matter_manipulator.common.items.manipulator.Transform;

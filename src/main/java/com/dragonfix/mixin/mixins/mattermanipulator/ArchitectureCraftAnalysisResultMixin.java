@@ -5,9 +5,9 @@ import net.minecraft.block.Block;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-import com.dragonfix.mattermanipulator.ArchitectureCraftOrientationBridge;
-import com.dragonfix.mattermanipulator.ArchitectureCraftPreviewBridge;
 import com.dragonfix.mattermanipulator.ArchitectureCraftPreviewRenderer;
+import com.dragonfix.mattermanipulator.bridge.ArchitectureCraftOrientationBridge;
+import com.dragonfix.mattermanipulator.bridge.ArchitectureCraftPreviewBridge;
 import com.recursive_pineapple.matter_manipulator.common.building.ArchitectureCraftAnalysisResult;
 import com.recursive_pineapple.matter_manipulator.common.building.PendingBlock;
 import com.recursive_pineapple.matter_manipulator.common.building.PortableItemStack;

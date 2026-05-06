@@ -1,4 +1,4 @@
-package com.dragonfix.mattermanipulator;
+package com.dragonfix.mattermanipulator.Analysis;
 
 import java.util.List;
 import java.util.Objects;
@@ -8,6 +8,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 
+import com.dragonfix.mattermanipulator.helper.InventorySlotCopyHelper;
+import com.dragonfix.mattermanipulator.helper.SpecialInventorySlots;
 import com.google.gson.annotations.SerializedName;
 import com.recursive_pineapple.matter_manipulator.common.building.BlockAnalyzer.IBlockApplyContext;
 import com.recursive_pineapple.matter_manipulator.common.building.ITileAnalysisIntegration;
@@ -21,6 +23,7 @@ public class EnderIOSoulBinderAnalysisResult implements ITileAnalysisIntegration
 
     private static final String SOUL_BINDER_CLASS = "crazypants.enderio.machine.soul.TileSoulBinder";
     private static final int CAPACITOR_SLOT = 4;
+    private static final String CAPACITOR_NAME = "Ender IO soul binder capacitor";
 
     @SerializedName("c")
     private PortableItemStack capacitor;
@@ -28,11 +31,11 @@ public class EnderIOSoulBinderAnalysisResult implements ITileAnalysisIntegration
     public static EnderIOSoulBinderAnalysisResult analyze(TileEntity tile) {
         if (!(tile instanceof IInventory inventory) || !isSoulBinder(inventory)) return null;
 
-        ItemStack stack = inventory.getStackInSlot(CAPACITOR_SLOT);
-        if (stack == null) return null;
+        PortableItemStack storedItem = InventorySlotCopyHelper.analyzeSlot(inventory, CAPACITOR_SLOT);
+        if (storedItem == null) return null;
 
         EnderIOSoulBinderAnalysisResult result = new EnderIOSoulBinderAnalysisResult();
-        result.capacitor = PortableItemStack.withNBT(stack);
+        result.capacitor = storedItem;
         return result;
     }
 
@@ -41,9 +44,7 @@ public class EnderIOSoulBinderAnalysisResult implements ITileAnalysisIntegration
     }
 
     private static boolean isSoulBinder(IInventory inventory) {
-        return inventory != null && SOUL_BINDER_CLASS.equals(
-            inventory.getClass()
-                .getName());
+        return SpecialInventorySlots.isExactInventoryClass(inventory, SOUL_BINDER_CLASS);
     }
 
     @Override
@@ -58,48 +59,15 @@ public class EnderIOSoulBinderAnalysisResult implements ITileAnalysisIntegration
 
     @Override
     public boolean getRequiredItemsForNewBlock(IBlockApplyContext context) {
-        return dragonfix$consumeCapacitor(context);
+        return InventorySlotCopyHelper.consumeItem(context, capacitor, CAPACITOR_NAME);
     }
 
     private boolean dragonfix$replaceCapacitor(IBlockApplyContext context, boolean mutate) {
         TileEntity tile = context.getTileEntity();
         if (!(tile instanceof IInventory inventory) || !isSoulBinder(inventory)) return true;
 
-        ItemStack existing = inventory.getStackInSlot(CAPACITOR_SLOT);
-        if (dragonfix$isSameStoredItem(existing, capacitor)) return true;
-
-        if (!dragonfix$consumeCapacitor(context)) return false;
-
-        if (existing != null) {
-            context.givePlayerItems(existing.copy());
-        }
-
-        if (mutate) {
-            ItemStack restored = capacitor == null ? null : capacitor.toStack();
-            inventory.setInventorySlotContents(CAPACITOR_SLOT, restored);
-            inventory.markDirty();
-            tile.markDirty();
-        }
-
-        return true;
-    }
-
-    private boolean dragonfix$consumeCapacitor(IBlockApplyContext context) {
-        ItemStack stack = capacitor == null ? null : capacitor.toStack();
-        if (stack == null) return true;
-
-        if (!context.tryConsumeItems(stack)) {
-            context.warn("Could not find Ender IO soul binder capacitor: " + stack.getDisplayName());
-            return false;
-        }
-
-        return true;
-    }
-
-    private static boolean dragonfix$isSameStoredItem(ItemStack stack, PortableItemStack portable) {
-        ItemStack target = portable == null ? null : portable.toStack();
-        if (stack == null || target == null) return stack == target;
-        return ItemStack.areItemStacksEqual(stack, target);
+        return InventorySlotCopyHelper
+            .replaceSlot(context, inventory, tile, CAPACITOR_SLOT, capacitor, CAPACITOR_NAME, mutate);
     }
 
     @Override
@@ -109,7 +77,7 @@ public class EnderIOSoulBinderAnalysisResult implements ITileAnalysisIntegration
 
     @Override
     public void getItemDetails(List<String> details) {
-        ItemStack stack = capacitor == null ? null : capacitor.toStack();
+        ItemStack stack = InventorySlotCopyHelper.toStack(capacitor);
         if (stack != null) details.add("Ender IO soul binder capacitor: " + stack.getDisplayName());
     }
 
@@ -134,8 +102,7 @@ public class EnderIOSoulBinderAnalysisResult implements ITileAnalysisIntegration
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (!(obj instanceof EnderIOSoulBinderAnalysisResult)) return false;
-        EnderIOSoulBinderAnalysisResult other = (EnderIOSoulBinderAnalysisResult) obj;
+        if (!(obj instanceof EnderIOSoulBinderAnalysisResult other)) return false;
         return Objects.equals(capacitor, other.capacitor);
     }
 }

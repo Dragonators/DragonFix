@@ -1,4 +1,4 @@
-package com.dragonfix.mattermanipulator;
+package com.dragonfix.mattermanipulator.Analysis;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,6 +12,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import com.dragonfix.mattermanipulator.FMPPartTransforms;
+import com.dragonfix.mattermanipulator.bridge.DragonFixMultipartPreviewBridge;
 import com.google.gson.annotations.SerializedName;
 import com.recursive_pineapple.matter_manipulator.MMMod;
 import com.recursive_pineapple.matter_manipulator.common.building.BlockAnalyzer.IBlockApplyContext;

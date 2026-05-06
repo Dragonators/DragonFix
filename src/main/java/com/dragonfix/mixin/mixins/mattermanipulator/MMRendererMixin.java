@@ -17,11 +17,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.dragonfix.mattermanipulator.ArchitectureCraftPreviewBridge;
-import com.dragonfix.mattermanipulator.DragonFixMultipartPreviewBridge;
+import com.dragonfix.mattermanipulator.Analysis.LittleTilesAnalysisResult;
 import com.dragonfix.mattermanipulator.DragonFixRenderHints;
-import com.dragonfix.mattermanipulator.LittleTilesAnalysisResult;
-import com.dragonfix.mattermanipulator.PendingBlockLittleTilesBridge;
+import com.dragonfix.mattermanipulator.bridge.ArchitectureCraftPreviewBridge;
+import com.dragonfix.mattermanipulator.bridge.DragonFixMultipartPreviewBridge;
+import com.dragonfix.mattermanipulator.bridge.PendingBlockLittleTilesBridge;
 import com.gtnewhorizon.gtnhlib.util.CoordinatePacker;
 import com.recursive_pineapple.matter_manipulator.GlobalMMConfig.RenderingConfig;
 import com.recursive_pineapple.matter_manipulator.common.building.BlockSpec;

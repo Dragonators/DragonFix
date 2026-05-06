@@ -1,4 +1,4 @@
-package com.dragonfix.mattermanipulator;
+package com.dragonfix.mattermanipulator.bridge;
 
 import com.recursive_pineapple.matter_manipulator.common.building.PendingBlock;
 
