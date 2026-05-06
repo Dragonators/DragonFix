@@ -1,4 +1,4 @@
-package com.dragonfix.mattermanipulator.Analysis;
+package com.dragonfix.mattermanipulator.analysis;
 
 import java.util.List;
 import java.util.Objects;
@@ -9,19 +9,16 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 
 import com.dragonfix.mattermanipulator.helper.InventorySlotCopyHelper;
-import com.dragonfix.mattermanipulator.helper.SpecialInventorySlots;
 import com.google.gson.annotations.SerializedName;
 import com.recursive_pineapple.matter_manipulator.common.building.BlockAnalyzer.IBlockApplyContext;
 import com.recursive_pineapple.matter_manipulator.common.building.ITileAnalysisIntegration;
 import com.recursive_pineapple.matter_manipulator.common.building.PortableItemStack;
 import com.recursive_pineapple.matter_manipulator.common.items.manipulator.Transform;
 
-/**
- * Based on the public slot behavior of GTNH Ender IO 2.9.28 TileSoulBinder/AbstractPoweredMachineEntity.
- */
+import crazypants.enderio.machine.soul.TileSoulBinder;
+
 public class EnderIOSoulBinderAnalysisResult implements ITileAnalysisIntegration {
 
-    private static final String SOUL_BINDER_CLASS = "crazypants.enderio.machine.soul.TileSoulBinder";
     private static final int CAPACITOR_SLOT = 4;
     private static final String CAPACITOR_NAME = "Ender IO soul binder capacitor";
 
@@ -44,17 +41,17 @@ public class EnderIOSoulBinderAnalysisResult implements ITileAnalysisIntegration
     }
 
     private static boolean isSoulBinder(IInventory inventory) {
-        return SpecialInventorySlots.isExactInventoryClass(inventory, SOUL_BINDER_CLASS);
+        return inventory instanceof TileSoulBinder;
     }
 
     @Override
     public boolean apply(IBlockApplyContext ctx) {
-        return dragonfix$replaceCapacitor(ctx, true);
+        return replaceCapacitor(ctx, true);
     }
 
     @Override
     public boolean getRequiredItemsForExistingBlock(IBlockApplyContext context) {
-        return dragonfix$replaceCapacitor(context, false);
+        return replaceCapacitor(context, false);
     }
 
     @Override
@@ -62,7 +59,7 @@ public class EnderIOSoulBinderAnalysisResult implements ITileAnalysisIntegration
         return InventorySlotCopyHelper.consumeItem(context, capacitor, CAPACITOR_NAME);
     }
 
-    private boolean dragonfix$replaceCapacitor(IBlockApplyContext context, boolean mutate) {
+    private boolean replaceCapacitor(IBlockApplyContext context, boolean mutate) {
         TileEntity tile = context.getTileEntity();
         if (!(tile instanceof IInventory inventory) || !isSoulBinder(inventory)) return true;
 
@@ -87,6 +84,7 @@ public class EnderIOSoulBinderAnalysisResult implements ITileAnalysisIntegration
     @Override
     public void migrate() {}
 
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public EnderIOSoulBinderAnalysisResult clone() {
         EnderIOSoulBinderAnalysisResult dup = new EnderIOSoulBinderAnalysisResult();

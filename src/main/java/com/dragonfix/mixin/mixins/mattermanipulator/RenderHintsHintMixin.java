@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.dragonfix.mattermanipulator.DragonFixRenderHints;
-import com.dragonfix.mattermanipulator.RenderHintsHintBridge;
+import com.dragonfix.mattermanipulator.bridge.RenderHintsHintBridge;
 
 @Mixin(targets = "com.recursive_pineapple.matter_manipulator.common.items.manipulator.RenderHints$Hint", remap = false)
 public abstract class RenderHintsHintMixin implements RenderHintsHintBridge {
@@ -143,18 +143,8 @@ public abstract class RenderHintsHintMixin implements RenderHintsHintBridge {
     }
 
     @Override
-    public DragonFixRenderHints.Bounds dragonfix$getBounds() {
-        return dragonfix$bounds;
-    }
-
-    @Override
     public void dragonfix$setBounds(DragonFixRenderHints.Bounds bounds) {
         dragonfix$bounds = bounds;
-    }
-
-    @Override
-    public DragonFixRenderHints.CustomRenderer dragonfix$getCustomRenderer() {
-        return dragonfix$customRenderer;
     }
 
     @Override

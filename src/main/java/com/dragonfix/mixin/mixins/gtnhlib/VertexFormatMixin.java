@@ -18,6 +18,7 @@ public abstract class VertexFormatMixin {
     /**
      * Binary compatibility overload for mods compiled against GTNHLib's pre-CEL quad package.
      */
+    @SuppressWarnings({ "AddedMixinMembersNamePattern", "MissingUnique" })
     @Deprecated
     public final void writeQuad(QuadView quad, ByteBuffer out) {
         writeQuad((ModelQuadView) quad, out);

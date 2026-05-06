@@ -28,32 +28,32 @@ public abstract class RenderBlocksOffsetMixin {
 
     @Inject(method = "renderFaceYNeg", at = @At("HEAD"), cancellable = true)
     private void dragonfix$renderMyCtmYNeg(Block block, double x, double y, double z, IIcon icon, CallbackInfo ci) {
-        dragonfix$renderMyCtm(block, x, y, z, icon, ForgeDirection.DOWN, ci);
+        dragonfix$renderMyCtm(x, y, z, icon, ForgeDirection.DOWN, ci);
     }
 
     @Inject(method = "renderFaceYPos", at = @At("HEAD"), cancellable = true)
     private void dragonfix$renderMyCtmYPos(Block block, double x, double y, double z, IIcon icon, CallbackInfo ci) {
-        dragonfix$renderMyCtm(block, x, y, z, icon, ForgeDirection.UP, ci);
+        dragonfix$renderMyCtm(x, y, z, icon, ForgeDirection.UP, ci);
     }
 
     @Inject(method = "renderFaceZNeg", at = @At("HEAD"), cancellable = true)
     private void dragonfix$renderMyCtmZNeg(Block block, double x, double y, double z, IIcon icon, CallbackInfo ci) {
-        dragonfix$renderMyCtm(block, x, y, z, icon, ForgeDirection.NORTH, ci);
+        dragonfix$renderMyCtm(x, y, z, icon, ForgeDirection.NORTH, ci);
     }
 
     @Inject(method = "renderFaceZPos", at = @At("HEAD"), cancellable = true)
     private void dragonfix$renderMyCtmZPos(Block block, double x, double y, double z, IIcon icon, CallbackInfo ci) {
-        dragonfix$renderMyCtm(block, x, y, z, icon, ForgeDirection.SOUTH, ci);
+        dragonfix$renderMyCtm(x, y, z, icon, ForgeDirection.SOUTH, ci);
     }
 
     @Inject(method = "renderFaceXNeg", at = @At("HEAD"), cancellable = true)
     private void dragonfix$renderMyCtmXNeg(Block block, double x, double y, double z, IIcon icon, CallbackInfo ci) {
-        dragonfix$renderMyCtm(block, x, y, z, icon, ForgeDirection.WEST, ci);
+        dragonfix$renderMyCtm(x, y, z, icon, ForgeDirection.WEST, ci);
     }
 
     @Inject(method = "renderFaceXPos", at = @At("HEAD"), cancellable = true)
     private void dragonfix$renderMyCtmXPos(Block block, double x, double y, double z, IIcon icon, CallbackInfo ci) {
-        dragonfix$renderMyCtm(block, x, y, z, icon, ForgeDirection.EAST, ci);
+        dragonfix$renderMyCtm(x, y, z, icon, ForgeDirection.EAST, ci);
     }
 
     @ModifyVariable(method = "renderFaceXPos", at = @At("HEAD"), ordinal = 0, argsOnly = true)
@@ -96,13 +96,13 @@ public abstract class RenderBlocksOffsetMixin {
     }
 
     @Unique
-    private void dragonfix$renderMyCtm(Block block, double x, double y, double z, IIcon icon, ForgeDirection direction,
+    private void dragonfix$renderMyCtm(double x, double y, double z, IIcon icon, ForgeDirection direction,
         CallbackInfo ci) {
         if (this.blockAccess == null || this.hasOverrideBlockTexture() || !MyCTMLibRenderWorldBlock.contains(icon)) {
             return;
         }
         if (MyCTMLibRenderWorldBlock
-            .render((RenderBlocks) ((Object) this), this.blockAccess, block, x, y, z, icon, direction)) {
+            .render((RenderBlocks) ((Object) this), this.blockAccess, x, y, z, icon, direction)) {
             ci.cancel();
         }
     }

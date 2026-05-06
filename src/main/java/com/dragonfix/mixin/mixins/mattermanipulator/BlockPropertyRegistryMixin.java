@@ -4,6 +4,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -142,6 +143,7 @@ public abstract class BlockPropertyRegistryMixin {
         });
     }
 
+    @Unique
     private static void dragonfix$set(Rotatable rotatable, ForgeDirection yaw, ForgeDirection pitch) {
         rotatable.yaw_$eq(yaw);
         rotatable.pitch_$eq(pitch);

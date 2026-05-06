@@ -1,8 +1,9 @@
-package com.dragonfix.mattermanipulator.Analysis;
+package com.dragonfix.mattermanipulator.analysis;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import net.minecraft.block.Block;
@@ -53,6 +54,7 @@ public class DragonFixMultipartAnalysisResult implements ITileAnalysisIntegratio
         @SerializedName("d")
         public PortableItemStack[] drops;
 
+        @SuppressWarnings("MethodDoesntCallSuperMethod")
         public PartData clone() {
             PartData dup = new PartData();
             dup.typeId = typeId;
@@ -163,7 +165,7 @@ public class DragonFixMultipartAnalysisResult implements ITileAnalysisIntegratio
 
     private PartData[] getSortedParts() {
         PartData[] sorted = parts.clone();
-        Arrays.sort(sorted, (a, b) -> Integer.compare(getPartOrder(a), getPartOrder(b)));
+        Arrays.sort(sorted, Comparator.comparingInt(DragonFixMultipartAnalysisResult::getPartOrder));
         return sorted;
     }
 
@@ -229,7 +231,7 @@ public class DragonFixMultipartAnalysisResult implements ITileAnalysisIntegratio
                 ctx.warn("Could not place multipart: " + data.typeId);
             }
         } catch (Exception e) {
-            MMMod.LOG.error("Failed to add multipart " + data.typeId, e);
+            MMMod.LOG.error("Failed to add multipart {}", data.typeId, e);
             refundPartItems(ctx, data);
             ctx.error("Failed to add multipart: " + data.typeId);
             return false;
@@ -329,13 +331,13 @@ public class DragonFixMultipartAnalysisResult implements ITileAnalysisIntegratio
     }
 
     @Override
-    public Block dragonfix$getPreviewBlock() {
+    public Block getPreviewBlock() {
         String name = getFirstMicroblockMaterialName();
         return name == null ? null : parseMaterialBlock(name);
     }
 
     @Override
-    public int dragonfix$getPreviewMeta() {
+    public int getPreviewMeta() {
         String name = getFirstMicroblockMaterialName();
         return name == null ? 0 : parseMaterialMeta(name);
     }
@@ -357,15 +359,10 @@ public class DragonFixMultipartAnalysisResult implements ITileAnalysisIntegratio
     private static int getPartOrder(PartData data) {
         if (data == null || data.typeId == null) return 1;
 
-        switch (data.typeId) {
-            case "mcr_face":
-            case "mcr_hllw":
-            case "mcr_edge":
-            case "mcr_cnr":
-                return 0;
-            default:
-                return 1;
-        }
+        return switch (data.typeId) {
+            case "mcr_face", "mcr_hllw", "mcr_edge", "mcr_cnr" -> 0;
+            default -> 1;
+        };
     }
 
     @Override
@@ -385,6 +382,7 @@ public class DragonFixMultipartAnalysisResult implements ITileAnalysisIntegratio
     @Override
     public void migrate() {}
 
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public DragonFixMultipartAnalysisResult clone() {
         DragonFixMultipartAnalysisResult dup = new DragonFixMultipartAnalysisResult();

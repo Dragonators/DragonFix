@@ -1,7 +1,8 @@
-package com.dragonfix.mattermanipulator.Analysis;
+package com.dragonfix.mattermanipulator.analysis;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -49,19 +50,18 @@ public class CarpentersBlocksAnalysisResult implements ITileAnalysisIntegration 
     private PortableItemStack[] covers;
 
     public static CarpentersBlocksAnalysisResult analyze(TileEntity te) {
-        if (!(te instanceof TEBase)) return null;
+        if (!(te instanceof TEBase cbTE)) return null;
 
-        TEBase cbTE = (TEBase) te;
         CarpentersBlocksAnalysisResult result = new CarpentersBlocksAnalysisResult();
 
         result.data = cbTE.getData();
-        result.blockType = dragonfix$getBlockType(te);
-        result.covers = dragonfix$analyzeCovers(cbTE);
+        result.blockType = getBlockType(te);
+        result.covers = analyzeCovers(cbTE);
 
         return result;
     }
 
-    private static byte dragonfix$getBlockType(TileEntity te) {
+    private static byte getBlockType(TileEntity te) {
         String blockName = te.getBlockType()
             .getUnlocalizedName();
 
@@ -71,7 +71,7 @@ public class CarpentersBlocksAnalysisResult implements ITileAnalysisIntegration 
         return TYPE_UNKNOWN;
     }
 
-    private static PortableItemStack[] dragonfix$analyzeCovers(TEBase cbTE) {
+    private static PortableItemStack[] analyzeCovers(TEBase cbTE) {
         PortableItemStack[] analyzedCovers = new PortableItemStack[7];
         boolean hasCovers = false;
 
@@ -89,9 +89,8 @@ public class CarpentersBlocksAnalysisResult implements ITileAnalysisIntegration 
     @Override
     public boolean apply(IBlockApplyContext ctx) {
         TileEntity te = ctx.getTileEntity();
-        if (!(te instanceof TEBase)) return false;
+        if (!(te instanceof TEBase cbTE)) return false;
 
-        TEBase cbTE = (TEBase) te;
         cbTE.setData(data);
 
         if (covers == null) return true;
@@ -124,18 +123,17 @@ public class CarpentersBlocksAnalysisResult implements ITileAnalysisIntegration 
     @Override
     public boolean getRequiredItemsForExistingBlock(IBlockApplyContext context) {
         TileEntity te = context.getTileEntity();
-        if (!(te instanceof TEBase)) return false;
+        if (!(te instanceof TEBase cbTE)) return false;
 
         if (covers == null) return true;
 
-        TEBase cbTE = (TEBase) te;
         for (int i = 0; i < covers.length && i < 7; i++) {
             if (covers[i] == null) continue;
 
             ItemStack existing = cbTE.getAttribute(TEBase.ATTR_COVER[i]);
             if (existing != null) {
                 PortableItemStack existingPortable = new PortableItemStack(existing);
-                if (dragonfix$isSameItem(existingPortable, covers[i])) {
+                if (isSameItem(existingPortable, covers[i])) {
                     continue;
                 }
                 context.givePlayerItems(existing.copy());
@@ -148,7 +146,7 @@ public class CarpentersBlocksAnalysisResult implements ITileAnalysisIntegration 
         return true;
     }
 
-    private static boolean dragonfix$isSameItem(PortableItemStack a, PortableItemStack b) {
+    private static boolean isSameItem(PortableItemStack a, PortableItemStack b) {
         return a.item != null && a.item.equals(b.item) && Objects.equals(a.metadata, b.metadata);
     }
 
@@ -181,20 +179,20 @@ public class CarpentersBlocksAnalysisResult implements ITileAnalysisIntegration 
     public void transform(Transform transform) {
         switch (blockType) {
             case TYPE_STAIRS:
-                dragonfix$transformStairs(transform);
+                transformStairs(transform);
                 break;
             case TYPE_SLOPE:
-                dragonfix$transformSlope(transform);
+                transformSlope(transform);
                 break;
             case TYPE_SLAB:
-                dragonfix$transformSlab(transform);
+                transformSlab(transform);
                 break;
             default:
                 break;
         }
     }
 
-    private static List<ForgeDirection> dragonfix$transformFacings(List<ForgeDirection> facings, Transform transform) {
+    private static List<ForgeDirection> transformFacings(List<ForgeDirection> facings, Transform transform) {
         List<ForgeDirection> result = new ArrayList<>(facings.size());
         for (ForgeDirection facing : facings) {
             result.add(transform.apply(facing));
@@ -202,60 +200,58 @@ public class CarpentersBlocksAnalysisResult implements ITileAnalysisIntegration 
         return result;
     }
 
-    private static boolean dragonfix$facingsMatch(List<ForgeDirection> a, List<ForgeDirection> b) {
-        return a.size() == b.size() && a.containsAll(b);
+    private static boolean facingsMatch(List<ForgeDirection> a, List<ForgeDirection> b) {
+        return a.size() == b.size() && new HashSet<>(a).containsAll(b);
     }
 
-    private static boolean dragonfix$stairsTypesCompatible(Stairs.Type a, Stairs.Type b) {
+    private static boolean stairsTypesCompatible(Stairs.Type a, Stairs.Type b) {
         if (a == b) return true;
         return (a == Stairs.Type.NORMAL_SIDE || a == Stairs.Type.NORMAL)
             && (b == Stairs.Type.NORMAL_SIDE || b == Stairs.Type.NORMAL);
     }
 
-    private static boolean dragonfix$slopeTypesCompatible(Slope.Type a, Slope.Type b) {
+    private static boolean slopeTypesCompatible(Slope.Type a, Slope.Type b) {
         if (a == b) return true;
         return (a == Slope.Type.WEDGE_SIDE || a == Slope.Type.WEDGE)
             && (b == Slope.Type.WEDGE_SIDE || b == Slope.Type.WEDGE);
     }
 
-    @SuppressWarnings("unchecked")
-    private void dragonfix$transformStairs(Transform transform) {
+    private void transformStairs(Transform transform) {
         if (data < 0 || data >= Stairs.stairsList.length) return;
 
         Stairs stairs = Stairs.stairsList[data];
         if (stairs == null) return;
 
         List<ForgeDirection> facings = stairs.facings;
-        List<ForgeDirection> newFacings = dragonfix$transformFacings(facings, transform);
+        List<ForgeDirection> newFacings = transformFacings(facings, transform);
 
         for (Stairs candidate : Stairs.stairsList) {
-            if (candidate != null && dragonfix$stairsTypesCompatible(candidate.stairsType, stairs.stairsType)
-                && dragonfix$facingsMatch(candidate.facings, newFacings)) {
+            if (candidate != null && stairsTypesCompatible(candidate.stairsType, stairs.stairsType)
+                && facingsMatch(candidate.facings, newFacings)) {
                 data = candidate.stairsID;
                 return;
             }
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private void dragonfix$transformSlope(Transform transform) {
+    private void transformSlope(Transform transform) {
         Slope slope = Slope.getSlopeById(data);
         if (slope == null) return;
 
         List<ForgeDirection> facings = slope.facings;
-        List<ForgeDirection> newFacings = dragonfix$transformFacings(facings, transform);
+        List<ForgeDirection> newFacings = transformFacings(facings, transform);
 
         for (int i = 0; i < SLOPE_COUNT; i++) {
             Slope candidate = Slope.getSlopeById(i);
-            if (candidate != null && dragonfix$slopeTypesCompatible(candidate.type, slope.type)
-                && dragonfix$facingsMatch(candidate.facings, newFacings)) {
+            if (candidate != null && slopeTypesCompatible(candidate.type, slope.type)
+                && facingsMatch(candidate.facings, newFacings)) {
                 data = candidate.slopeID;
                 return;
             }
         }
     }
 
-    private void dragonfix$transformSlab(Transform transform) {
+    private void transformSlab(Transform transform) {
         if (data < 1 || data > 6) return;
 
         ForgeDirection dir = ForgeDirection.getOrientation(SLAB_DIR_MAP[data - 1]);
@@ -272,6 +268,7 @@ public class CarpentersBlocksAnalysisResult implements ITileAnalysisIntegration 
     @Override
     public void migrate() {}
 
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public CarpentersBlocksAnalysisResult clone() {
         CarpentersBlocksAnalysisResult dup = new CarpentersBlocksAnalysisResult();
@@ -299,9 +296,8 @@ public class CarpentersBlocksAnalysisResult implements ITileAnalysisIntegration 
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (!(obj instanceof CarpentersBlocksAnalysisResult)) return false;
+        if (!(obj instanceof CarpentersBlocksAnalysisResult other)) return false;
 
-        CarpentersBlocksAnalysisResult other = (CarpentersBlocksAnalysisResult) obj;
         return data == other.data && blockType == other.blockType && Arrays.equals(covers, other.covers);
     }
 

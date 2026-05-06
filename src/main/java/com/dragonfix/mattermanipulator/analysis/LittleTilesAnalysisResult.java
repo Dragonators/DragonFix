@@ -1,4 +1,4 @@
-package com.dragonfix.mattermanipulator.Analysis;
+package com.dragonfix.mattermanipulator.analysis;
 
 import java.util.List;
 
@@ -8,13 +8,13 @@ import net.minecraft.tileentity.TileEntity;
 
 import org.joml.Vector3i;
 
+import com.creativemd.littletiles.common.tileentity.TileEntityLittleTiles;
 import com.recursive_pineapple.matter_manipulator.common.building.BlockAnalyzer.IBlockApplyContext;
 import com.recursive_pineapple.matter_manipulator.common.building.ITileAnalysisIntegration;
 import com.recursive_pineapple.matter_manipulator.common.items.manipulator.Transform;
 
 public class LittleTilesAnalysisResult implements ITileAnalysisIntegration {
 
-    private static final String TILE_ENTITY_CLASS = "com.creativemd.littletiles.common.tileentity.TileEntityLittleTiles";
     private static final int GRID_SIZE = 16;
     private static final int CENTER = GRID_SIZE / 2;
 
@@ -33,7 +33,7 @@ public class LittleTilesAnalysisResult implements ITileAnalysisIntegration {
     }
 
     public static LittleTilesAnalysisResult analyze(TileEntity te) {
-        if (!dragonfix$isLittleTilesTileEntity(te)) return null;
+        if (!isLittleTilesTileEntity(te)) return null;
 
         LittleTilesAnalysisResult result = new LittleTilesAnalysisResult();
         result.tileData = new NBTTagCompound();
@@ -42,17 +42,15 @@ public class LittleTilesAnalysisResult implements ITileAnalysisIntegration {
         return result;
     }
 
-    private static boolean dragonfix$isLittleTilesTileEntity(TileEntity te) {
-        return te != null && TILE_ENTITY_CLASS.equals(
-            te.getClass()
-                .getName());
+    private static boolean isLittleTilesTileEntity(TileEntity te) {
+        return te instanceof TileEntityLittleTiles;
     }
 
     @Override
     public boolean apply(IBlockApplyContext ctx) {
         TileEntity te = ctx.getTileEntity();
 
-        if (!dragonfix$isLittleTilesTileEntity(te)) {
+        if (!isLittleTilesTileEntity(te)) {
             ctx.error("LittleTiles tile entity is missing");
             return false;
         }
@@ -61,7 +59,7 @@ public class LittleTilesAnalysisResult implements ITileAnalysisIntegration {
 
         if (!ctx.tryApplyAction(Math.max(1, tileData.getInteger("tilesCount")))) return false;
 
-        NBTTagCompound copy = dragonfix$copyTileData();
+        NBTTagCompound copy = copyTileData();
         copy.setInteger("x", ctx.getX());
         copy.setInteger("y", ctx.getY());
         copy.setInteger("z", ctx.getZ());
@@ -91,7 +89,7 @@ public class LittleTilesAnalysisResult implements ITileAnalysisIntegration {
 
     @Override
     public void getItemTag(NBTTagCompound tag) {
-        if (tileData != null) tag.setTag("MatterManipulatorLittleTiles", dragonfix$copyTileData());
+        if (tileData != null) tag.setTag("MatterManipulatorLittleTiles", copyTileData());
     }
 
     @Override
@@ -145,16 +143,16 @@ public class LittleTilesAnalysisResult implements ITileAnalysisIntegration {
             if (!tileData.hasKey(tileKey)) continue;
 
             NBTTagCompound tile = tileData.getCompoundTag(tileKey);
-            dragonfix$transformTile(tile, transform);
+            transformTile(tile, transform);
             tileData.setTag(tileKey, tile);
         }
     }
 
-    private void dragonfix$transformTile(NBTTagCompound tile, Transform transform) {
+    private void transformTile(NBTTagCompound tile, Transform transform) {
         int boxCount = tile.getInteger("bSize");
 
         for (int i = 0; i < boxCount; i++) {
-            dragonfix$transformBox(tile, "bBox" + i, transform);
+            transformBox(tile, "bBox" + i, transform);
         }
 
         if (boxCount > 0) {
@@ -164,7 +162,7 @@ public class LittleTilesAnalysisResult implements ITileAnalysisIntegration {
         }
     }
 
-    private void dragonfix$transformBox(NBTTagCompound tag, String name, Transform transform) {
+    private void transformBox(NBTTagCompound tag, String name, Transform transform) {
         int minX = tag.getInteger(name + "minX");
         int minY = tag.getInteger(name + "minY");
         int minZ = tag.getInteger(name + "minZ");
@@ -205,14 +203,15 @@ public class LittleTilesAnalysisResult implements ITileAnalysisIntegration {
         tag.setInteger(name + "maxZ", outMaxZ);
     }
 
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public LittleTilesAnalysisResult clone() {
         LittleTilesAnalysisResult dup = new LittleTilesAnalysisResult();
-        dup.tileData = dragonfix$copyTileData();
+        dup.tileData = copyTileData();
         return dup;
     }
 
-    private NBTTagCompound dragonfix$copyTileData() {
+    private NBTTagCompound copyTileData() {
         return tileData == null ? null : (NBTTagCompound) tileData.copy();
     }
 
@@ -227,9 +226,8 @@ public class LittleTilesAnalysisResult implements ITileAnalysisIntegration {
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (!(obj instanceof LittleTilesAnalysisResult)) return false;
+        if (!(obj instanceof LittleTilesAnalysisResult other)) return false;
 
-        LittleTilesAnalysisResult other = (LittleTilesAnalysisResult) obj;
         if (tileData == null) return other.tileData == null;
         return tileData.equals(other.tileData);
     }

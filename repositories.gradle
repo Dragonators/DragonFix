@@ -2,6 +2,15 @@
 
 repositories {
     maven {
+        name = "ModMaven"
+        url = uri("https://modmaven.dev/")
+        metadataSources {
+            mavenPom()
+            artifact()
+        }
+    }
+
+    maven {
         name = "JitPack"
         url = uri("https://jitpack.io")
     }

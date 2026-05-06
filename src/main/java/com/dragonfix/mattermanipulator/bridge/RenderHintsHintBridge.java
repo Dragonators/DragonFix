@@ -1,15 +1,11 @@
-package com.dragonfix.mattermanipulator;
+package com.dragonfix.mattermanipulator.bridge;
 
 import com.dragonfix.mattermanipulator.DragonFixRenderHints.Bounds;
 import com.dragonfix.mattermanipulator.DragonFixRenderHints.CustomRenderer;
 
 public interface RenderHintsHintBridge {
 
-    Bounds dragonfix$getBounds();
-
     void dragonfix$setBounds(Bounds bounds);
-
-    CustomRenderer dragonfix$getCustomRenderer();
 
     void dragonfix$setCustomRenderer(CustomRenderer renderer);
 

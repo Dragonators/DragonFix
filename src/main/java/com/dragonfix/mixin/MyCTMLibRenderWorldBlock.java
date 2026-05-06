@@ -2,7 +2,6 @@ package com.dragonfix.mixin;
 
 import java.util.List;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
@@ -21,8 +20,8 @@ public final class MyCTMLibRenderWorldBlock {
         return icon != null && Textures.contain(icon.getIconName());
     }
 
-    public static boolean render(RenderBlocks renderBlocks, IBlockAccess blockAccess, Block block, double x, double y,
-        double z, IIcon icon, ForgeDirection direction) {
+    public static boolean render(RenderBlocks renderBlocks, IBlockAccess blockAccess, double x, double y, double z,
+        IIcon icon, ForgeDirection direction) {
 
         String iconName = normalizeIconName(icon.getIconName());
         int[] iconIndices = Textures.threadLocalIconIdx.get();

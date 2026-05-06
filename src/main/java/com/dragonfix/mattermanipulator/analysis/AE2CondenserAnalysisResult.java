@@ -1,6 +1,5 @@
-package com.dragonfix.mattermanipulator.Analysis;
+package com.dragonfix.mattermanipulator.analysis;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Objects;
 
@@ -10,19 +9,16 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 
 import com.dragonfix.mattermanipulator.helper.InventorySlotCopyHelper;
-import com.dragonfix.mattermanipulator.helper.SpecialInventorySlots;
 import com.google.gson.annotations.SerializedName;
 import com.recursive_pineapple.matter_manipulator.common.building.BlockAnalyzer.IBlockApplyContext;
 import com.recursive_pineapple.matter_manipulator.common.building.ITileAnalysisIntegration;
 import com.recursive_pineapple.matter_manipulator.common.building.PortableItemStack;
 import com.recursive_pineapple.matter_manipulator.common.items.manipulator.Transform;
 
-/**
- * Based on the public slot behavior of GTNH Applied Energistics 2 rv3-beta-690-GTNH TileCondenser/ContainerCondenser.
- */
+import appeng.tile.misc.TileCondenser;
+
 public class AE2CondenserAnalysisResult implements ITileAnalysisIntegration {
 
-    private static final String CONDENSER_CLASS = "appeng.tile.misc.TileCondenser";
     private static final int STORAGE_COMPONENT_SLOT = 2;
     private static final String STORAGE_COMPONENT_NAME = "AE2 condenser storage component";
 
@@ -30,7 +26,7 @@ public class AE2CondenserAnalysisResult implements ITileAnalysisIntegration {
     private PortableItemStack storageComponent;
 
     public static AE2CondenserAnalysisResult analyze(TileEntity tile) {
-        IInventory internalInventory = dragonfix$getInternalInventory(tile);
+        IInventory internalInventory = getInternalInventory(tile);
         if (internalInventory == null) return null;
 
         PortableItemStack storedItem = InventorySlotCopyHelper.analyzeSlot(internalInventory, STORAGE_COMPONENT_SLOT);
@@ -42,35 +38,21 @@ public class AE2CondenserAnalysisResult implements ITileAnalysisIntegration {
     }
 
     public static boolean isMatterCondenserStorageSlot(IInventory inventory, int slot) {
-        return slot == STORAGE_COMPONENT_SLOT
-            && SpecialInventorySlots.isExactInventoryClass(inventory, CONDENSER_CLASS);
+        return slot == STORAGE_COMPONENT_SLOT && inventory instanceof TileCondenser;
     }
 
-    private static IInventory dragonfix$getInternalInventory(TileEntity tile) {
-        if (tile == null || !CONDENSER_CLASS.equals(
-            tile.getClass()
-                .getName())) {
-            return null;
-        }
-
-        try {
-            Object internalInventory = tile.getClass()
-                .getMethod("getInternalInventory")
-                .invoke(tile);
-            return internalInventory instanceof IInventory ? (IInventory) internalInventory : null;
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ignored) {
-            return null;
-        }
+    private static IInventory getInternalInventory(TileEntity tile) {
+        return tile instanceof TileCondenser ? ((TileCondenser) tile).getInternalInventory() : null;
     }
 
     @Override
     public boolean apply(IBlockApplyContext ctx) {
-        return dragonfix$replaceStorageComponent(ctx, true);
+        return replaceStorageComponent(ctx, true);
     }
 
     @Override
     public boolean getRequiredItemsForExistingBlock(IBlockApplyContext context) {
-        return dragonfix$replaceStorageComponent(context, false);
+        return replaceStorageComponent(context, false);
     }
 
     @Override
@@ -78,8 +60,8 @@ public class AE2CondenserAnalysisResult implements ITileAnalysisIntegration {
         return InventorySlotCopyHelper.consumeItem(context, storageComponent, STORAGE_COMPONENT_NAME);
     }
 
-    private boolean dragonfix$replaceStorageComponent(IBlockApplyContext context, boolean mutate) {
-        IInventory internalInventory = dragonfix$getInternalInventory(context.getTileEntity());
+    private boolean replaceStorageComponent(IBlockApplyContext context, boolean mutate) {
+        IInventory internalInventory = getInternalInventory(context.getTileEntity());
         if (internalInventory == null) return true;
 
         return InventorySlotCopyHelper.replaceSlot(
@@ -109,6 +91,7 @@ public class AE2CondenserAnalysisResult implements ITileAnalysisIntegration {
     @Override
     public void migrate() {}
 
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public AE2CondenserAnalysisResult clone() {
         AE2CondenserAnalysisResult dup = new AE2CondenserAnalysisResult();

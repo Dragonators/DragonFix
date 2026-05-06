@@ -1,0 +1,11 @@
+dragonfix.mm.gui.persistent_schematic=持久化选区
+dragonfix.mm.gui.copying_persistent=复制（持久化）
+dragonfix.mm.gui.pasting_persistent=粘贴（持久化）
+dragonfix.mm.gui.save_schematic=保存选区文件
+dragonfix.mm.gui.load_schematic=加载选区文件
+dragonfix.mm.gui.no_schematics=没有已保存的选区文件
+dragonfix.mm.gui.ok=确定
+dragonfix.mm.gui.cancel=取消
+dragonfix.mm.tooltip.mode.copying_persistent=模式：复制（持久化）
+dragonfix.mm.tooltip.mode.pasting_persistent=模式：粘贴（持久化）
+dragonfix.mm.tooltip.schematic=选区文件

@@ -1,186 +1,102 @@
 package com.dragonfix.mattermanipulator;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 import net.minecraft.block.Block;
-import net.minecraft.util.IIcon;
 
+import com.dragonfix.mattermanipulator.bridge.RenderHintsHintBridge;
+import com.dragonfix.mixin.mixins.mattermanipulator.RenderHintsAccessor;
 import com.recursive_pineapple.matter_manipulator.common.items.manipulator.RenderHints;
 
 public final class DragonFixRenderHints {
-
-    private static Constructor<?> hintConstructor;
-    private static Field hintsField;
-    private static Field xField;
-    private static Field yField;
-    private static Field zField;
-    private static Field iconsField;
-    private static Field tintField;
-    private static boolean reflectionFailed;
 
     private DragonFixRenderHints() {}
 
     public static void addHint(int x, int y, int z, double minX, double minY, double minZ, double maxX, double maxY,
         double maxZ, Block block, int meta, short[] tint) {
-        if (reflectionFailed || !dragonfix$initReflection()) {
-            RenderHints.addHint(x, y, z, block, meta, tint);
-            return;
+        RenderHints.addHint(x, y, z, block, meta, tint);
+
+        RenderHintsHintBridge hint = getLastHint();
+        if (hint != null) {
+            hint.dragonfix$setBounds(new Bounds(minX, minY, minZ, maxX, maxY, maxZ));
         }
-
-        try {
-            Object hint = dragonfix$newHint(x, y, z, block, meta, tint);
-            ((RenderHintsHintBridge) hint).dragonfix$setBounds(new Bounds(minX, minY, minZ, maxX, maxY, maxZ));
-
-            dragonfix$getHints().add(hint);
-        } catch (ReflectiveOperationException | ClassCastException e) {
-            reflectionFailed = true;
-            RenderHints.addHint(x, y, z, block, meta, tint);
-        }
-    }
-
-    public static void addCustomHint(int x, int y, int z, Block block, int meta, short[] tint,
-        CustomRenderer renderer) {
-        addCustomHint(x, y, z, block, meta, tint, renderer, 6);
     }
 
     public static void addCustomHint(int x, int y, int z, Block block, int meta, short[] tint, CustomRenderer renderer,
         int quadCount) {
-        if (reflectionFailed || !dragonfix$initReflection()) {
-            RenderHints.addHint(x, y, z, block, meta, tint);
-            return;
+        RenderHints.addHint(x, y, z, block, meta, tint);
+
+        RenderHintsHintBridge hint = getLastHint();
+        if (hint != null) {
+            hint.dragonfix$setCustomRenderer(renderer);
+            hint.dragonfix$setQuadCount(quadCount);
         }
-
-        try {
-            Object hint = dragonfix$newHint(x, y, z, block, meta, tint);
-            RenderHintsHintBridge bridge = (RenderHintsHintBridge) hint;
-            bridge.dragonfix$setCustomRenderer(renderer);
-            bridge.dragonfix$setQuadCount(quadCount);
-
-            dragonfix$getHints().add(hint);
-        } catch (ReflectiveOperationException | ClassCastException e) {
-            reflectionFailed = true;
-            RenderHints.addHint(x, y, z, block, meta, tint);
-        }
-    }
-
-    public static Bounds getBounds(Object hint) {
-        if (!(hint instanceof RenderHintsHintBridge)) return null;
-        return ((RenderHintsHintBridge) hint).dragonfix$getBounds();
-    }
-
-    public static CustomRenderer getCustomRenderer(Object hint) {
-        if (!(hint instanceof RenderHintsHintBridge)) return null;
-        return ((RenderHintsHintBridge) hint).dragonfix$getCustomRenderer();
     }
 
     public static long expandVboSize(long originalSize) {
-        if (originalSize <= 0 || reflectionFailed || !dragonfix$initReflection()) {
+        if (originalSize <= 0) {
             return originalSize;
         }
 
-        try {
-            ArrayList<Object> hints = dragonfix$getHints();
-            int hintCount = hints.size();
-            if (hintCount == 0) {
-                return originalSize;
-            }
+        ArrayList<Object> hints = getHints();
+        if (hints == null) return originalSize;
 
-            long bytesPerHint = originalSize / hintCount;
-            if (bytesPerHint <= 0) {
-                return originalSize;
-            }
+        int hintCount = hints.size();
+        if (hintCount == 0) {
+            return originalSize;
+        }
 
-            long bytesPerQuad = bytesPerHint / 6;
-            if (bytesPerQuad <= 0) {
-                return originalSize;
-            }
+        long bytesPerHint = originalSize / hintCount;
+        if (bytesPerHint <= 0) {
+            return originalSize;
+        }
 
-            long extraQuads = 0;
-            for (Object hint : hints) {
-                if (hint instanceof RenderHintsHintBridge) {
-                    int quadCount = ((RenderHintsHintBridge) hint).dragonfix$getQuadCount();
-                    if (quadCount <= 6) {
-                        continue;
-                    }
+        long bytesPerQuad = bytesPerHint / 6;
+        if (bytesPerQuad <= 0) {
+            return originalSize;
+        }
 
-                    long hintExtraQuads = quadCount - 6L;
-                    if (extraQuads > Long.MAX_VALUE - hintExtraQuads) {
-                        return originalSize;
-                    }
-                    extraQuads += hintExtraQuads;
+        long extraQuads = 0;
+        for (Object hint : hints) {
+            if (hint instanceof RenderHintsHintBridge) {
+                int quadCount = ((RenderHintsHintBridge) hint).dragonfix$getQuadCount();
+                if (quadCount <= 6) {
+                    continue;
                 }
-            }
 
-            if (extraQuads <= 0) {
-                return originalSize;
+                long hintExtraQuads = quadCount - 6L;
+                if (extraQuads > Long.MAX_VALUE - hintExtraQuads) {
+                    return originalSize;
+                }
+                extraQuads += hintExtraQuads;
             }
+        }
 
-            if (extraQuads > (Long.MAX_VALUE - originalSize) / bytesPerQuad) {
-                return originalSize;
-            }
-
-            return originalSize + extraQuads * bytesPerQuad;
-        } catch (ReflectiveOperationException | ClassCastException e) {
-            reflectionFailed = true;
+        if (extraQuads <= 0) {
             return originalSize;
         }
-    }
 
-    private static Object dragonfix$newHint(int x, int y, int z, Block block, int meta, short[] tint)
-        throws ReflectiveOperationException {
-        Object hint = hintConstructor.newInstance();
-        IIcon[] icons = new IIcon[6];
-        for (int i = 0; i < icons.length; i++) {
-            icons[i] = block.getIcon(i, meta);
+        if (extraQuads > (Long.MAX_VALUE - originalSize) / bytesPerQuad) {
+            return originalSize;
         }
 
-        xField.setInt(hint, x);
-        yField.setInt(hint, y);
-        zField.setInt(hint, z);
-        iconsField.set(hint, icons);
-        tintField.set(hint, tint);
-        return hint;
+        return originalSize + extraQuads * bytesPerQuad;
     }
 
-    @SuppressWarnings("unchecked")
-    private static ArrayList<Object> dragonfix$getHints() throws ReflectiveOperationException {
-        return (ArrayList<Object>) hintsField.get(null);
+    private static RenderHintsHintBridge getLastHint() {
+        ArrayList<Object> hints = getHints();
+        if (hints == null || hints.isEmpty()) return null;
+
+        Object hint = hints.get(hints.size() - 1);
+        return hint instanceof RenderHintsHintBridge ? (RenderHintsHintBridge) hint : null;
     }
 
-    private static boolean dragonfix$initReflection() {
-        if (hintConstructor != null) {
-            return true;
-        }
-
+    private static ArrayList<Object> getHints() {
         try {
-            Class<?> renderHints = RenderHints.class;
-            Class<?> hint = Class
-                .forName("com.recursive_pineapple.matter_manipulator.common.items.manipulator.RenderHints$Hint");
-
-            hintConstructor = hint.getDeclaredConstructor();
-            hintConstructor.setAccessible(true);
-
-            hintsField = renderHints.getDeclaredField("HINTS");
-            hintsField.setAccessible(true);
-
-            xField = dragonfix$getField(hint, "x");
-            yField = dragonfix$getField(hint, "y");
-            zField = dragonfix$getField(hint, "z");
-            iconsField = dragonfix$getField(hint, "icons");
-            tintField = dragonfix$getField(hint, "tint");
-            return true;
-        } catch (ReflectiveOperationException | LinkageError e) {
-            reflectionFailed = true;
-            return false;
+            return RenderHintsAccessor.dragonfix$getHints();
+        } catch (AssertionError | LinkageError | RuntimeException ignored) {
+            return null;
         }
-    }
-
-    private static Field dragonfix$getField(Class<?> owner, String name) throws NoSuchFieldException {
-        Field field = owner.getDeclaredField(name);
-        field.setAccessible(true);
-        return field;
     }
 
     public static final class Bounds {

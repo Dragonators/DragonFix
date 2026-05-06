@@ -1,0 +1,11 @@
+dragonfix.mm.gui.persistent_schematic=Persistent Schematic
+dragonfix.mm.gui.copying_persistent=Copying (Persistent)
+dragonfix.mm.gui.pasting_persistent=Pasting (Persistent)
+dragonfix.mm.gui.save_schematic=Save Selection File
+dragonfix.mm.gui.load_schematic=Load Selection File
+dragonfix.mm.gui.no_schematics=No saved selection files
+dragonfix.mm.gui.ok=OK
+dragonfix.mm.gui.cancel=Cancel
+dragonfix.mm.tooltip.mode.copying_persistent=Mode: Copying (Persistent)
+dragonfix.mm.tooltip.mode.pasting_persistent=Mode: Pasting (Persistent)
+dragonfix.mm.tooltip.schematic=Schematic

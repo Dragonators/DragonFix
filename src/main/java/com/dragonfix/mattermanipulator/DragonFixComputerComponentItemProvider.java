@@ -1,10 +1,7 @@
 package com.dragonfix.mattermanipulator;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -14,6 +11,7 @@ import com.recursive_pineapple.matter_manipulator.common.building.providers.IIte
 import com.recursive_pineapple.matter_manipulator.common.utils.BigItemStack;
 
 import it.unimi.dsi.fastutil.booleans.BooleanObjectImmutablePair;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import li.cil.oc.api.API;
 
 /**
@@ -29,16 +27,18 @@ import li.cil.oc.api.API;
  */
 public class DragonFixComputerComponentItemProvider implements IItemProvider {
 
-    private static final HashSet<Integer> FUZZY_COMPONENT_DAMAGE = Arrays
-        .stream(
-            new String[] { "cpu1", "cpu2", "cpu3", "dataCard1", "dataCard2", "dataCard3", "internetCard", "lanCard",
-                "wlanCard1", "wlanCard2", "linkedCard", "redstoneCard1", "redstoneCard2", "tpsCard", "debugCard",
-                "graphicsCard1", "graphicsCard2", "graphicsCard3", "ram1", "ram2", "ram3", "ram4", "ram5", "ram6", })
-        .map(
-            name -> API.items.get(name)
-                .createItemStack(1)
-                .getItemDamage())
-        .collect(Collectors.toCollection(HashSet::new));
+    private static final IntOpenHashSet FUZZY_COMPONENT_DAMAGE = new IntOpenHashSet();
+
+    static {
+        for (String name : new String[] { "cpu1", "cpu2", "cpu3", "dataCard1", "dataCard2", "dataCard3", "internetCard",
+            "lanCard", "wlanCard1", "wlanCard2", "linkedCard", "redstoneCard1", "redstoneCard2", "tpsCard", "debugCard",
+            "graphicsCard1", "graphicsCard2", "graphicsCard3", "ram1", "ram2", "ram3", "ram4", "ram5", "ram6", }) {
+            FUZZY_COMPONENT_DAMAGE.add(
+                API.items.get(name)
+                    .createItemStack(1)
+                    .getItemDamage());
+        }
+    }
 
     private static final ItemStack EEPROM = API.items.get("eeprom")
         .createItemStack(1);

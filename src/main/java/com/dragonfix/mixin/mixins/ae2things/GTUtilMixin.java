@@ -1,6 +1,5 @@
 package com.dragonfix.mixin.mixins.ae2things;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import net.minecraft.item.ItemStack;
@@ -11,6 +10,8 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import com.asdflj.ae2thing.nei.object.OrderStack;
 
 import codechicken.nei.recipe.IRecipeHandler;
 import gregtech.api.enums.ItemList;
@@ -48,16 +49,7 @@ public abstract class GTUtilMixin {
 
     @Unique
     private static Object dragonfix$getStack(Object orderStack) {
-        if (orderStack == null) {
-            return null;
-        }
-        try {
-            return orderStack.getClass()
-                .getMethod("getStack")
-                .invoke(orderStack);
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ignored) {
-            return null;
-        }
+        return orderStack instanceof OrderStack<?>os ? os.getStack() : null;
     }
 
     @Unique

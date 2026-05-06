@@ -16,12 +16,12 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import com.dragonfix.mattermanipulator.Analysis.AE2CondenserAnalysisResult;
-import com.dragonfix.mattermanipulator.Analysis.AvaritiaddonsExtremeAutoCrafterAnalysisResult;
-import com.dragonfix.mattermanipulator.Analysis.CarpentersBlocksAnalysisResult;
-import com.dragonfix.mattermanipulator.Analysis.DragonFixMultipartAnalysisResult;
-import com.dragonfix.mattermanipulator.Analysis.EnderIOSoulBinderAnalysisResult;
-import com.dragonfix.mattermanipulator.Analysis.LittleTilesAnalysisResult;
+import com.dragonfix.mattermanipulator.analysis.AE2CondenserAnalysisResult;
+import com.dragonfix.mattermanipulator.analysis.AvaritiaddonsExtremeAutoCrafterAnalysisResult;
+import com.dragonfix.mattermanipulator.analysis.CarpentersBlocksAnalysisResult;
+import com.dragonfix.mattermanipulator.analysis.DragonFixMultipartAnalysisResult;
+import com.dragonfix.mattermanipulator.analysis.EnderIOSoulBinderAnalysisResult;
+import com.dragonfix.mattermanipulator.analysis.LittleTilesAnalysisResult;
 import com.dragonfix.mattermanipulator.bridge.PendingBlockAvaritiaddonsBridge;
 import com.dragonfix.mattermanipulator.bridge.PendingBlockLittleTilesBridge;
 import com.dragonfix.mattermanipulator.bridge.PendingBlockMachineInventoryBridge;
@@ -184,20 +184,20 @@ public abstract class PendingBlockMixin
         }
     }
 
-    @Inject(method = "transform", at = @At("HEAD"), remap = false)
+    @Inject(method = "transform*", at = @At("HEAD"), remap = false)
     private void dragonfix$captureRotationBeforeTransform(Transform transform, CallbackInfo ci) {
         dragonfix$rotationBeforeTransform = spec == null ? null : spec.getProperty(CopyableProperty.ROTATION);
     }
 
     @Redirect(
-        method = "transform",
+        method = "transform*",
         at = @At(value = "INVOKE", target = "Ljava/lang/Integer;parseInt(Ljava/lang/String;)I"),
         remap = false)
     private int dragonfix$parseRotationAsDouble(String rotation) {
         return (int) Double.parseDouble(rotation);
     }
 
-    @Inject(method = "transform", at = @At("RETURN"), remap = false)
+    @Inject(method = "transform*", at = @At("RETURN"), remap = false)
     private void dragonfix$restorePreciseRotation(Transform transform, CallbackInfo ci) {
         String rotationText = dragonfix$rotationBeforeTransform;
         dragonfix$rotationBeforeTransform = null;

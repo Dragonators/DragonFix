@@ -4,7 +4,7 @@ import net.minecraft.block.Block;
 
 public interface DragonFixMultipartPreviewBridge {
 
-    Block dragonfix$getPreviewBlock();
+    Block getPreviewBlock();
 
-    int dragonfix$getPreviewMeta();
+    int getPreviewMeta();
 }

@@ -38,22 +38,12 @@ public final class FMPPartTransforms {
         int slot = shape & 0x0F;
         int sizeBits = shape & 0xF0;
 
-        int newSlot;
-        switch (typeId) {
-            case "mcr_face":
-            case "mcr_hllw":
-                newSlot = transformFaceSlot(slot, transform);
-                break;
-            case "mcr_edge":
-                newSlot = transformEdgeSlot(slot, transform);
-                break;
-            case "mcr_cnr":
-                newSlot = transformCornerSlot(slot, transform);
-                break;
-            default:
-                newSlot = -1;
-                break;
-        }
+        int newSlot = switch (typeId) {
+            case "mcr_face", "mcr_hllw" -> transformFaceSlot(slot, transform);
+            case "mcr_edge" -> transformEdgeSlot(slot, transform);
+            case "mcr_cnr" -> transformCornerSlot(slot, transform);
+            default -> -1;
+        };
 
         if (newSlot >= 0) {
             nbt.setByte("shape", (byte) (sizeBits | newSlot));

@@ -24,19 +24,22 @@ DragonFix 是一个独立的轻量级修复型模组，类似 RandomFix，用于
 4. 若需要按目标 mod 是否存在来控制 Mixin，应优先扩展：
   - com.dragonfix.mixin.MixinPlugin
 5. Mixin 方法前缀使用 dragonfix$，避免与目标类方法冲突。
-6. 新增针对某个 mod 的 Mixin 修复时，必须同步在 com.dragonfix.DragonFix 的 @Mod dependencies 中增加对应 modId 与最低兼容版本：
+6. 需要访问目标类非公开字段或方法时，优先使用 Mixin @Accessor / @Invoker，不要直接使用反射。
+7. 如果目标方法是公开稳定 API，应优先直接调用原方法，并通过 compileOnly 补齐必要的签名依赖。
+8. 只有在目标类/成员必须动态发现、Mixin 无法稳定描述目标、或为了保持可选目标的类加载边界时才使用反射；使用反射时优先考虑 MethodHandle / VarHandle，尽量避免热路径上的 Method.invoke / Field.get。
+9. 新增针对某个 mod 的 Mixin 修复时，必须同步在 com.dragonfix.DragonFix 的 @Mod dependencies 中增加对应 modId 与最低兼容版本：
   - 必选目标使用 required-after:<modid>@[version,)
   - 可选目标使用 after:<modid>@[version,)
   - Forge/FML 检查的是目标 mod 在 @Mod 或 mcmod.info 中声明的版本，不是 Maven/JitPack/GitHub tag 坐标。
-7. 新增可选目标 mod 依赖时，放入 dependencies.gradle，优先使用 compileOnly，除非运行测试确实需要 runtimeOnlyNonPublishable。
-8. 不要重新引入 ExampleMod、GalaFix、mymodid、myname 等模板占位内容。
-9. 不要把客户端专用类直接用于服务端路径，特别注意 dedicated server 兼容性。
-10. 每次修改后至少运行：
+10. 新增可选目标 mod 依赖时，放入 dependencies.gradle，优先使用 compileOnly，除非运行测试确实需要 runtimeOnlyNonPublishable。
+11. 不要重新引入 ExampleMod、GalaFix、mymodid、myname 等模板占位内容。
+12. 不要把客户端专用类直接用于服务端路径，特别注意 dedicated server 兼容性。
+13. 每次修改后至少运行：
   - ./gradlew build
-11. 如果修改 Mixin、资源、mcmod.info 或版本配置，优先运行：
+14. 如果修改 Mixin、资源、mcmod.info 或版本配置，优先运行：
 - ./gradlew clean build
-12. 每次增加 Mixin 修复时，必须同步更新 README.md 的当前修复列表。
-13. 发布或推送修复时，必须确认目标 Git tag 指向最终提交，并同步推送 main 与 tag 到远程。
+15. 每次增加 Mixin 修复时，必须同步更新 README.md 的当前修复列表。
+16. 发布或推送修复时，必须确认目标 Git tag 指向最终提交，并同步推送 main 与 tag 到远程。
 
 代码风格：
 - 使用 Java。

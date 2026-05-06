@@ -56,9 +56,8 @@ public final class ArchitectureCraftPreviewRenderer {
             renderer.quadCount());
     }
 
-    private static void dragonfix$drawShape(Tessellator tessellator, int x, int y, int z, Shape shape,
-        Block materialBlock, int materialMeta, int side, int turn, double offsetX, short[] tint, int eyeXint,
-        int eyeYint, int eyeZint) {
+    private static void drawShape(Tessellator tessellator, int x, int y, int z, Shape shape, Block materialBlock,
+        int materialMeta, int side, int turn, double offsetX, short[] tint, int eyeXint, int eyeYint, int eyeZint) {
         World world = Minecraft.getMinecraft().theWorld;
         if (world == null) return;
 
@@ -76,7 +75,7 @@ public final class ArchitectureCraftPreviewRenderer {
             .t(Trans3.sideTurn(side, turn))
             .translate(offsetX, 0, 0);
 
-        SHAPE_RENDERER.dragonfix$renderShape(
+        SHAPE_RENDERER.renderShape(
             tile,
             new HintRenderTarget(x, y, z, renderPos, tessellator, tint, world),
             transform,
@@ -84,8 +83,8 @@ public final class ArchitectureCraftPreviewRenderer {
             false);
     }
 
-    private static int dragonfix$getShapeQuadCount(int x, int y, int z, Shape shape, Block materialBlock,
-        int materialMeta, int side, int turn, double offsetX) {
+    private static int getShapeQuadCount(int x, int y, int z, Shape shape, Block materialBlock, int materialMeta,
+        int side, int turn, double offsetX) {
         if (!(shape.kind instanceof Window)) {
             synchronized (SHAPE_QUAD_COUNTS) {
                 int cached = SHAPE_QUAD_COUNTS.get(shape.id);
@@ -95,7 +94,7 @@ public final class ArchitectureCraftPreviewRenderer {
             }
         }
 
-        int quadCount = dragonfix$countShapeQuads(x, y, z, shape, materialBlock, materialMeta, side, turn, offsetX);
+        int quadCount = countShapeQuads(x, y, z, shape, materialBlock, materialMeta, side, turn, offsetX);
         if (quadCount < 6) {
             return 6;
         }
@@ -109,8 +108,8 @@ public final class ArchitectureCraftPreviewRenderer {
         return quadCount;
     }
 
-    private static int dragonfix$countShapeQuads(int x, int y, int z, Shape shape, Block materialBlock,
-        int materialMeta, int side, int turn, double offsetX) {
+    private static int countShapeQuads(int x, int y, int z, Shape shape, Block materialBlock, int materialMeta,
+        int side, int turn, double offsetX) {
         World world = Minecraft.getMinecraft().theWorld;
         if (world == null) return -1;
 
@@ -130,7 +129,7 @@ public final class ArchitectureCraftPreviewRenderer {
         CountingRenderTarget target = new CountingRenderTarget(renderPos);
 
         try {
-            SHAPE_RENDERER.dragonfix$renderShape(tile, target, transform, true, false);
+            SHAPE_RENDERER.renderShape(tile, target, transform, true, false);
         } catch (RuntimeException | LinkageError e) {
             return -1;
         }
@@ -164,7 +163,7 @@ public final class ArchitectureCraftPreviewRenderer {
             this.turn = turn;
             this.offsetX = offsetX;
             this.tint = tint;
-            quadCount = dragonfix$getShapeQuadCount(x, y, z, shape, materialBlock, materialMeta, side, turn, offsetX);
+            quadCount = getShapeQuadCount(x, y, z, shape, materialBlock, materialMeta, side, turn, offsetX);
         }
 
         private int quadCount() {
@@ -174,7 +173,7 @@ public final class ArchitectureCraftPreviewRenderer {
         @Override
         public void draw(Tessellator tessellator, double eyeX, double eyeY, double eyeZ, int eyeXint, int eyeYint,
             int eyeZint) {
-            dragonfix$drawShape(
+            drawShape(
                 tessellator,
                 x,
                 y,
@@ -194,8 +193,8 @@ public final class ArchitectureCraftPreviewRenderer {
 
     private static final class ShapeRenderer extends ShapeRenderDispatch {
 
-        private void dragonfix$renderShape(TileShape tile, RenderTargetBase target, Trans3 transform,
-            boolean renderBase, boolean renderSecondary) {
+        private void renderShape(TileShape tile, RenderTargetBase target, Trans3 transform, boolean renderBase,
+            boolean renderSecondary) {
             renderShapeTE(tile, target, transform, renderBase, renderSecondary);
         }
     }

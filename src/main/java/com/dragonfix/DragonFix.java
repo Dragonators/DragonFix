@@ -3,6 +3,8 @@ package com.dragonfix;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.dragonfix.mattermanipulator.persistent.network.PersistentSchematicNetwork;
+
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 
@@ -20,19 +22,22 @@ public class DragonFix {
         + "required-after:GalaxySpace@[1.1.121-GTNH,);"
         + "required-after:gtnhlib@[0.9.47,);"
         + "required-after:matter-manipulator@[0.0.51-GTNH];"
-        + "after:ForgeMultipart@[1.6.8,);"
+        + "required-after:ForgeMultipart@[1.7.2,);"
         + "required-after:CarpentersBlocks@[3.7.0-GTNH,);"
-        + "after:appliedenergistics2@[rv3-beta-690-GTNH,);"
-        + "after:EnderIO@[2.9.28,);"
-        + "after:ae2thing@[v1.2.14,);"
+        + "required-after:appliedenergistics2@[rv3-beta-690-GTNH,);"
+        + "required-after:EnderCore@[0.4.8,);"
+        + "required-after:EnderIO@[2.9.28,);"
+        + "required-after:LittleTiles@[1.5.14-GTNH,);"
         + "required-after:avaritiaddons@[1.9.3-GTNH,);"
         + "required-after:ArchitectureCraft@[1.11.6,);"
+        + "after:ae2thing@[v1.2.14,);"
         + "after:programmablehatches@[0.1.3p55,);"
         + "after:MyCTMLib@[v1.2.5_28x,)";
     public static final Logger LOG = LogManager.getLogger(MODID);
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
+        PersistentSchematicNetwork.init();
         LOG.info("{} loaded at version {}", NAME, Tags.VERSION);
     }
 }

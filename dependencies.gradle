@@ -55,6 +55,10 @@ dependencies {
     }
 
     // Optional target for MatterManipulator Ender IO Soul Binder capacitor copy integration.
+    compileOnly("com.github.GTNewHorizons:EnderCore:0.4.8:dev") {
+        transitive = false
+    }
+
     compileOnly("com.github.GTNewHorizons:EnderIO:2.9.28:dev") {
         transitive = false
     }
@@ -65,7 +69,16 @@ dependencies {
     }
 
     // Required target for MatterManipulator LittleTiles copy/build integration.
+    compileOnly("com.github.GTNewHorizons:LittleTiles:1.5.14-GTNH:dev") {
+        transitive = false
+    }
+
     compileOnly("com.github.GTNewHorizons:MatterManipulator:0.0.51-GTNH:dev") {
+        transitive = false
+    }
+
+    // Compile signature dependency required when directly calling MatterManipulator item APIs.
+    compileOnly("net.industrial-craft:industrialcraft-2:2.2.828-experimental:dev@jar") {
         transitive = false
     }
 

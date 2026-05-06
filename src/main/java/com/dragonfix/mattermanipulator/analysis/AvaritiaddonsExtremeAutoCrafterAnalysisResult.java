@@ -1,4 +1,4 @@
-package com.dragonfix.mattermanipulator.Analysis;
+package com.dragonfix.mattermanipulator.analysis;
 
 import java.util.Arrays;
 import java.util.List;
@@ -8,16 +8,16 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 
-import com.dragonfix.mattermanipulator.helper.SpecialInventorySlots;
 import com.google.gson.annotations.SerializedName;
 import com.recursive_pineapple.matter_manipulator.common.building.BlockAnalyzer.IBlockApplyContext;
 import com.recursive_pineapple.matter_manipulator.common.building.ITileAnalysisIntegration;
 import com.recursive_pineapple.matter_manipulator.common.building.PortableItemStack;
 import com.recursive_pineapple.matter_manipulator.common.items.manipulator.Transform;
 
+import wanion.avaritiaddons.block.extremeautocrafter.TileEntityExtremeAutoCrafter;
+
 public class AvaritiaddonsExtremeAutoCrafterAnalysisResult implements ITileAnalysisIntegration {
 
-    private static final String EXTREME_AUTO_CRAFTER_CLASS = "wanion.avaritiaddons.block.extremeautocrafter.TileEntityExtremeAutoCrafter";
     public static final int REAL_SLOT_COUNT = 81;
     public static final int GHOST_SLOT_COUNT = 81;
     public static final int FIRST_GHOST_SLOT = REAL_SLOT_COUNT;
@@ -45,7 +45,7 @@ public class AvaritiaddonsExtremeAutoCrafterAnalysisResult implements ITileAnaly
     }
 
     public static boolean isExtremeAutoCrafter(IInventory inventory) {
-        return SpecialInventorySlots.isExactInventoryClass(inventory, EXTREME_AUTO_CRAFTER_CLASS);
+        return inventory instanceof TileEntityExtremeAutoCrafter;
     }
 
     public static boolean isGhostOrOutputSlot(IInventory inventory, int slot) {
@@ -106,6 +106,7 @@ public class AvaritiaddonsExtremeAutoCrafterAnalysisResult implements ITileAnaly
     @Override
     public void migrate() {}
 
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public AvaritiaddonsExtremeAutoCrafterAnalysisResult clone() {
         AvaritiaddonsExtremeAutoCrafterAnalysisResult dup = new AvaritiaddonsExtremeAutoCrafterAnalysisResult();
