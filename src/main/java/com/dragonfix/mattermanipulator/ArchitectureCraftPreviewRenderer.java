@@ -10,20 +10,40 @@ import com.recursive_pineapple.matter_manipulator.common.building.PendingBlock;
 import gcewing.architecture.client.render.ShapeRenderDispatch;
 import gcewing.architecture.client.render.target.RenderTargetBase;
 import gcewing.architecture.common.shape.Shape;
+import gcewing.architecture.common.shape.Window;
 import gcewing.architecture.common.tile.TileShape;
 import gcewing.architecture.compat.BlockPos;
 import gcewing.architecture.compat.Trans3;
 import gcewing.architecture.compat.Vector3;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
 public final class ArchitectureCraftPreviewRenderer {
 
     private static final ShapeRenderer SHAPE_RENDERER = new ShapeRenderer();
+    private static final Int2IntOpenHashMap SHAPE_QUAD_COUNTS = new Int2IntOpenHashMap();
+
+    static {
+        SHAPE_QUAD_COUNTS.defaultReturnValue(-1);
+    }
 
     private ArchitectureCraftPreviewRenderer() {}
 
     public static void addHint(PendingBlock pendingBlock, int shapeId, Block materialBlock, int materialMeta, int side,
         int turn, double offsetX, short[] tint) {
         if (materialBlock == null) return;
+
+        Shape shape = Shape.forId(shapeId);
+        ArchitectureCraftHintRenderer renderer = new ArchitectureCraftHintRenderer(
+            pendingBlock.x,
+            pendingBlock.y,
+            pendingBlock.z,
+            shape,
+            materialBlock,
+            materialMeta,
+            side,
+            turn,
+            offsetX,
+            tint);
 
         DragonFixRenderHints.addCustomHint(
             pendingBlock.x,
@@ -32,59 +52,72 @@ public final class ArchitectureCraftPreviewRenderer {
             materialBlock,
             materialMeta,
             tint,
-            (tessellator, eyeX, eyeY, eyeZ, eyeXint, eyeYint, eyeZint) -> dragonfix$drawShape(
-                tessellator,
-                pendingBlock,
-                shapeId,
-                materialBlock,
-                materialMeta,
-                side,
-                turn,
-                offsetX,
-                tint,
-                eyeXint,
-                eyeYint,
-                eyeZint),
-            dragonfix$countShapeQuads(pendingBlock, shapeId, materialBlock, materialMeta, side, turn, offsetX));
+            renderer,
+            renderer.quadCount());
     }
 
-    private static void dragonfix$drawShape(Tessellator tessellator, PendingBlock pendingBlock, int shapeId,
+    private static void dragonfix$drawShape(Tessellator tessellator, int x, int y, int z, Shape shape,
         Block materialBlock, int materialMeta, int side, int turn, double offsetX, short[] tint, int eyeXint,
         int eyeYint, int eyeZint) {
         World world = Minecraft.getMinecraft().theWorld;
         if (world == null) return;
 
-        TileShape tile = new TileShape(Shape.forId(shapeId), materialBlock, materialMeta);
-        tile.xCoord = pendingBlock.x;
-        tile.yCoord = pendingBlock.y;
-        tile.zCoord = pendingBlock.z;
+        TileShape tile = new TileShape(shape, materialBlock, materialMeta);
+        tile.xCoord = x;
+        tile.yCoord = y;
+        tile.zCoord = z;
         tile.setWorldObj(world);
         tile.setSide(side);
         tile.setTurn(turn);
         tile.setOffsetX(offsetX);
 
-        BlockPos renderPos = new BlockPos(pendingBlock.x - eyeXint, pendingBlock.y - eyeYint, pendingBlock.z - eyeZint);
+        BlockPos renderPos = new BlockPos(x - eyeXint, y - eyeYint, z - eyeZint);
         Trans3 transform = Trans3.blockCenter(renderPos)
             .t(Trans3.sideTurn(side, turn))
             .translate(offsetX, 0, 0);
 
         SHAPE_RENDERER.dragonfix$renderShape(
             tile,
-            new HintRenderTarget(pendingBlock.x, pendingBlock.y, pendingBlock.z, renderPos, tessellator, tint, world),
+            new HintRenderTarget(x, y, z, renderPos, tessellator, tint, world),
             transform,
             true,
             false);
     }
 
-    private static int dragonfix$countShapeQuads(PendingBlock pendingBlock, int shapeId, Block materialBlock,
+    private static int dragonfix$getShapeQuadCount(int x, int y, int z, Shape shape, Block materialBlock,
+        int materialMeta, int side, int turn, double offsetX) {
+        if (!(shape.kind instanceof Window)) {
+            synchronized (SHAPE_QUAD_COUNTS) {
+                int cached = SHAPE_QUAD_COUNTS.get(shape.id);
+                if (cached >= 6) {
+                    return cached;
+                }
+            }
+        }
+
+        int quadCount = dragonfix$countShapeQuads(x, y, z, shape, materialBlock, materialMeta, side, turn, offsetX);
+        if (quadCount < 6) {
+            return 6;
+        }
+
+        if (!(shape.kind instanceof Window)) {
+            synchronized (SHAPE_QUAD_COUNTS) {
+                SHAPE_QUAD_COUNTS.put(shape.id, quadCount);
+            }
+        }
+
+        return quadCount;
+    }
+
+    private static int dragonfix$countShapeQuads(int x, int y, int z, Shape shape, Block materialBlock,
         int materialMeta, int side, int turn, double offsetX) {
         World world = Minecraft.getMinecraft().theWorld;
-        if (world == null) return 6;
+        if (world == null) return -1;
 
-        TileShape tile = new TileShape(Shape.forId(shapeId), materialBlock, materialMeta);
-        tile.xCoord = pendingBlock.x;
-        tile.yCoord = pendingBlock.y;
-        tile.zCoord = pendingBlock.z;
+        TileShape tile = new TileShape(shape, materialBlock, materialMeta);
+        tile.xCoord = x;
+        tile.yCoord = y;
+        tile.zCoord = z;
         tile.setWorldObj(world);
         tile.setSide(side);
         tile.setTurn(turn);
@@ -99,10 +132,64 @@ public final class ArchitectureCraftPreviewRenderer {
         try {
             SHAPE_RENDERER.dragonfix$renderShape(tile, target, transform, true, false);
         } catch (RuntimeException | LinkageError e) {
-            return 6;
+            return -1;
         }
 
         return Math.max(6, (target.vertexCount() + 3) / 4);
+    }
+
+    private static final class ArchitectureCraftHintRenderer implements DragonFixRenderHints.CustomRenderer {
+
+        private final int x;
+        private final int y;
+        private final int z;
+        private final Shape shape;
+        private final Block materialBlock;
+        private final int materialMeta;
+        private final int side;
+        private final int turn;
+        private final double offsetX;
+        private final short[] tint;
+        private final int quadCount;
+
+        private ArchitectureCraftHintRenderer(int x, int y, int z, Shape shape, Block materialBlock, int materialMeta,
+            int side, int turn, double offsetX, short[] tint) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.shape = shape;
+            this.materialBlock = materialBlock;
+            this.materialMeta = materialMeta;
+            this.side = side;
+            this.turn = turn;
+            this.offsetX = offsetX;
+            this.tint = tint;
+            quadCount = dragonfix$getShapeQuadCount(x, y, z, shape, materialBlock, materialMeta, side, turn, offsetX);
+        }
+
+        private int quadCount() {
+            return quadCount;
+        }
+
+        @Override
+        public void draw(Tessellator tessellator, double eyeX, double eyeY, double eyeZ, int eyeXint, int eyeYint,
+            int eyeZint) {
+            dragonfix$drawShape(
+                tessellator,
+                x,
+                y,
+                z,
+                shape,
+                materialBlock,
+                materialMeta,
+                side,
+                turn,
+                offsetX,
+                tint,
+                eyeXint,
+                eyeYint,
+                eyeZint);
+        }
     }
 
     private static final class ShapeRenderer extends ShapeRenderDispatch {

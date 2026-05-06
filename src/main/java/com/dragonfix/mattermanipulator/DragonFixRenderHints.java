@@ -3,9 +3,6 @@ package com.dragonfix.mattermanipulator;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 import net.minecraft.block.Block;
 import net.minecraft.util.IIcon;
@@ -13,11 +10,6 @@ import net.minecraft.util.IIcon;
 import com.recursive_pineapple.matter_manipulator.common.items.manipulator.RenderHints;
 
 public final class DragonFixRenderHints {
-
-    private static final Map<Object, Bounds> BOUNDS = Collections.synchronizedMap(new WeakHashMap<>());
-    private static final Map<Object, CustomRenderer> CUSTOM_RENDERERS = Collections
-        .synchronizedMap(new WeakHashMap<>());
-    private static final Map<Object, Integer> CUSTOM_QUAD_COUNTS = Collections.synchronizedMap(new WeakHashMap<>());
 
     private static Constructor<?> hintConstructor;
     private static Field hintsField;
@@ -39,7 +31,7 @@ public final class DragonFixRenderHints {
 
         try {
             Object hint = dragonfix$newHint(x, y, z, block, meta, tint);
-            BOUNDS.put(hint, new Bounds(minX, minY, minZ, maxX, maxY, maxZ));
+            ((RenderHintsHintBridge) hint).dragonfix$setBounds(new Bounds(minX, minY, minZ, maxX, maxY, maxZ));
 
             dragonfix$getHints().add(hint);
         } catch (ReflectiveOperationException | ClassCastException e) {
@@ -62,8 +54,9 @@ public final class DragonFixRenderHints {
 
         try {
             Object hint = dragonfix$newHint(x, y, z, block, meta, tint);
-            CUSTOM_RENDERERS.put(hint, renderer);
-            CUSTOM_QUAD_COUNTS.put(hint, Math.max(6, quadCount));
+            RenderHintsHintBridge bridge = (RenderHintsHintBridge) hint;
+            bridge.dragonfix$setCustomRenderer(renderer);
+            bridge.dragonfix$setQuadCount(quadCount);
 
             dragonfix$getHints().add(hint);
         } catch (ReflectiveOperationException | ClassCastException e) {
@@ -73,11 +66,13 @@ public final class DragonFixRenderHints {
     }
 
     public static Bounds getBounds(Object hint) {
-        return BOUNDS.get(hint);
+        if (!(hint instanceof RenderHintsHintBridge)) return null;
+        return ((RenderHintsHintBridge) hint).dragonfix$getBounds();
     }
 
     public static CustomRenderer getCustomRenderer(Object hint) {
-        return CUSTOM_RENDERERS.get(hint);
+        if (!(hint instanceof RenderHintsHintBridge)) return null;
+        return ((RenderHintsHintBridge) hint).dragonfix$getCustomRenderer();
     }
 
     public static long expandVboSize(long originalSize) {
@@ -104,8 +99,12 @@ public final class DragonFixRenderHints {
 
             long extraQuads = 0;
             for (Object hint : hints) {
-                Integer quadCount = CUSTOM_QUAD_COUNTS.get(hint);
-                if (quadCount != null && quadCount > 6) {
+                if (hint instanceof RenderHintsHintBridge) {
+                    int quadCount = ((RenderHintsHintBridge) hint).dragonfix$getQuadCount();
+                    if (quadCount <= 6) {
+                        continue;
+                    }
+
                     long hintExtraQuads = quadCount - 6L;
                     if (extraQuads > Long.MAX_VALUE - hintExtraQuads) {
                         return originalSize;

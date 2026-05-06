@@ -7,14 +7,16 @@ import net.minecraft.world.World;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.dragonfix.mattermanipulator.DragonFixRenderHints;
+import com.dragonfix.mattermanipulator.RenderHintsHintBridge;
 
 @Mixin(targets = "com.recursive_pineapple.matter_manipulator.common.items.manipulator.RenderHints$Hint", remap = false)
-public abstract class RenderHintsHintMixin {
+public abstract class RenderHintsHintMixin implements RenderHintsHintBridge {
 
     @Shadow(remap = false)
     public int x;
@@ -31,18 +33,25 @@ public abstract class RenderHintsHintMixin {
     @Shadow(remap = false)
     public short[] tint;
 
+    @Unique
+    private DragonFixRenderHints.Bounds dragonfix$bounds;
+
+    @Unique
+    private DragonFixRenderHints.CustomRenderer dragonfix$customRenderer;
+
+    @Unique
+    private int dragonfix$quadCount = 6;
+
     @Inject(method = "draw", at = @At("HEAD"), cancellable = true, remap = false)
     private void dragonfix$drawSizedHint(Tessellator tes, double eyeX, double eyeY, double eyeZ, int eyeXint,
         int eyeYint, int eyeZint, CallbackInfo ci) {
-        DragonFixRenderHints.CustomRenderer customRenderer = DragonFixRenderHints.getCustomRenderer(this);
-        if (customRenderer != null) {
-            customRenderer.draw(tes, eyeX, eyeY, eyeZ, eyeXint, eyeYint, eyeZint);
+        if (dragonfix$customRenderer != null) {
+            dragonfix$customRenderer.draw(tes, eyeX, eyeY, eyeZ, eyeXint, eyeYint, eyeZint);
             ci.cancel();
             return;
         }
 
-        DragonFixRenderHints.Bounds bounds = DragonFixRenderHints.getBounds(this);
-        if (bounds == null) {
+        if (dragonfix$bounds == null) {
             return;
         }
 
@@ -51,18 +60,18 @@ public abstract class RenderHintsHintMixin {
         tes.setBrightness(brightness);
         tes.setColorRGBA(tint[0], tint[1], tint[2], 150);
 
-        double x1 = (x - eyeXint) + bounds.minX;
-        double y1 = (y - eyeYint) + bounds.minY;
-        double z1 = (z - eyeZint) + bounds.minZ;
-        double x2 = (x - eyeXint) + bounds.maxX;
-        double y2 = (y - eyeYint) + bounds.maxY;
-        double z2 = (z - eyeZint) + bounds.maxZ;
-        double worldX1 = x + bounds.minX;
-        double worldY1 = y + bounds.minY;
-        double worldZ1 = z + bounds.minZ;
-        double worldX2 = x + bounds.maxX;
-        double worldY2 = y + bounds.maxY;
-        double worldZ2 = z + bounds.maxZ;
+        double x1 = (x - eyeXint) + dragonfix$bounds.minX;
+        double y1 = (y - eyeYint) + dragonfix$bounds.minY;
+        double z1 = (z - eyeZint) + dragonfix$bounds.minZ;
+        double x2 = (x - eyeXint) + dragonfix$bounds.maxX;
+        double y2 = (y - eyeYint) + dragonfix$bounds.maxY;
+        double z2 = (z - eyeZint) + dragonfix$bounds.maxZ;
+        double worldX1 = x + dragonfix$bounds.minX;
+        double worldY1 = y + dragonfix$bounds.minY;
+        double worldZ1 = z + dragonfix$bounds.minZ;
+        double worldX2 = x + dragonfix$bounds.maxX;
+        double worldY2 = y + dragonfix$bounds.maxY;
+        double worldZ2 = z + dragonfix$bounds.maxZ;
 
         for (int pass = 0; pass < 2; pass++) {
             boolean unobstructedPass = pass == 1;
@@ -131,5 +140,35 @@ public abstract class RenderHintsHintMixin {
         }
 
         ci.cancel();
+    }
+
+    @Override
+    public DragonFixRenderHints.Bounds dragonfix$getBounds() {
+        return dragonfix$bounds;
+    }
+
+    @Override
+    public void dragonfix$setBounds(DragonFixRenderHints.Bounds bounds) {
+        dragonfix$bounds = bounds;
+    }
+
+    @Override
+    public DragonFixRenderHints.CustomRenderer dragonfix$getCustomRenderer() {
+        return dragonfix$customRenderer;
+    }
+
+    @Override
+    public void dragonfix$setCustomRenderer(DragonFixRenderHints.CustomRenderer renderer) {
+        dragonfix$customRenderer = renderer;
+    }
+
+    @Override
+    public int dragonfix$getQuadCount() {
+        return dragonfix$quadCount;
+    }
+
+    @Override
+    public void dragonfix$setQuadCount(int quadCount) {
+        dragonfix$quadCount = Math.max(6, quadCount);
     }
 }
