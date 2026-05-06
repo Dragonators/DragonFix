@@ -83,6 +83,11 @@ dependencies {
         transitive = false
     }
 
+    // Required target for MatterManipulator Avaritiaddons Dire Autocrafting Table copy integration.
+    compileOnly("com.github.GTNewHorizons:Avaritiaddons:1.9.3-GTNH:dev") {
+        transitive = false
+    }
+
     compileOnly("com.github.GTNewHorizons:ModularUI:1.2.20:dev") {
         transitive = false
     }

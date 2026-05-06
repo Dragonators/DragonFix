@@ -23,6 +23,7 @@ public class DragonFix {
         + "after:ForgeMultipart@[1.6.8,);"
         + "required-after:CarpentersBlocks@[3.7.0-GTNH,);"
         + "after:ae2thing@[v1.2.14,);"
+        + "required-after:avaritiaddons@[1.9.3-GTNH,);"
         + "required-after:ArchitectureCraft@[1.11.6,);"
         + "after:programmablehatches@[0.1.3p55,);"
         + "after:MyCTMLib@[v1.2.5_28x,)";
