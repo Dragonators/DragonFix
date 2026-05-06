@@ -20,6 +20,17 @@ import li.cil.oc.util.PackedColor.ColorFormat;
 import li.cil.oc.util.RenderState;
 import li.cil.oc.util.TextBuffer;
 
+/**
+ * Replaces OpenComputers screen/manual text rendering with Tessellator-backed quads for Angelica compatibility.
+ *
+ * <p>
+ * Adapted from GTNewHorizons/OpenComputers PR #184 by PinkYuDeer.
+ *
+ * @see <a href="https://github.com/GTNewHorizons/OpenComputers/pull/184">OpenComputers PR #184</a>
+ * @see <a href=
+ *      "https://github.com/GTNewHorizons/OpenComputers/commit/e7fa0a1aec316bd99720cd8a0eb1c8f55449cef2">OpenComputers
+ *      commit e7fa0a1</a>
+ */
 @Mixin(value = TextureFontRenderer.class, remap = false)
 public abstract class TextureFontRendererMixin implements OpenComputersTextureFontRendererBridge {
 

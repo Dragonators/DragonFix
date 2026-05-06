@@ -8,6 +8,17 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import li.cil.oc.client.renderer.font.DynamicFontRenderer;
 
+/**
+ * Emits OpenComputers dynamic font glyph vertices into the active Tessellator batch.
+ *
+ * <p>
+ * Adapted from GTNewHorizons/OpenComputers PR #184 by PinkYuDeer.
+ *
+ * @see <a href="https://github.com/GTNewHorizons/OpenComputers/pull/184">OpenComputers PR #184</a>
+ * @see <a href=
+ *      "https://github.com/GTNewHorizons/OpenComputers/commit/e7fa0a1aec316bd99720cd8a0eb1c8f55449cef2">OpenComputers
+ *      commit e7fa0a1</a>
+ */
 @Mixin(value = DynamicFontRenderer.CharIcon.class, remap = false)
 public abstract class DynamicFontRendererCharIconMixin {
 
