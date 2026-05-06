@@ -40,6 +40,7 @@ DragonFix 是一个面向 Minecraft 1.7.10 / Forge 的轻量级修复模组。
   - 修复 OpenComputers 可旋转方块复制/粘贴时朝向未按 MM 变换同步的问题。
   - 修复 OpenComputers 组件带地址或数据 NBT 时，复制/粘贴库存可能错误要求原始带地址物品的问题。
   - 修复 Avaritiaddons 梦魇工作台右侧 ghost 标记区被错误当作真实库存物品粘贴，导致 `Invalid item for slot` 警告的问题；现在会按标记配置复制/恢复右侧区域。
+  - 修复 AE2 物质聚合器存储组件槽位被错误按外部输入槽恢复，导致 `Invalid item for slot 2` 警告且无法粘贴存储组件的问题。
   - 修复 LittleTiles 与 ArchitectureCraft 方块在 MatterManipulator 预览提示中无法按实际材料/小方块形状显示的问题。
   - 修复 ArchitectureCraft 真实形状预览可能超出 MatterManipulator 原始 hint VBO 预分配容量，导致整批预览不渲染的问题。
   - 修复 ArchitectureCraft 方块在 MatterManipulator 复制结构旋转/镜像后未同步更新朝向与偏移的问题。

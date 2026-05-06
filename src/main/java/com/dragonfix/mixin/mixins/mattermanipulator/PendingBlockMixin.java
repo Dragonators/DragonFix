@@ -16,12 +16,14 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import com.dragonfix.mattermanipulator.AE2CondenserAnalysisResult;
 import com.dragonfix.mattermanipulator.AvaritiaddonsExtremeAutoCrafterAnalysisResult;
 import com.dragonfix.mattermanipulator.CarpentersBlocksAnalysisResult;
 import com.dragonfix.mattermanipulator.DragonFixMultipartAnalysisResult;
 import com.dragonfix.mattermanipulator.LittleTilesAnalysisResult;
 import com.dragonfix.mattermanipulator.PendingBlockAvaritiaddonsBridge;
 import com.dragonfix.mattermanipulator.PendingBlockLittleTilesBridge;
+import com.dragonfix.mattermanipulator.PendingBlockMachineInventoryBridge;
 import com.recursive_pineapple.matter_manipulator.common.building.CopyableProperty;
 import com.recursive_pineapple.matter_manipulator.common.building.ITileAnalysisIntegration;
 import com.recursive_pineapple.matter_manipulator.common.building.ImmutableBlockSpec;
@@ -36,7 +38,8 @@ import cpw.mods.fml.common.Loader;
  * https://github.com/GTNewHorizons/MatterManipulator/commit/9d76ed6e8ec87da8f55404893ea3b5ebe6912759
  */
 @Mixin(value = PendingBlock.class, remap = false)
-public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge, PendingBlockAvaritiaddonsBridge {
+public abstract class PendingBlockMixin
+    implements PendingBlockLittleTilesBridge, PendingBlockAvaritiaddonsBridge, PendingBlockMachineInventoryBridge {
 
     @Unique
     private static final double dragonfix$ROTATION_EPSILON = 1e-4d;
@@ -69,6 +72,9 @@ public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge
     private ITileAnalysisIntegration dragonfix$avaritiaddonsExtremeAutoCrafterAnalysis;
 
     @Unique
+    private ITileAnalysisIntegration dragonfix$ae2CondenserAnalysis;
+
+    @Unique
     private String dragonfix$rotationBeforeTransform;
 
     @Inject(method = "getIntegrations", at = @At("RETURN"), remap = false)
@@ -80,6 +86,10 @@ public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge
         if (dragonfix$avaritiaddonsExtremeAutoCrafterAnalysis != null) {
             cir.getReturnValue()
                 .add(dragonfix$avaritiaddonsExtremeAutoCrafterAnalysis);
+        }
+        if (dragonfix$ae2CondenserAnalysis != null) {
+            cir.getReturnValue()
+                .add(dragonfix$ae2CondenserAnalysis);
         }
         if (dragonfix$littleTilesAnalysis != null) {
             cir.getReturnValue()
@@ -95,6 +105,7 @@ public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge
     private void dragonfix$resetLittleTilesIntegration(CallbackInfoReturnable<PendingBlock> cir) {
         mp = null;
         dragonfix$avaritiaddonsExtremeAutoCrafterAnalysis = null;
+        dragonfix$ae2CondenserAnalysis = null;
         dragonfix$littleTilesAnalysis = null;
         dragonfix$carpentersBlocksAnalysis = null;
     }
@@ -120,6 +131,12 @@ public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge
             ((PendingBlockAvaritiaddonsBridge) cir.getReturnValue())
                 .dragonfix$setAvaritiaddonsExtremeAutoCrafterAnalysis(analysis.clone());
         }
+
+        analysis = dragonfix$ae2CondenserAnalysis;
+        if (analysis != null) {
+            ((PendingBlockMachineInventoryBridge) cir.getReturnValue())
+                .dragonfix$setAE2CondenserAnalysis(analysis.clone());
+        }
     }
 
     @Inject(method = "analyze", at = @At("RETURN"), remap = false)
@@ -130,6 +147,9 @@ public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge
         if (te != null && (flags & dragonfix$ANALYZE_INV) != 0 && Loader.isModLoaded("avaritiaddons")) {
             dragonfix$avaritiaddonsExtremeAutoCrafterAnalysis = AvaritiaddonsExtremeAutoCrafterAnalysisResult
                 .analyze(te);
+        }
+        if (te != null && (flags & dragonfix$ANALYZE_INV) != 0 && Loader.isModLoaded("appliedenergistics2")) {
+            dragonfix$ae2CondenserAnalysis = AE2CondenserAnalysisResult.analyze(te);
         }
         if (te != null && (flags & dragonfix$ANALYZE_LT) != 0) {
             dragonfix$littleTilesAnalysis = LittleTilesAnalysisResult.analyze(te);
@@ -193,6 +213,9 @@ public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge
         if (dragonfix$avaritiaddonsExtremeAutoCrafterAnalysis != null) {
             dragonfix$avaritiaddonsExtremeAutoCrafterAnalysis.migrate();
         }
+        if (dragonfix$ae2CondenserAnalysis != null) {
+            dragonfix$ae2CondenserAnalysis.migrate();
+        }
     }
 
     @Inject(method = "hashCode", at = @At("RETURN"), cancellable = true, remap = false)
@@ -206,6 +229,9 @@ public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge
         cir.setReturnValue(
             31 * cir.getReturnValue() + (dragonfix$avaritiaddonsExtremeAutoCrafterAnalysis == null ? 0
                 : dragonfix$avaritiaddonsExtremeAutoCrafterAnalysis.hashCode()));
+        cir.setReturnValue(
+            31 * cir.getReturnValue()
+                + (dragonfix$ae2CondenserAnalysis == null ? 0 : dragonfix$ae2CondenserAnalysis.hashCode()));
     }
 
     @Inject(method = "equals", at = @At("RETURN"), cancellable = true, remap = false)
@@ -237,6 +263,16 @@ public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge
         } else {
             cir.setReturnValue(dragonfix$avaritiaddonsExtremeAutoCrafterAnalysis.equals(otherAvaritiaddons));
         }
+
+        if (!cir.getReturnValueZ()) return;
+
+        ITileAnalysisIntegration otherAE2 = ((PendingBlockMachineInventoryBridge) obj)
+            .dragonfix$getAE2CondenserAnalysis();
+        if (dragonfix$ae2CondenserAnalysis == null) {
+            cir.setReturnValue(otherAE2 == null);
+        } else {
+            cir.setReturnValue(dragonfix$ae2CondenserAnalysis.equals(otherAE2));
+        }
     }
 
     @Override
@@ -267,6 +303,16 @@ public abstract class PendingBlockMixin implements PendingBlockLittleTilesBridge
     @Override
     public void dragonfix$setAvaritiaddonsExtremeAutoCrafterAnalysis(ITileAnalysisIntegration analysis) {
         dragonfix$avaritiaddonsExtremeAutoCrafterAnalysis = analysis;
+    }
+
+    @Override
+    public ITileAnalysisIntegration dragonfix$getAE2CondenserAnalysis() {
+        return dragonfix$ae2CondenserAnalysis;
+    }
+
+    @Override
+    public void dragonfix$setAE2CondenserAnalysis(ITileAnalysisIntegration analysis) {
+        dragonfix$ae2CondenserAnalysis = analysis;
     }
 
     @Unique

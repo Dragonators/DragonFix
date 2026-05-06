@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import com.dragonfix.mattermanipulator.AE2CondenserAnalysisResult;
 import com.dragonfix.mattermanipulator.AvaritiaddonsExtremeAutoCrafterAnalysisResult;
 import com.dragonfix.mattermanipulator.DragonFixComputerComponentItemProvider;
 import com.recursive_pineapple.matter_manipulator.common.building.InventoryAnalysis;
@@ -44,7 +45,8 @@ public abstract class InventoryAnalysisMixin {
     private static boolean dragonfix$isCopyableInventorySlot(InventoryAdapter adapter,
         net.minecraft.inventory.IInventory inv, int slot) {
         return adapter.isValidSlot(inv, slot)
-            && !AvaritiaddonsExtremeAutoCrafterAnalysisResult.isGhostOrOutputSlot(inv, slot);
+            && !AvaritiaddonsExtremeAutoCrafterAnalysisResult.isGhostOrOutputSlot(inv, slot)
+            && !AE2CondenserAnalysisResult.isMatterCondenserStorageSlot(inv, slot);
     }
 
     @Redirect(
@@ -56,6 +58,7 @@ public abstract class InventoryAnalysisMixin {
     private boolean dragonfix$isRestorableInventorySlot(InventoryAdapter adapter,
         net.minecraft.inventory.IInventory inv, int slot) {
         return adapter.isValidSlot(inv, slot)
-            && !AvaritiaddonsExtremeAutoCrafterAnalysisResult.isGhostOrOutputSlot(inv, slot);
+            && !AvaritiaddonsExtremeAutoCrafterAnalysisResult.isGhostOrOutputSlot(inv, slot)
+            && !AE2CondenserAnalysisResult.isMatterCondenserStorageSlot(inv, slot);
     }
 }

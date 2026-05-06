@@ -49,7 +49,7 @@ dependencies {
         transitive = false
     }
 
-    // Signature dependencies needed when targeting Programmable Hatches' GT/AE2 parent classes.
+    // Optional target for MatterManipulator AE2 Matter Condenser storage component copy integration.
     compileOnly("com.github.GTNewHorizons:Applied-Energistics-2-Unofficial:rv3-beta-690-GTNH:dev") {
         transitive = false
     }
