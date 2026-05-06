@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import com.dragonfix.mattermanipulator.AE2CondenserAnalysisResult;
 import com.dragonfix.mattermanipulator.AvaritiaddonsExtremeAutoCrafterAnalysisResult;
 import com.dragonfix.mattermanipulator.DragonFixComputerComponentItemProvider;
+import com.dragonfix.mattermanipulator.EnderIOSoulBinderAnalysisResult;
 import com.recursive_pineapple.matter_manipulator.common.building.InventoryAnalysis;
 import com.recursive_pineapple.matter_manipulator.common.building.providers.IItemProvider;
 import com.recursive_pineapple.matter_manipulator.common.utils.InventoryAdapter;
@@ -46,7 +47,8 @@ public abstract class InventoryAnalysisMixin {
         net.minecraft.inventory.IInventory inv, int slot) {
         return adapter.isValidSlot(inv, slot)
             && !AvaritiaddonsExtremeAutoCrafterAnalysisResult.isGhostOrOutputSlot(inv, slot)
-            && !AE2CondenserAnalysisResult.isMatterCondenserStorageSlot(inv, slot);
+            && !AE2CondenserAnalysisResult.isMatterCondenserStorageSlot(inv, slot)
+            && !EnderIOSoulBinderAnalysisResult.isSoulBinderCapacitorSlot(inv, slot);
     }
 
     @Redirect(
@@ -59,6 +61,7 @@ public abstract class InventoryAnalysisMixin {
         net.minecraft.inventory.IInventory inv, int slot) {
         return adapter.isValidSlot(inv, slot)
             && !AvaritiaddonsExtremeAutoCrafterAnalysisResult.isGhostOrOutputSlot(inv, slot)
-            && !AE2CondenserAnalysisResult.isMatterCondenserStorageSlot(inv, slot);
+            && !AE2CondenserAnalysisResult.isMatterCondenserStorageSlot(inv, slot)
+            && !EnderIOSoulBinderAnalysisResult.isSoulBinderCapacitorSlot(inv, slot);
     }
 }

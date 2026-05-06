@@ -20,6 +20,7 @@ import com.dragonfix.mattermanipulator.AE2CondenserAnalysisResult;
 import com.dragonfix.mattermanipulator.AvaritiaddonsExtremeAutoCrafterAnalysisResult;
 import com.dragonfix.mattermanipulator.CarpentersBlocksAnalysisResult;
 import com.dragonfix.mattermanipulator.DragonFixMultipartAnalysisResult;
+import com.dragonfix.mattermanipulator.EnderIOSoulBinderAnalysisResult;
 import com.dragonfix.mattermanipulator.LittleTilesAnalysisResult;
 import com.dragonfix.mattermanipulator.PendingBlockAvaritiaddonsBridge;
 import com.dragonfix.mattermanipulator.PendingBlockLittleTilesBridge;
@@ -75,6 +76,9 @@ public abstract class PendingBlockMixin
     private ITileAnalysisIntegration dragonfix$ae2CondenserAnalysis;
 
     @Unique
+    private ITileAnalysisIntegration dragonfix$enderIOSoulBinderAnalysis;
+
+    @Unique
     private String dragonfix$rotationBeforeTransform;
 
     @Inject(method = "getIntegrations", at = @At("RETURN"), remap = false)
@@ -91,6 +95,10 @@ public abstract class PendingBlockMixin
             cir.getReturnValue()
                 .add(dragonfix$ae2CondenserAnalysis);
         }
+        if (dragonfix$enderIOSoulBinderAnalysis != null) {
+            cir.getReturnValue()
+                .add(dragonfix$enderIOSoulBinderAnalysis);
+        }
         if (dragonfix$littleTilesAnalysis != null) {
             cir.getReturnValue()
                 .add(dragonfix$littleTilesAnalysis);
@@ -106,6 +114,7 @@ public abstract class PendingBlockMixin
         mp = null;
         dragonfix$avaritiaddonsExtremeAutoCrafterAnalysis = null;
         dragonfix$ae2CondenserAnalysis = null;
+        dragonfix$enderIOSoulBinderAnalysis = null;
         dragonfix$littleTilesAnalysis = null;
         dragonfix$carpentersBlocksAnalysis = null;
     }
@@ -137,6 +146,12 @@ public abstract class PendingBlockMixin
             ((PendingBlockMachineInventoryBridge) cir.getReturnValue())
                 .dragonfix$setAE2CondenserAnalysis(analysis.clone());
         }
+
+        analysis = dragonfix$enderIOSoulBinderAnalysis;
+        if (analysis != null) {
+            ((PendingBlockMachineInventoryBridge) cir.getReturnValue())
+                .dragonfix$setEnderIOSoulBinderAnalysis(analysis.clone());
+        }
     }
 
     @Inject(method = "analyze", at = @At("RETURN"), remap = false)
@@ -150,6 +165,9 @@ public abstract class PendingBlockMixin
         }
         if (te != null && (flags & dragonfix$ANALYZE_INV) != 0 && Loader.isModLoaded("appliedenergistics2")) {
             dragonfix$ae2CondenserAnalysis = AE2CondenserAnalysisResult.analyze(te);
+        }
+        if (te != null && (flags & dragonfix$ANALYZE_INV) != 0 && Loader.isModLoaded("EnderIO")) {
+            dragonfix$enderIOSoulBinderAnalysis = EnderIOSoulBinderAnalysisResult.analyze(te);
         }
         if (te != null && (flags & dragonfix$ANALYZE_LT) != 0) {
             dragonfix$littleTilesAnalysis = LittleTilesAnalysisResult.analyze(te);
@@ -216,6 +234,9 @@ public abstract class PendingBlockMixin
         if (dragonfix$ae2CondenserAnalysis != null) {
             dragonfix$ae2CondenserAnalysis.migrate();
         }
+        if (dragonfix$enderIOSoulBinderAnalysis != null) {
+            dragonfix$enderIOSoulBinderAnalysis.migrate();
+        }
     }
 
     @Inject(method = "hashCode", at = @At("RETURN"), cancellable = true, remap = false)
@@ -232,6 +253,9 @@ public abstract class PendingBlockMixin
         cir.setReturnValue(
             31 * cir.getReturnValue()
                 + (dragonfix$ae2CondenserAnalysis == null ? 0 : dragonfix$ae2CondenserAnalysis.hashCode()));
+        cir.setReturnValue(
+            31 * cir.getReturnValue()
+                + (dragonfix$enderIOSoulBinderAnalysis == null ? 0 : dragonfix$enderIOSoulBinderAnalysis.hashCode()));
     }
 
     @Inject(method = "equals", at = @At("RETURN"), cancellable = true, remap = false)
@@ -273,6 +297,16 @@ public abstract class PendingBlockMixin
         } else {
             cir.setReturnValue(dragonfix$ae2CondenserAnalysis.equals(otherAE2));
         }
+
+        if (!cir.getReturnValueZ()) return;
+
+        ITileAnalysisIntegration otherEnderIO = ((PendingBlockMachineInventoryBridge) obj)
+            .dragonfix$getEnderIOSoulBinderAnalysis();
+        if (dragonfix$enderIOSoulBinderAnalysis == null) {
+            cir.setReturnValue(otherEnderIO == null);
+        } else {
+            cir.setReturnValue(dragonfix$enderIOSoulBinderAnalysis.equals(otherEnderIO));
+        }
     }
 
     @Override
@@ -313,6 +347,16 @@ public abstract class PendingBlockMixin
     @Override
     public void dragonfix$setAE2CondenserAnalysis(ITileAnalysisIntegration analysis) {
         dragonfix$ae2CondenserAnalysis = analysis;
+    }
+
+    @Override
+    public ITileAnalysisIntegration dragonfix$getEnderIOSoulBinderAnalysis() {
+        return dragonfix$enderIOSoulBinderAnalysis;
+    }
+
+    @Override
+    public void dragonfix$setEnderIOSoulBinderAnalysis(ITileAnalysisIntegration analysis) {
+        dragonfix$enderIOSoulBinderAnalysis = analysis;
     }
 
     @Unique

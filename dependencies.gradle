@@ -54,6 +54,11 @@ dependencies {
         transitive = false
     }
 
+    // Optional target for MatterManipulator Ender IO Soul Binder capacitor copy integration.
+    compileOnly("com.github.GTNewHorizons:EnderIO:2.9.28:dev") {
+        transitive = false
+    }
+
     // Target library for GTNHLib ModelQuad QuadView compatibility fix.
     compileOnly("com.github.GTNewHorizons:GTNHLib:0.9.47:dev") {
         transitive = false
