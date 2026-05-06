@@ -10,8 +10,14 @@ import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 import com.recursive_pineapple.matter_manipulator.client.rendering.BoxRenderer;
 
 /**
- * Adapted from GTNewHorizons/MatterManipulator commit 184f6db by RecursivePineapple:
- * https://github.com/GTNewHorizons/MatterManipulator/commit/184f6db9df8b3e49ff01bdc3dd9842306fdbc675
+ * Reuses MatterManipulator box renderer buffers instead of recreating them every frame.
+ *
+ * <p>
+ * Adapted from GTNewHorizons/MatterManipulator commit 184f6db by RecursivePineapple.
+ *
+ * @see <a href=
+ *      "https://github.com/GTNewHorizons/MatterManipulator/commit/184f6db9df8b3e49ff01bdc3dd9842306fdbc675">MatterManipulator
+ *      commit 184f6db</a>
  */
 @Mixin(value = BoxRenderer.class, remap = false)
 public abstract class BoxRendererMixin {

@@ -17,9 +17,15 @@ import it.unimi.dsi.fastutil.booleans.BooleanObjectImmutablePair;
 import li.cil.oc.api.API;
 
 /**
- * Adapted from GTNewHorizons/MatterManipulator PR #47 by Vlamonster:
- * https://github.com/GTNewHorizons/MatterManipulator/pull/47
- * https://github.com/GTNewHorizons/MatterManipulator/commit/37acef5934de822cad490ec22875d48400c9791e
+ * Provides equivalent OpenComputers components without requiring copied address-bearing NBT.
+ *
+ * <p>
+ * Adapted from GTNewHorizons/MatterManipulator PR #47 by Vlamonster.
+ *
+ * @see <a href="https://github.com/GTNewHorizons/MatterManipulator/pull/47">MatterManipulator PR #47</a>
+ * @see <a href=
+ *      "https://github.com/GTNewHorizons/MatterManipulator/commit/37acef5934de822cad490ec22875d48400c9791e">MatterManipulator
+ *      commit 37acef59</a>
  */
 public class DragonFixComputerComponentItemProvider implements IItemProvider {
 

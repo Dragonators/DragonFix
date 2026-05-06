@@ -16,9 +16,15 @@ import cpw.mods.fml.common.Loader;
 import li.cil.oc.common.tileentity.traits.Rotatable;
 
 /**
- * Adapted from GTNewHorizons/MatterManipulator PR #48 by Vlamonster:
- * https://github.com/GTNewHorizons/MatterManipulator/pull/48
- * https://github.com/GTNewHorizons/MatterManipulator/commit/c8835f4b05017dbd03266e715dfdd475d7c8557e
+ * Replaces OpenComputers rotation copying so MatterManipulator can transform rotatable blocks correctly.
+ *
+ * <p>
+ * Adapted from GTNewHorizons/MatterManipulator PR #48 by Vlamonster.
+ *
+ * @see <a href="https://github.com/GTNewHorizons/MatterManipulator/pull/48">MatterManipulator PR #48</a>
+ * @see <a href=
+ *      "https://github.com/GTNewHorizons/MatterManipulator/commit/c8835f4b05017dbd03266e715dfdd475d7c8557e">MatterManipulator
+ *      commit c8835f4b</a>
  */
 @Mixin(value = BlockPropertyRegistry.class, remap = false)
 public abstract class BlockPropertyRegistryMixin {

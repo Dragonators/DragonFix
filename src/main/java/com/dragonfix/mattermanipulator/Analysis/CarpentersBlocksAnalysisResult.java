@@ -20,8 +20,12 @@ import com.recursive_pineapple.matter_manipulator.common.building.PortableItemSt
 import com.recursive_pineapple.matter_manipulator.common.items.manipulator.Transform;
 
 /**
- * Adapted from GTNewHorizons/MatterManipulator PR #46 by Luca-Guettinger:
- * https://github.com/GTNewHorizons/MatterManipulator/pull/46
+ * Copies and restores Carpenter's Blocks shape data and covers for MatterManipulator builds.
+ *
+ * <p>
+ * Adapted from GTNewHorizons/MatterManipulator PR #46 by Luca-Guettinger.
+ *
+ * @see <a href="https://github.com/GTNewHorizons/MatterManipulator/pull/46">MatterManipulator PR #46</a>
  */
 public class CarpentersBlocksAnalysisResult implements ITileAnalysisIntegration {
 

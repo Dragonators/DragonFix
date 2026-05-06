@@ -8,9 +8,15 @@ import net.minecraftforge.common.util.ForgeDirection;
 import com.recursive_pineapple.matter_manipulator.common.items.manipulator.Transform;
 
 /**
- * Adapted from GTNewHorizons/MatterManipulator PR #34 by Luca-Guettinger and RecursivePineapple:
- * https://github.com/GTNewHorizons/MatterManipulator/pull/34
- * https://github.com/GTNewHorizons/MatterManipulator/commit/9d76ed6e8ec87da8f55404893ea3b5ebe6912759
+ * Rotates ForgeMultipart side, microblock shape, and orientation NBT for MatterManipulator transforms.
+ *
+ * <p>
+ * Adapted from GTNewHorizons/MatterManipulator PR #34 by Luca-Guettinger and RecursivePineapple.
+ *
+ * @see <a href="https://github.com/GTNewHorizons/MatterManipulator/pull/34">MatterManipulator PR #34</a>
+ * @see <a href=
+ *      "https://github.com/GTNewHorizons/MatterManipulator/commit/9d76ed6e8ec87da8f55404893ea3b5ebe6912759">MatterManipulator
+ *      commit 9d76ed6e</a>
  */
 public final class FMPPartTransforms {
 

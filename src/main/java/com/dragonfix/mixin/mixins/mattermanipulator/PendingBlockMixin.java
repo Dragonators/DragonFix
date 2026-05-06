@@ -34,9 +34,16 @@ import com.recursive_pineapple.matter_manipulator.common.items.manipulator.Trans
 import cpw.mods.fml.common.Loader;
 
 /**
- * Contains mixin hooks adapted from GTNewHorizons/MatterManipulator PR #34 by Luca-Guettinger and RecursivePineapple:
- * https://github.com/GTNewHorizons/MatterManipulator/pull/34
- * https://github.com/GTNewHorizons/MatterManipulator/commit/9d76ed6e8ec87da8f55404893ea3b5ebe6912759
+ * Attaches DragonFix tile analysis integrations and transform fixes to MatterManipulator pending blocks.
+ *
+ * <p>
+ * Integration hook structure adapted from GTNewHorizons/MatterManipulator PR #34 by Luca-Guettinger and
+ * RecursivePineapple.
+ *
+ * @see <a href="https://github.com/GTNewHorizons/MatterManipulator/pull/34">MatterManipulator PR #34</a>
+ * @see <a href=
+ *      "https://github.com/GTNewHorizons/MatterManipulator/commit/9d76ed6e8ec87da8f55404893ea3b5ebe6912759">MatterManipulator
+ *      commit 9d76ed6e</a>
  */
 @Mixin(value = PendingBlock.class, remap = false)
 public abstract class PendingBlockMixin
