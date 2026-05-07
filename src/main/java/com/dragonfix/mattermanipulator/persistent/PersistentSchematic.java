@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
@@ -33,6 +34,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagLong;
 import net.minecraft.nbt.NBTTagShort;
 import net.minecraft.nbt.NBTTagString;
+import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -107,6 +109,7 @@ public class PersistentSchematic {
     private static final String ARRAY_MARKER = "dragonfixArray";
     private static final String ARRAY_LENGTH = "length";
     private static final String ARRAY_VALUES = "values";
+    private static final String PATTERN_STABLE_ITEM_ID = "dragonfix$itemId";
 
     private static final Gson GSON = new GsonBuilder().registerTypeAdapter(UniqueIdentifier.class, new UIDJsonAdapter())
         .registerTypeAdapter(NBTTagCompound.class, new PersistentNBTJsonAdapter())
@@ -114,6 +117,7 @@ public class PersistentSchematic {
         .registerTypeAdapter(ImmutableBlockSpec.class, new ImmutableBlockSpecAdapter())
         .registerTypeAdapter(PendingBlock.class, new PendingBlockAdapter())
         .registerTypeAdapter(InventoryAnalysis.class, new InventoryAnalysisAdapter())
+        .registerTypeAdapter(PatternItemProvider.class, new PatternItemProviderAdapter())
         .registerTypeAdapter(
             DragonFixComputerComponentItemProvider.class,
             new DragonFixComputerComponentItemProviderAdapter())
@@ -404,7 +408,8 @@ public class PersistentSchematic {
     }
 
     public static String saveResultMessage(String name, int blocks) {
-        return String.format("Saved Matter Manipulator schematic '%s' (%d blocks).", normalizeFileName(name), blocks);
+        return StatCollector
+            .translateToLocalFormatted("dragonfix.mm.info.schematic_saved", normalizeFileName(name), blocks);
     }
 
     public static void sendLoadResult(EntityPlayer player, String name, PersistentSchematic schematic) {
@@ -417,10 +422,15 @@ public class PersistentSchematic {
     }
 
     public static String loadResultMessage(String name, PersistentSchematic schematic, boolean fromCache) {
-        return String.format(
-            "Loaded Matter Manipulator schematic '%s' (%s).",
+        return StatCollector.translateToLocalFormatted(
+            "dragonfix.mm.info.schematic_loaded",
             normalizeFileName(name),
-            schematic.describe() + (fromCache ? ", from cache" : ""));
+            schematic.blocks.size(),
+            schematic.deltas.x,
+            schematic.deltas.y,
+            schematic.deltas.z,
+            MMUtils.formatNumbers((double) schematic.deltas.x * schematic.deltas.y * schematic.deltas.z),
+            fromCache ? StatCollector.translateToLocal("dragonfix.mm.info.schematic_from_cache") : "");
     }
 
     private static JsonElement encodeArrays(JsonElement element) {
@@ -787,6 +797,118 @@ public class PersistentSchematic {
             if (stack == null) throw new JsonParseException("Unknown OpenComputers component in schematic");
 
             return new DragonFixComputerComponentItemProvider(stack);
+        }
+    }
+
+    private static NBTTagCompound dragonfix$withStablePatternItemIds(NBTTagCompound pattern) {
+        if (pattern == null) return null;
+
+        NBTTagCompound copy = (NBTTagCompound) pattern.copy();
+        dragonfix$writeStablePatternItemIds(copy.getTagList("in", 10));
+        dragonfix$writeStablePatternItemIds(copy.getTagList("out", 10));
+        return copy;
+    }
+
+    private static void dragonfix$writeStablePatternItemIds(NBTTagList items) {
+        for (int i = 0; i < items.tagCount(); i++) {
+            NBTTagCompound itemTag = items.getCompoundTagAt(i);
+            if (!itemTag.hasKey("id")) continue;
+
+            Item item = Item.getItemById(itemTag.getShort("id"));
+            UniqueIdentifier id = item == null ? null : GameRegistry.findUniqueIdentifierFor(item);
+            if (id != null) itemTag.setString(PATTERN_STABLE_ITEM_ID, id.modId + ":" + id.name);
+        }
+    }
+
+    private static void dragonfix$restoreStablePatternItemIds(NBTTagCompound pattern) {
+        if (pattern == null) return;
+
+        dragonfix$restoreStablePatternItemIds(pattern.getTagList("in", 10));
+        dragonfix$restoreStablePatternItemIds(pattern.getTagList("out", 10));
+    }
+
+    private static void dragonfix$restoreStablePatternItemIds(NBTTagList items) {
+        for (int i = 0; i < items.tagCount(); i++) {
+            NBTTagCompound itemTag = items.getCompoundTagAt(i);
+            if (!itemTag.hasKey(PATTERN_STABLE_ITEM_ID)) continue;
+
+            Item item = dragonfix$findItem(itemTag.getString(PATTERN_STABLE_ITEM_ID));
+            itemTag.removeTag(PATTERN_STABLE_ITEM_ID);
+            if (item != null) itemTag.setShort("id", (short) Item.getIdFromItem(item));
+        }
+    }
+
+    private static Item dragonfix$findItem(String id) {
+        int separator = id.indexOf(':');
+        if (separator <= 0 || separator == id.length() - 1) return null;
+        return GameRegistry.findItem(id.substring(0, separator), id.substring(separator + 1));
+    }
+
+    private static class PatternItemProviderAdapter
+        implements JsonSerializer<PatternItemProvider>, JsonDeserializer<PatternItemProvider> {
+
+        private static final Field AMOUNT = dragonfix$field("amount");
+        private static final Field PATTERN = dragonfix$field("pattern");
+
+        @Override
+        public JsonElement serialize(PatternItemProvider src, Type typeOfSrc, JsonSerializationContext context) {
+            JsonObject obj = new JsonObject();
+            Integer amount = dragonfix$get(AMOUNT, src, Integer.class);
+            NBTTagCompound pattern = dragonfix$get(PATTERN, src, NBTTagCompound.class);
+
+            if (amount != null) obj.addProperty("amount", amount);
+            obj.add("pattern", context.serialize(dragonfix$withStablePatternItemIds(pattern), NBTTagCompound.class));
+            return obj;
+        }
+
+        @Override
+        public PatternItemProvider deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
+            JsonObject obj = json.getAsJsonObject();
+            PatternItemProvider provider = new PatternItemProvider();
+
+            JsonElement amount = obj.get("amount");
+            dragonfix$set(
+                AMOUNT,
+                provider,
+                amount == null || amount.isJsonNull() ? null : Integer.valueOf(amount.getAsInt()));
+
+            NBTTagCompound pattern = dragonfix$deserializeNullable(obj, "pattern", NBTTagCompound.class, context);
+            dragonfix$restoreStablePatternItemIds(pattern);
+            dragonfix$set(PATTERN, provider, pattern);
+
+            return provider;
+        }
+
+        private static Field dragonfix$field(String name) {
+            try {
+                Field field = PatternItemProvider.class.getDeclaredField(name);
+                field.setAccessible(true);
+                return field;
+            } catch (ReflectiveOperationException e) {
+                throw new ExceptionInInitializerError(e);
+            }
+        }
+
+        private static <T> T dragonfix$get(Field field, PatternItemProvider provider, Class<T> type) {
+            try {
+                return type.cast(field.get(provider));
+            } catch (ReflectiveOperationException e) {
+                throw new JsonParseException("Could not read PatternItemProvider field", e);
+            }
+        }
+
+        private static void dragonfix$set(Field field, PatternItemProvider provider, Object value) {
+            try {
+                field.set(provider, value);
+            } catch (ReflectiveOperationException e) {
+                throw new JsonParseException("Could not write PatternItemProvider field", e);
+            }
+        }
+
+        private static <T> T dragonfix$deserializeNullable(JsonObject obj, String name, Class<T> type,
+            JsonDeserializationContext context) {
+            JsonElement element = obj.get(name);
+            return element == null || element.isJsonNull() ? null : context.deserialize(element, type);
         }
     }
 

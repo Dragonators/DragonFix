@@ -54,6 +54,9 @@ DragonFix 是一个面向 Minecraft 1.7.10 / Forge 的轻量级修复模组。
   - 修复 MatterManipulator 对门进行复制粘贴处理中的问题。
   - 修复 MalisisDoors 自定义门在复制粘贴时缺少门材质 NBT 的问题。
   - 修复带小数角度的方块属性旋转/镜像时无法解析的问题。
+  - 修复粘贴区域与已完成区域大面积重合时，MatterManipulator 会在单次建造调用中扫描大量已完成方块导致长时间卡顿的问题。
+  - 修复 AE2 编码样板在 MatterManipulator 持久选区文件中使用不稳定数字物品 ID，导致跨存档粘贴后样板无效的问题。
+  - 修复 MatterManipulator 安装 AE2 升级卡时可能把已提取的升级卡数量归零，导致 ME 接口、存储总线等方块或部件无法恢复升级卡的问题。
   - 复用 MatterManipulator 选区 BoxRenderer 的 VBO，减少每帧渲染选区时的缓冲对象创建。
   - 增加 MatterManipulator 持久选区文件功能，可将分析后的 `PendingBlock` 数据保存为 `.mmschematic` 并跨存档加载粘贴。
 

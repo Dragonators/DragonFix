@@ -9,3 +9,9 @@ dragonfix.mm.gui.cancel=取消
 dragonfix.mm.tooltip.mode.copying_persistent=模式：复制（持久化）
 dragonfix.mm.tooltip.mode.pasting_persistent=模式：粘贴（持久化）
 dragonfix.mm.tooltip.schematic=选区文件
+dragonfix.mm.info.scan_progress=已扫描/跳过 %d 个待处理方块（其中 %d 个已完成），剩余 %d 个。
+dragonfix.mm.warning.missing_upgrade=找不到升级卡：%s x %d
+dragonfix.mm.error.too_many_upgrades=尝试安装过多升级卡：剩余升级卡已丢弃（这是一个错误，请报告）
+dragonfix.mm.info.schematic_saved=已保存 Matter Manipulator 选区文件 '%s'（%d 个方块）。
+dragonfix.mm.info.schematic_loaded=已加载 Matter Manipulator 选区文件 '%s'（%d 个方块，dX=%d dY=%d dZ=%d V=%s）%s。
+dragonfix.mm.info.schematic_from_cache=，来自缓存
