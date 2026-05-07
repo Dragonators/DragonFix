@@ -101,6 +101,11 @@ dependencies {
         transitive = false
     }
 
+    // Required target for MatterManipulator Biomes O' Plenty plant placement integration.
+    compileOnly("curse.maven:biomes-o-plenty-220318:2499612") {
+        transitive = false
+    }
+
     compileOnly("com.github.GTNewHorizons:CodeChickenCore:1.4.10:dev") {
         transitive = false
     }

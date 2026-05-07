@@ -30,6 +30,7 @@ public class DragonFix {
         + "required-after:avaritiaddons@[1.9.3-GTNH,);"
         + "required-after:ArchitectureCraft@[1.11.6,);"
         + "after:ae2thing@[v1.2.14,);"
+        + "required-after:BiomesOPlenty@[2.1.0,);"
         + "after:malisisdoors@[1.18.2-GTNH,);"
         + "after:programmablehatches@[0.1.3p55,);"
         + "after:MyCTMLib@[v1.2.5_28x,)";

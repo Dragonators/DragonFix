@@ -1,17 +1,26 @@
 package com.dragonfix.mixin.mixins.mattermanipulator;
 
+import java.util.Deque;
+
 import net.minecraft.block.Block;
 import net.minecraft.world.World;
 
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-import com.dragonfix.mattermanipulator.helper.DoorPlacementHelper;
+import com.dragonfix.mattermanipulator.helper.MatterManipulatorPlacementHelper;
+import com.recursive_pineapple.matter_manipulator.common.building.PendingBlock;
 import com.recursive_pineapple.matter_manipulator.common.building.PendingBuild;
 
 @Mixin(value = PendingBuild.class, remap = false)
 public abstract class PendingBuildMixin {
+
+    @Shadow(remap = false)
+    @Final
+    private Deque<PendingBlock> pendingBlocks;
 
     @Redirect(
         method = "tryPlaceBlocks",
@@ -21,7 +30,7 @@ public abstract class PendingBuildMixin {
             remap = true),
         remap = false)
     private boolean dragonfix$canPlaceDoor(Block block, World world, int x, int y, int z) {
-        return DoorPlacementHelper.canPlaceBlockAt(block, world, x, y, z);
+        return MatterManipulatorPlacementHelper.canPlaceBlockAt(pendingBlocks.peekFirst(), block, world, x, y, z);
     }
 
     @Redirect(
@@ -32,6 +41,6 @@ public abstract class PendingBuildMixin {
             remap = true),
         remap = false)
     private boolean dragonfix$placeDoor(World world, int x, int y, int z, Block block, int metadata, int flags) {
-        return DoorPlacementHelper.setBlock(world, x, y, z, block, metadata, flags);
+        return MatterManipulatorPlacementHelper.setBlock(world, x, y, z, block, metadata, flags);
     }
 }

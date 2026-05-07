@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 
 import com.dragonfix.mattermanipulator.analysis.DoorAnalysisResult;
 import com.dragonfix.mattermanipulator.bridge.PendingBlockDoorBridge;
+import com.dragonfix.mattermanipulator.helper.BiomesOPlentyPlacementHelper;
 import com.recursive_pineapple.matter_manipulator.GlobalMMConfig.DebugConfig;
 import com.recursive_pineapple.matter_manipulator.MMMod;
 import com.recursive_pineapple.matter_manipulator.common.building.BlockAnalyzer;
@@ -47,6 +48,7 @@ public abstract class BlockAnalyzerMixin {
             Block block = world.getBlock(voxel.x, voxel.y, voxel.z);
             int meta = world.getBlockMetadata(voxel.x, voxel.y, voxel.z);
             if (block instanceof BlockDoor && (meta & 8) != 0) continue;
+            if (BiomesOPlentyPlacementHelper.isGeneratedUpperHalf(block, meta)) continue;
 
             BlockSpec spec = BlockSpec.fromBlock(null, world, voxel.x, voxel.y, voxel.z);
 
@@ -67,6 +69,9 @@ public abstract class BlockAnalyzerMixin {
 
             if (pending.mp != null) {
                 pending.buildOrder = Math.max(pending.buildOrder, 100);
+            }
+            if (BiomesOPlentyPlacementHelper.isWorldDecor(block)) {
+                pending.buildOrder = Math.max(pending.buildOrder, 50);
             }
 
             pending.x -= a.x;

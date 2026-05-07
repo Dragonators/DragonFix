@@ -15,4 +15,12 @@ repositories {
         url = uri("https://jitpack.io")
     }
 
+    maven {
+        name = "CurseMaven"
+        url = uri("https://cursemaven.com")
+        content {
+            includeGroup("curse.maven")
+        }
+    }
+
 }

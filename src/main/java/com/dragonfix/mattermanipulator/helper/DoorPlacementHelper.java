@@ -10,11 +10,12 @@ public final class DoorPlacementHelper {
 
     private DoorPlacementHelper() {}
 
-    public static boolean canPlaceBlockAt(Block block, World world, int x, int y, int z) {
-        if (!(block instanceof BlockDoor) || !(world instanceof ProxiedWorldBridge bridge)) {
-            return block.canPlaceBlockAt(world, x, y, z);
-        }
+    public static boolean isDoor(Block block) {
+        return block instanceof BlockDoor;
+    }
 
+    public static boolean canPlaceDoorAt(Block block, World world, int x, int y, int z) {
+        if (!(world instanceof ProxiedWorldBridge bridge)) return block.canPlaceBlockAt(world, x, y, z);
         World realWorld = bridge.dragonfix$getWrappedWorld();
         if (y >= realWorld.getHeight() - 1) return false;
         if (!World.doesBlockHaveSolidTopSurface(world, x, y - 1, z)) return false;
@@ -23,10 +24,6 @@ public final class DoorPlacementHelper {
     }
 
     public static boolean setBlock(World world, int x, int y, int z, Block block, int metadata, int flags) {
-        if (!(block instanceof BlockDoor) || (metadata & 8) != 0) {
-            return world.setBlock(x, y, z, block, metadata, flags);
-        }
-
         boolean lower = world.setBlock(x, y, z, block, metadata & 7, 2);
         boolean upper = world.setBlock(x, y + 1, z, block, 8, 2);
 
