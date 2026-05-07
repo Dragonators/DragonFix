@@ -14,6 +14,9 @@ DragonFix 是一个面向 Minecraft 1.7.10 / Forge 的轻量级修复模组。
 
 ## 当前修复
 
+- Minecraft / Forge network
+  - 仅 `DragonFixMM` 通道使用 Forge VarShort 长度编码放宽客户端自定义载荷包的 32 KiB 限制；其他模组通道仍保持原版/Forge 行为。
+
 - Programmable Hatches / 可编程舱室
   - 修复 IO Hub 无法合成的问题。
   - 修复 IO Hub 无法被 OpenComputers 分析器识别节点的问题。

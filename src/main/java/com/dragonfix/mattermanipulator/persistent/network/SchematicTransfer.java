@@ -20,9 +20,9 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 public final class SchematicTransfer {
 
     public static final int MAX_SCHEMATIC_BYTES = 64 * 1024 * 1024;
-    private static final int MAX_CUSTOM_PAYLOAD_BYTES = 32767;
-    // MM's Network passes ByteBuf.array() to FML, so stay below Netty's 32 KiB backing-array growth.
-    private static final int TARGET_PACKET_BYTES = Math.min(16 * 1024, MAX_CUSTOM_PAYLOAD_BYTES);
+    private static final int MAX_CUSTOM_PAYLOAD_BYTES = 0x7FFFFF;
+    // DragonFixMM C17 packets use Forge VarShort lengths; keep chunks below the channel ceiling.
+    private static final int TARGET_PACKET_BYTES = Math.min(1024 * 1024, MAX_CUSTOM_PAYLOAD_BYTES);
     private static final int CHUNK_PACKET_OVERHEAD_BYTES = 1 + 2 + 16 + 4 + 4 + 4 + 2;
     private static final long TRANSFER_TIMEOUT_MS = 30L * 1000L;
 

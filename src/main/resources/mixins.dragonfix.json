@@ -4,7 +4,10 @@
   "plugin": "com.dragonfix.mixin.MixinPlugin",
   "package": "com.dragonfix.mixin.mixins",
   "refmap": "mixins.dragonfix.refmap.json",
-  "mixins": [],
+  "mixins": [
+    "forge.FMLProxyPacketPayloadMixin",
+    "minecraft.C17PacketCustomPayloadMixin"
+  ],
   "client": [
     "gtnhlib.ModelQuadMixin",
     "gtnhlib.VertexFormatMixin",
