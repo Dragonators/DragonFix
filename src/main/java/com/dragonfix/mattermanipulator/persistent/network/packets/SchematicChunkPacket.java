@@ -36,7 +36,7 @@ public abstract class SchematicChunkPacket extends FileNamePacket {
         buffer.writeInt(totalLength);
         buffer.writeInt(chunkIndex);
         buffer.writeInt(chunkCount);
-        buffer.writeShort(length);
+        buffer.writeInt(length);
         buffer.writeBytes(payload, bytesOffset, length);
     }
 
@@ -52,7 +52,7 @@ public abstract class SchematicChunkPacket extends FileNamePacket {
         packet.totalLength = buffer.readInt();
         packet.chunkIndex = buffer.readInt();
         packet.chunkCount = buffer.readInt();
-        int length = buffer.readUnsignedShort();
+        int length = buffer.readInt();
         packet.validateChunk(length);
         packet.bytes = new byte[length];
         packet.bytesOffset = 0;

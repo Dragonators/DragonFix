@@ -21,9 +21,9 @@ public final class SchematicTransfer {
 
     public static final int MAX_SCHEMATIC_BYTES = 64 * 1024 * 1024;
     private static final int MAX_CUSTOM_PAYLOAD_BYTES = 0x7FFFFF;
-    // DragonFixMM C17 packets use Forge VarShort lengths; keep chunks below the channel ceiling.
+    // DragonFixMM packets use Forge VarShort lengths; keep chunks well below the channel ceiling.
     private static final int TARGET_PACKET_BYTES = Math.min(1024 * 1024, MAX_CUSTOM_PAYLOAD_BYTES);
-    private static final int CHUNK_PACKET_OVERHEAD_BYTES = 1 + 2 + 16 + 4 + 4 + 4 + 2;
+    private static final int CHUNK_PACKET_OVERHEAD_BYTES = 1 + 2 + 16 + 4 + 4 + 4 + 4;
     private static final long TRANSFER_TIMEOUT_MS = 30L * 1000L;
 
     private static final Object2ObjectMap<LoadTransferKey, ChunkTransfer> incomingLoadTransfers = new Object2ObjectOpenHashMap<>();
