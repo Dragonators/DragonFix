@@ -65,6 +65,10 @@ public abstract class BlockAnalyzerMixin {
             ((PendingBlockDoorBridge) pending)
                 .dragonfix$setDoorAnalysis(DoorAnalysisResult.analyze(world, voxel.x, voxel.y, voxel.z, block, meta));
 
+            if (pending.mp != null) {
+                pending.buildOrder = Math.max(pending.buildOrder, 100);
+            }
+
             pending.x -= a.x;
             pending.y -= a.y;
             pending.z -= a.z;

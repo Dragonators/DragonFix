@@ -1,12 +1,15 @@
 package com.dragonfix.mixin.mixins.mattermanipulator;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.material.MaterialLiquid;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.gen.Invoker;
 
 import com.recursive_pineapple.matter_manipulator.common.building.InteropConstants;
+import com.recursive_pineapple.matter_manipulator.common.utils.Mods;
 
 import cpw.mods.fml.common.registry.GameRegistry;
 
@@ -18,6 +21,18 @@ public abstract class InteropConstantsMixin {
 
     @Unique
     private static boolean dragonfix$lookedUpLittleTilesBlock;
+
+    /**
+     * @author DragonFix
+     * @reason MatterManipulator 0.0.51 skips the ForgeMultipart container block before tile analysis can capture parts.
+     */
+    @Overwrite(remap = false)
+    public static boolean skipWhenCopying(Block block, int metadata) {
+        return block.getMaterial() instanceof MaterialLiquid
+            || Mods.GregTech.isModLoaded() && dragonfix$isGTRenderer(block)
+            || InteropConstants.BRIGHT_AIR.matches(block, metadata)
+            || InteropConstants.ARCANE_LAMP_LIGHT.matches(block, metadata);
+    }
 
     /**
      * @author DragonFix
@@ -38,5 +53,10 @@ public abstract class InteropConstantsMixin {
         }
 
         return dragonfix$littleTilesBlock;
+    }
+
+    @Invoker(value = "isGTRenderer", remap = false)
+    private static boolean dragonfix$isGTRenderer(Block block) {
+        throw new AssertionError();
     }
 }
