@@ -33,18 +33,14 @@ public final class PersistentSchematicState {
             }
         } else if (previousMode != PersistentSchematicMode.NONE && previousMode != mode) {
             bridge.dragonfix$capturePersistentSelection(previousMode);
+            bridge.dragonfix$capturePersistentSchematic(previousMode);
         } else if (previousMode == mode && mode != PersistentSchematicMode.NONE) {
             bridge.dragonfix$capturePersistentSelection(mode);
+            bridge.dragonfix$capturePersistentSchematic(mode);
         }
 
         bridge.dragonfix$setPersistentSchematicMode(mode);
-        bridge.dragonfix$setPersistentSchematicId(schematicId);
-
-        if (fileName == null || fileName.isEmpty()) {
-            bridge.dragonfix$setPersistentSchematicFile("");
-        } else {
-            bridge.dragonfix$setPersistentSchematicFile(PersistentSchematic.normalizeFileName(fileName));
-        }
+        bridge.dragonfix$activatePersistentSchematic(mode, fileName, schematicId);
 
         if (mode == PersistentSchematicMode.NONE) {
             bridge.dragonfix$activateNormalSelection(false);
@@ -82,9 +78,18 @@ public final class PersistentSchematicState {
         if (!MatterManipulatorStateAccess.isMatterManipulator(stack)) return false;
 
         MMState state = MatterManipulatorStateAccess.getState(stack);
-        if (!resetPasteSession(state)) return false;
+        PersistentSchematicConfigBridge bridge = (PersistentSchematicConfigBridge) state.config;
+        boolean changed = bridge.dragonfix$isPersistentSchematicPaste() ? resetPasteSession(state)
+            : clearStoredPasteSession(state);
 
+        if (!changed) return false;
         MatterManipulatorStateAccess.setState(stack, state);
+        return true;
+    }
+
+    public static boolean clearStoredPasteSession(MMState state) {
+        PersistentSchematicConfigBridge bridge = (PersistentSchematicConfigBridge) state.config;
+        bridge.dragonfix$clearStoredPersistentPasteSession();
         return true;
     }
 
@@ -99,9 +104,8 @@ public final class PersistentSchematicState {
             || state.config.action != PendingAction.MARK_PASTE;
 
         bridge.dragonfix$setPersistentSchematicMode(PersistentSchematicMode.PASTE);
-        bridge.dragonfix$setPersistentSchematicFile("");
-        bridge.dragonfix$setPersistentSchematicId(null);
         bridge.dragonfix$resetPersistentPasteSelection();
+        bridge.dragonfix$resetPersistentPasteSchematic();
         state.config.placeMode = PlaceMode.COPYING;
         state.config.action = PendingAction.MARK_PASTE;
 
@@ -115,6 +119,7 @@ public final class PersistentSchematicState {
         if (previousMode == PersistentSchematicMode.NONE) return false;
 
         bridge.dragonfix$capturePersistentSelection(previousMode);
+        bridge.dragonfix$capturePersistentSchematic(previousMode);
         bridge.dragonfix$activateNormalSelection(syncPersistentCopy && previousMode == PersistentSchematicMode.COPY);
         bridge.dragonfix$setPersistentSchematicMode(PersistentSchematicMode.NONE);
         bridge.dragonfix$setPersistentSchematicFile("");

@@ -18,6 +18,10 @@ public interface PersistentSchematicConfigBridge {
 
     void dragonfix$setPersistentSchematicId(UUID id);
 
+    void dragonfix$capturePersistentSchematic(PersistentSchematicMode mode);
+
+    void dragonfix$activatePersistentSchematic(PersistentSchematicMode mode, String fileName, UUID id);
+
     void dragonfix$captureNormalSelection();
 
     void dragonfix$capturePersistentSelection(PersistentSchematicMode mode);
@@ -29,6 +33,10 @@ public interface PersistentSchematicConfigBridge {
     void dragonfix$activatePersistentSelection(PersistentSchematicMode mode);
 
     void dragonfix$resetPersistentPasteSelection();
+
+    void dragonfix$resetPersistentPasteSchematic();
+
+    void dragonfix$clearStoredPersistentPasteSession();
 
     default boolean dragonfix$isPersistentSchematicCopy() {
         return dragonfix$getPersistentSchematicMode() == PersistentSchematicMode.COPY;

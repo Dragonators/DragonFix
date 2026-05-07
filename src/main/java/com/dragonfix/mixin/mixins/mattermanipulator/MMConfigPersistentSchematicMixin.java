@@ -56,6 +56,14 @@ public abstract class MMConfigPersistentSchematicMixin implements PersistentSche
     private UUID dragonfix$persistentSchematicId;
 
     @Unique
+    @SerializedName("dragonfixPersistentPasteFile")
+    private String dragonfix$persistentPasteFile = "";
+
+    @Unique
+    @SerializedName("dragonfixPersistentPasteId")
+    private UUID dragonfix$persistentPasteId;
+
+    @Unique
     @SerializedName("dragonfixNormalA")
     private Location dragonfix$normalCoordA;
 
@@ -165,6 +173,35 @@ public abstract class MMConfigPersistentSchematicMixin implements PersistentSche
     }
 
     @Override
+    public void dragonfix$capturePersistentSchematic(PersistentSchematicMode mode) {
+        if (mode == PersistentSchematicMode.PASTE) {
+            dragonfix$persistentPasteFile = dragonfix$persistentSchematicFile;
+            dragonfix$persistentPasteId = dragonfix$persistentSchematicId;
+        }
+    }
+
+    @Override
+    public void dragonfix$activatePersistentSchematic(PersistentSchematicMode mode, String fileName, UUID id) {
+        if (mode == PersistentSchematicMode.PASTE) {
+            if (fileName == null || fileName.isEmpty()) {
+                dragonfix$persistentSchematicFile = dragonfix$persistentPasteFile == null ? ""
+                    : dragonfix$persistentPasteFile;
+                dragonfix$persistentSchematicId = dragonfix$persistentPasteId;
+            } else {
+                dragonfix$persistentSchematicFile = PersistentSchematic.normalizeFileName(fileName);
+                dragonfix$persistentSchematicId = id;
+                dragonfix$persistentPasteFile = dragonfix$persistentSchematicFile;
+                dragonfix$persistentPasteId = id;
+            }
+            return;
+        }
+
+        dragonfix$persistentSchematicFile = fileName == null || fileName.isEmpty() ? ""
+            : PersistentSchematic.normalizeFileName(fileName);
+        dragonfix$persistentSchematicId = id;
+    }
+
+    @Override
     public void dragonfix$captureNormalSelection() {
         dragonfix$normalCoordA = dragonfix$copy(coordA);
         dragonfix$normalCoordB = dragonfix$copy(coordB);
@@ -225,6 +262,22 @@ public abstract class MMConfigPersistentSchematicMixin implements PersistentSche
         coordB = null;
         coordC = null;
         arraySpan = null;
+    }
+
+    @Override
+    public void dragonfix$resetPersistentPasteSchematic() {
+        dragonfix$persistentPasteFile = "";
+        dragonfix$persistentPasteId = null;
+        dragonfix$persistentSchematicFile = "";
+        dragonfix$persistentSchematicId = null;
+    }
+
+    @Override
+    public void dragonfix$clearStoredPersistentPasteSession() {
+        dragonfix$persistentPaste = null;
+        dragonfix$persistentArraySpan = null;
+        dragonfix$persistentPasteFile = "";
+        dragonfix$persistentPasteId = null;
     }
 
     @Unique
