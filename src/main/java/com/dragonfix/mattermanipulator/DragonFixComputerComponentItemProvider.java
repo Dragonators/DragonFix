@@ -13,6 +13,7 @@ import com.recursive_pineapple.matter_manipulator.common.utils.BigItemStack;
 import it.unimi.dsi.fastutil.booleans.BooleanObjectImmutablePair;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import li.cil.oc.api.API;
+import li.cil.oc.api.detail.ItemInfo;
 
 /**
  * Provides equivalent OpenComputers components without requiring copied address-bearing NBT.
@@ -30,13 +31,11 @@ public class DragonFixComputerComponentItemProvider implements IItemProvider {
     private static final IntOpenHashSet FUZZY_COMPONENT_DAMAGE = new IntOpenHashSet();
 
     static {
-        for (String name : new String[] { "cpu1", "cpu2", "cpu3", "dataCard1", "dataCard2", "dataCard3", "internetCard",
-            "lanCard", "wlanCard1", "wlanCard2", "linkedCard", "redstoneCard1", "redstoneCard2", "tpsCard", "debugCard",
-            "graphicsCard1", "graphicsCard2", "graphicsCard3", "ram1", "ram2", "ram3", "ram4", "ram5", "ram6", }) {
-            FUZZY_COMPONENT_DAMAGE.add(
-                API.items.get(name)
-                    .createItemStack(1)
-                    .getItemDamage());
+        for (String name : new String[] { "cpu1", "cpu2", "cpu3", "apu1", "apu2", "apuCreative", "dataCard1",
+            "dataCard2", "dataCard3", "internetCard", "lanCard", "wlanCard1", "wlanCard2", "linkedCard",
+            "redstoneCard1", "redstoneCard2", "tpsCard", "debugCard", "graphicsCard1", "graphicsCard2", "graphicsCard3",
+            "ram1", "ram2", "ram3", "ram4", "ram5", "ram6", }) {
+            addFuzzyComponent(name);
         }
     }
 
@@ -58,8 +57,26 @@ public class DragonFixComputerComponentItemProvider implements IItemProvider {
     }
 
     public static DragonFixComputerComponentItemProvider fromStack(ItemStack stack) {
-        if (stack == null || API.items.get(stack) == null) return null;
+        if (stack == null || API.items.get(stack) == null || !isHandledComponent(stack)) return null;
         return new DragonFixComputerComponentItemProvider(withoutAddress(stack));
+    }
+
+    private static void addFuzzyComponent(String name) {
+        ItemInfo item = API.items.get(name);
+        if (item != null) {
+            FUZZY_COMPONENT_DAMAGE.add(
+                item.createItemStack(1)
+                    .getItemDamage());
+        }
+    }
+
+    private static boolean isHandledComponent(ItemStack stack) {
+        int damage = stack.getItemDamage();
+        return FUZZY_COMPONENT_DAMAGE.contains(damage) || damage == EEPROM.getItemDamage()
+            || damage == HDD_1.getItemDamage()
+            || damage == HDD_2.getItemDamage()
+            || damage == HDD_3.getItemDamage()
+            || damage == FLOPPY.getItemDamage();
     }
 
     @Override

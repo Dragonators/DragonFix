@@ -43,7 +43,7 @@ DragonFix 是一个面向 Minecraft 1.7.10 / Forge 的轻量级修复模组。
   - 修复 Forge Microblocks 的 ForgeMultipart 容器方块在区域分析阶段被 MatterManipulator 0.0.51-GTNH 当作跳过方块，导致 `.mmschematic` 导出和普通复制都缺少 microblock parts 的问题；同时让 multipart 在普通支撑方块之后建造。
   - 修复 Biomes O' Plenty 植物在 MatterManipulator 建造预检中因目标 metadata 尚未写入而无法放置的问题，并避免重复复制 BOP 双格植物上半部分。
   - 修复 OpenComputers 可旋转方块复制/粘贴时朝向未按 MM 变换同步的问题。
-  - 修复 OpenComputers 组件带地址或数据 NBT 时，复制/粘贴库存可能错误要求原始带地址物品的问题。
+  - 修复 OpenComputers 组件带地址或数据 NBT 时，复制/粘贴库存可能错误要求原始带地址物品的问题；同时补齐 APU 系列组件的等价消耗，避免创造模式粘贴时错误提示缺少 APU。
   - 修复 Avaritiaddons 梦魇工作台右侧 ghost 标记区的复制/恢复。
   - 修复 AE2 物质聚合器存储组件槽位的复制/恢复。
   - 修复 Ender IO 灵魂绑定器电容槽位的复制/恢复。
