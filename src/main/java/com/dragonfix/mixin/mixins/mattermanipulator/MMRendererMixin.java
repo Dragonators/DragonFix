@@ -31,6 +31,8 @@ import com.dragonfix.mattermanipulator.bridge.PendingBlockLittleTilesBridge;
 import com.dragonfix.mattermanipulator.bridge.PersistentSchematicConfigBridge;
 import com.dragonfix.mattermanipulator.helper.MatterManipulatorStateAccess;
 import com.dragonfix.mattermanipulator.persistent.PersistentSchematic;
+import com.dragonfix.mattermanipulator.persistent.PersistentSchematicState;
+import com.dragonfix.mattermanipulator.persistent.network.PersistentSchematicNetwork;
 import com.gtnewhorizon.gtnhlib.util.AboveHotbarHUD;
 import com.gtnewhorizon.gtnhlib.util.CoordinatePacker;
 import com.recursive_pineapple.matter_manipulator.GlobalMMConfig.RenderingConfig;
@@ -133,6 +135,14 @@ public abstract class MMRendererMixin {
         PersistentSchematicConfigBridge bridge = (PersistentSchematicConfigBridge) state.config;
 
         if (!bridge.dragonfix$isPersistentSchematicCopy() && !bridge.dragonfix$isPersistentSchematicPaste()) return;
+
+        if (bridge.dragonfix$isPersistentSchematicPaste() && dragonfix$isStalePersistentSchematicPaste(bridge)) {
+            PersistentSchematicState.resetPasteSession(state);
+            MatterManipulatorStateAccess.setState(held, state);
+            PersistentSchematicNetwork.sendResetPasteSessionToServer();
+            dragonfix$clearStaleHints();
+            return;
+        }
 
         dragonfix$renderPersistentSchematic(event, player, state, manipulator, bridge);
         ci.cancel();
@@ -340,7 +350,8 @@ public abstract class MMRendererMixin {
                 BoxRenderer.INSTANCE.drawAround(copyDeltas.toBoundingBox(), new Vector3f(0.15f, 0.6f, 0.75f));
             }
 
-            if (bridge.dragonfix$isPersistentSchematicPaste() && isPasteValid) {
+            if (bridge.dragonfix$isPersistentSchematicPaste() && isPasteValid
+                && dragonfix$hasRenderablePersistentSchematic(bridge)) {
                 try {
                     pasteDeltas = PersistentSchematic.load(bridge.dragonfix$getPersistentSchematicFile())
                         .getPasteVisualDeltas(
@@ -365,6 +376,20 @@ public abstract class MMRendererMixin {
         } finally {
             BoxRenderer.INSTANCE.finish();
         }
+    }
+
+    @Unique
+    private static boolean dragonfix$isStalePersistentSchematicPaste(PersistentSchematicConfigBridge bridge) {
+        return bridge.dragonfix$getPersistentSchematicId() != null
+            && !PersistentSchematicNetwork.isClientLoadedSchematic(bridge.dragonfix$getPersistentSchematicId());
+    }
+
+    @Unique
+    private static boolean dragonfix$hasRenderablePersistentSchematic(PersistentSchematicConfigBridge bridge) {
+        return !bridge.dragonfix$getPersistentSchematicFile()
+            .isEmpty()
+            && (bridge.dragonfix$getPersistentSchematicId() == null
+                || PersistentSchematicNetwork.isClientLoadedSchematic(bridge.dragonfix$getPersistentSchematicId()));
     }
 
     @Unique

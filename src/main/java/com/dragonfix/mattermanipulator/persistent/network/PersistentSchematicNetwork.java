@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -18,10 +21,10 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
 
 import com.dragonfix.DragonFix;
-import com.dragonfix.mattermanipulator.bridge.PersistentSchematicConfigBridge;
 import com.dragonfix.mattermanipulator.helper.MatterManipulatorStateAccess;
 import com.dragonfix.mattermanipulator.persistent.PersistentSchematic;
 import com.dragonfix.mattermanipulator.persistent.PersistentSchematicMode;
+import com.dragonfix.mattermanipulator.persistent.PersistentSchematicState;
 import com.dragonfix.mattermanipulator.persistent.network.packets.LoadPacket;
 import com.dragonfix.mattermanipulator.persistent.network.packets.LoadRequestPacket;
 import com.dragonfix.mattermanipulator.persistent.network.packets.LoadResponsePacket;
@@ -31,7 +34,6 @@ import com.dragonfix.mattermanipulator.persistent.network.packets.SavePacket;
 import com.gtnewhorizon.gtnhlib.util.ServerThreadUtil;
 import com.recursive_pineapple.matter_manipulator.MMMod;
 import com.recursive_pineapple.matter_manipulator.common.items.manipulator.MMState;
-import com.recursive_pineapple.matter_manipulator.common.items.manipulator.MMState.PlaceMode;
 import com.recursive_pineapple.matter_manipulator.common.networking.MMPacket;
 import com.recursive_pineapple.matter_manipulator.common.networking.Network;
 import com.recursive_pineapple.matter_manipulator.common.utils.MMUtils;
@@ -56,6 +58,7 @@ public final class PersistentSchematicNetwork {
         return thread;
     });
     private static final PersistentSchematicCache uploadedSchematicCache = new PersistentSchematicCache();
+    private static final Set<UUID> clientLoadedSchematics = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     private PersistentSchematicNetwork() {}
 
@@ -82,6 +85,14 @@ public final class PersistentSchematicNetwork {
         channel.sendToServer(packet);
     }
 
+    public static void sendResetPasteSessionToServer() {
+        init();
+        ModePacket packet = new ModePacket();
+        packet.mode = PersistentSchematicMode.PASTE;
+        packet.resetPasteSession = true;
+        channel.sendToServer(packet);
+    }
+
     public static void sendSaveToServer(String fileName) {
         init();
         SavePacket packet = new SavePacket();
@@ -98,6 +109,7 @@ public final class PersistentSchematicNetwork {
                 byte[] bytes = PersistentSchematic.readBytes(normalizedFileName);
                 UUID contentId = contentId(bytes);
 
+                rememberClientLoadedSchematic(contentId);
                 SchematicTransfer.rememberPendingUpload(contentId, normalizedFileName, bytes);
 
                 sendLoadRequestToServer(normalizedFileName, contentId);
@@ -118,6 +130,16 @@ public final class PersistentSchematicNetwork {
 
     public static void cacheUploadedSchematic(UUID id, UUID ownerId, PersistentSchematic schematic) {
         uploadedSchematicCache.put(id, ownerId, schematic);
+    }
+
+    public static void rememberClientLoadedSchematic(UUID id) {
+        if (id != null) {
+            clientLoadedSchematics.add(id);
+        }
+    }
+
+    public static boolean isClientLoadedSchematic(UUID id) {
+        return id != null && clientLoadedSchematics.contains(id);
     }
 
     public static @Nullable PersistentSchematic getAvailableSchematic(UUID id, String fileName, World world)
@@ -178,11 +200,7 @@ public final class PersistentSchematicNetwork {
         if (!MatterManipulatorStateAccess.isMatterManipulator(held)) return;
 
         MMState state = MatterManipulatorStateAccess.getState(held);
-        PersistentSchematicConfigBridge config = (PersistentSchematicConfigBridge) state.config;
-        config.dragonfix$setPersistentSchematicMode(PersistentSchematicMode.PASTE);
-        config.dragonfix$setPersistentSchematicFile(PersistentSchematic.normalizeFileName(fileName));
-        config.dragonfix$setPersistentSchematicId(id);
-        state.config.placeMode = PlaceMode.COPYING;
+        PersistentSchematicState.enterMode(state, player.worldObj, PersistentSchematicMode.PASTE, fileName, id);
         MatterManipulatorStateAccess.setState(held, state);
     }
 

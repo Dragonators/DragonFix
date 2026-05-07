@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.dragonfix.mattermanipulator.bridge.PersistentSchematicConfigBridge;
 import com.dragonfix.mattermanipulator.persistent.PersistentSchematic;
+import com.dragonfix.mattermanipulator.persistent.PersistentSchematicState;
 import com.dragonfix.mattermanipulator.persistent.network.PersistentSchematicNetwork;
 import com.recursive_pineapple.matter_manipulator.common.items.manipulator.ItemMatterManipulator;
 import com.recursive_pineapple.matter_manipulator.common.items.manipulator.MMState;
@@ -20,6 +21,29 @@ import com.recursive_pineapple.matter_manipulator.common.utils.MMUtils;
 
 @Mixin(value = ItemMatterManipulator.class, remap = false)
 public abstract class ItemMatterManipulatorPersistentCommonMixin {
+
+    @Inject(method = "onUsingTick", at = @At("HEAD"), cancellable = true, remap = false)
+    private void dragonfix$stopMissingPersistentSchematicBuild(ItemStack stack, EntityPlayer player, int count,
+        CallbackInfo ci) {
+        if (player.worldObj.isRemote || Integer.MAX_VALUE - count != 1) return;
+
+        MMState state = ItemMatterManipulator.getState(stack);
+        PersistentSchematicConfigBridge bridge = (PersistentSchematicConfigBridge) state.config;
+        if (!bridge.dragonfix$isPersistentSchematicPaste()) return;
+
+        if (bridge.dragonfix$getPersistentSchematicId() != null && PersistentSchematicNetwork.getUploadedSchematic(
+            bridge.dragonfix$getPersistentSchematicId(),
+            PersistentSchematicNetwork.playerId(player)) != null) {
+            return;
+        }
+
+        PersistentSchematicState.resetPasteSession(state);
+        ItemMatterManipulator.setState(stack, state);
+        player.stopUsingItem();
+        MMUtils
+            .sendErrorToPlayer(player, "Persistent Matter Manipulator schematic is no longer uploaded; load it again.");
+        ci.cancel();
+    }
 
     @Inject(method = "onMarkArray", at = @At("HEAD"), cancellable = true, remap = false)
     private void dragonfix$markPersistentSchematicArray(World world, EntityPlayer player, ItemStack stack,

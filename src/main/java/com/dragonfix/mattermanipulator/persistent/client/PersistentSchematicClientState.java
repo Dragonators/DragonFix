@@ -4,12 +4,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 
-import com.dragonfix.mattermanipulator.bridge.PersistentSchematicConfigBridge;
 import com.dragonfix.mattermanipulator.helper.MatterManipulatorStateAccess;
-import com.dragonfix.mattermanipulator.persistent.PersistentSchematic;
 import com.dragonfix.mattermanipulator.persistent.PersistentSchematicMode;
+import com.dragonfix.mattermanipulator.persistent.PersistentSchematicState;
 import com.recursive_pineapple.matter_manipulator.common.items.manipulator.MMState;
-import com.recursive_pineapple.matter_manipulator.common.items.manipulator.MMState.PlaceMode;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -27,19 +25,7 @@ public final class PersistentSchematicClientState {
         if (!MatterManipulatorStateAccess.isMatterManipulator(held)) return;
 
         MMState state = MatterManipulatorStateAccess.getState(held);
-        PersistentSchematicConfigBridge bridge = (PersistentSchematicConfigBridge) state.config;
-
-        bridge.dragonfix$setPersistentSchematicMode(mode);
-        bridge.dragonfix$setPersistentSchematicId(null);
-
-        if (fileName != null) {
-            bridge.dragonfix$setPersistentSchematicFile(PersistentSchematic.normalizeFileName(fileName));
-        }
-
-        if (mode != PersistentSchematicMode.NONE) {
-            state.config.placeMode = PlaceMode.COPYING;
-        }
-
+        PersistentSchematicState.enterMode(state, player.worldObj, mode, fileName, null);
         MatterManipulatorStateAccess.setState(held, state);
     }
 }

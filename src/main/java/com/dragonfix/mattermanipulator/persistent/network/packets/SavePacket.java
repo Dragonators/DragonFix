@@ -4,9 +4,9 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.dragonfix.DragonFix;
-import com.dragonfix.mattermanipulator.bridge.PersistentSchematicConfigBridge;
 import com.dragonfix.mattermanipulator.persistent.PersistentSchematic;
 import com.dragonfix.mattermanipulator.persistent.PersistentSchematicMode;
+import com.dragonfix.mattermanipulator.persistent.PersistentSchematicState;
 import com.dragonfix.mattermanipulator.persistent.network.PersistentSchematicNetwork;
 import com.dragonfix.mattermanipulator.persistent.network.SchematicTransfer;
 import com.recursive_pineapple.matter_manipulator.common.items.manipulator.MMState;
@@ -29,11 +29,7 @@ public class SavePacket extends FileNamePacket {
         PersistentSchematic schematic = PersistentSchematic
             .capture(player.worldObj, state.config.coordA, state.config.coordB);
 
-        PersistentSchematicConfigBridge config = (PersistentSchematicConfigBridge) state.config;
-        config.dragonfix$setPersistentSchematicMode(PersistentSchematicMode.COPY);
-        config.dragonfix$setPersistentSchematicFile(PersistentSchematic.normalizeFileName(fileName));
-        config.dragonfix$setPersistentSchematicId(null);
-        state.config.placeMode = MMState.PlaceMode.COPYING;
+        PersistentSchematicState.enterMode(state, player.worldObj, PersistentSchematicMode.COPY, fileName, null);
 
         String schematicFileName = PersistentSchematic.normalizeFileName(fileName);
         int blocks = schematic.blocks.size();
