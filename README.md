@@ -36,23 +36,24 @@ DragonFix 是一个面向 Minecraft 1.7.10 / Forge 的轻量级修复模组。
   - 修复使用 GTNHLib 0.9.x（Angelica 2.x 必需版本）时，物质操纵者无法渲染选区的问题。
   - 修复旧版 `QuadView` 调用 GTNHLib `VertexFormat.writeQuad` 时可能因 CEL 包名迁移导致的二进制兼容问题。
 - MatterManipulator
-  - 为 MatterManipulator 0.0.51-GTNH 补充 LittleTiles 方块复制、旋转和建造时的 tile 数据适配。
-  - 修复复制带小数角度的方块属性后，旋转/镜像时 `rotation` 属性被整数解析截断或解析失败的问题。
+  - 为 MatterManipulator 新增 LittleTiles 方块复制、旋转和建造时的 tile 数据适配。
   - 为 Carpenter's Blocks 方块补充复制、旋转和建造时的 data/covers 适配。
   - 为 ForgeMultipart / Project Red multipart 方块补充复制、旋转、物品消耗、建造和预览适配。
-  - 修复 Forge Microblocks 的 ForgeMultipart 容器方块在区域分析阶段被 MatterManipulator 0.0.51-GTNH 当作跳过方块，导致 `.mmschematic` 导出和普通复制都缺少 microblock parts 的问题；同时让 multipart 在普通支撑方块之后建造。
-  - 修复 Biomes O' Plenty 植物在 MatterManipulator 建造预检中因目标 metadata 尚未写入而无法放置的问题，并避免重复复制 BOP 双格植物上半部分。
+  - 修复 Forge Microblocks 的 ForgeMultipart 容器方块在区域分析阶段被当作跳过方块的问题；同时让 multipart 在普通支撑方块之后建造。
+  - 修复 Biomes O' Plenty 植物在 MatterManipulator 建造预检流程中的问题。
   - 修复 OpenComputers 可旋转方块复制/粘贴时朝向未按 MM 变换同步的问题。
-  - 修复 OpenComputers 组件带地址或数据 NBT 时，复制/粘贴库存可能错误要求原始带地址物品的问题；同时补齐 APU 系列组件的等价消耗，避免创造模式粘贴时错误提示缺少 APU。
-  - 修复 Avaritiaddons 梦魇工作台右侧 ghost 标记区的复制/恢复。
+  - 修复 OpenComputers 组件带地址或数据 NBT 时，复制/粘贴库存可能错误要求原始带地址物品的问题。
+  - 修复 OpenComputers 无法粘贴 APU 系列组件的问题。
+  - 修复 Avaritiaddons 梦魇工作台右侧标记区的复制/恢复。
   - 修复 AE2 物质聚合器存储组件槽位的复制/恢复。
   - 修复 Ender IO 灵魂绑定器电容槽位的复制/恢复。
   - 修复 OpenComputers 微控制器在 MatterManipulator 持久选区粘贴时组件列表未同步写回方块物品，或组件使用不稳定数字物品 ID 导致 CPU/内存等组件丢失的问题。
   - 修复 LittleTiles 与 ArchitectureCraft 方块在 MatterManipulator 预览提示中无法按实际材料/小方块形状显示的问题。
   - 修复 ArchitectureCraft 真实形状预览可能超出 MatterManipulator 原始 hint VBO 预分配容量，导致整批预览不渲染的问题。
   - 修复 ArchitectureCraft 方块在 MatterManipulator 复制结构旋转/镜像后未同步更新朝向与偏移的问题。
-  - 修复 MatterManipulator 将门上半部分分析成 air 并按单格方块粘贴，导致门检查高度、缺失上半部分并掉落的问题。
-  - 修复 MalisisDoors 自定义门在 MatterManipulator 持久选区粘贴时缺少门材质 NBT 导致服务端报错的问题。
+  - 修复 MatterManipulator 对门进行复制粘贴处理中的问题。
+  - 修复 MalisisDoors 自定义门在复制粘贴时缺少门材质 NBT 的问题。
+  - 修复带小数角度的方块属性旋转/镜像时无法解析的问题。
   - 复用 MatterManipulator 选区 BoxRenderer 的 VBO，减少每帧渲染选区时的缓冲对象创建。
   - 增加 MatterManipulator 持久选区文件功能，可将分析后的 `PendingBlock` 数据保存为 `.mmschematic` 并跨存档加载粘贴。
 
