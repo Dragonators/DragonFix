@@ -22,12 +22,18 @@ import com.dragonfix.mattermanipulator.analysis.CarpentersBlocksAnalysisResult;
 import com.dragonfix.mattermanipulator.analysis.DragonFixMultipartAnalysisResult;
 import com.dragonfix.mattermanipulator.analysis.EnderIOSoulBinderAnalysisResult;
 import com.dragonfix.mattermanipulator.analysis.LittleTilesAnalysisResult;
+import com.dragonfix.mattermanipulator.analysis.MalisisCustomDoorAnalysisResult;
+import com.dragonfix.mattermanipulator.analysis.OpenComputersMicrocontrollerAnalysisResult;
 import com.dragonfix.mattermanipulator.bridge.PendingBlockAvaritiaddonsBridge;
+import com.dragonfix.mattermanipulator.bridge.PendingBlockDoorBridge;
 import com.dragonfix.mattermanipulator.bridge.PendingBlockLittleTilesBridge;
 import com.dragonfix.mattermanipulator.bridge.PendingBlockMachineInventoryBridge;
+import com.dragonfix.mattermanipulator.bridge.PendingBlockMalisisDoorsBridge;
+import com.dragonfix.mattermanipulator.bridge.PendingBlockOpenComputersBridge;
 import com.recursive_pineapple.matter_manipulator.common.building.CopyableProperty;
 import com.recursive_pineapple.matter_manipulator.common.building.ITileAnalysisIntegration;
 import com.recursive_pineapple.matter_manipulator.common.building.ImmutableBlockSpec;
+import com.recursive_pineapple.matter_manipulator.common.building.InventoryAnalysis;
 import com.recursive_pineapple.matter_manipulator.common.building.PendingBlock;
 import com.recursive_pineapple.matter_manipulator.common.items.manipulator.Transform;
 
@@ -47,7 +53,8 @@ import cpw.mods.fml.common.Loader;
  */
 @Mixin(value = PendingBlock.class, remap = false)
 public abstract class PendingBlockMixin
-    implements PendingBlockLittleTilesBridge, PendingBlockAvaritiaddonsBridge, PendingBlockMachineInventoryBridge {
+    implements PendingBlockLittleTilesBridge, PendingBlockAvaritiaddonsBridge, PendingBlockMachineInventoryBridge,
+    PendingBlockMalisisDoorsBridge, PendingBlockOpenComputersBridge, PendingBlockDoorBridge {
 
     @Unique
     private static final double dragonfix$ROTATION_EPSILON = 1e-4d;
@@ -70,6 +77,9 @@ public abstract class PendingBlockMixin
     @Shadow(remap = false)
     public ITileAnalysisIntegration mp;
 
+    @Shadow(remap = false)
+    public InventoryAnalysis inventory;
+
     @Unique
     private ITileAnalysisIntegration dragonfix$littleTilesAnalysis;
 
@@ -84,6 +94,15 @@ public abstract class PendingBlockMixin
 
     @Unique
     private ITileAnalysisIntegration dragonfix$enderIOSoulBinderAnalysis;
+
+    @Unique
+    private ITileAnalysisIntegration dragonfix$malisisCustomDoorAnalysis;
+
+    @Unique
+    private ITileAnalysisIntegration dragonfix$openComputersMicrocontrollerAnalysis;
+
+    @Unique
+    private ITileAnalysisIntegration dragonfix$doorAnalysis;
 
     @Unique
     private String dragonfix$rotationBeforeTransform;
@@ -114,6 +133,18 @@ public abstract class PendingBlockMixin
             cir.getReturnValue()
                 .add(dragonfix$carpentersBlocksAnalysis);
         }
+        if (dragonfix$malisisCustomDoorAnalysis != null) {
+            cir.getReturnValue()
+                .add(dragonfix$malisisCustomDoorAnalysis);
+        }
+        if (dragonfix$openComputersMicrocontrollerAnalysis != null) {
+            cir.getReturnValue()
+                .add(dragonfix$openComputersMicrocontrollerAnalysis);
+        }
+        if (dragonfix$doorAnalysis != null) {
+            cir.getReturnValue()
+                .add(dragonfix$doorAnalysis);
+        }
     }
 
     @Inject(method = "reset", at = @At("HEAD"), remap = false)
@@ -124,6 +155,9 @@ public abstract class PendingBlockMixin
         dragonfix$enderIOSoulBinderAnalysis = null;
         dragonfix$littleTilesAnalysis = null;
         dragonfix$carpentersBlocksAnalysis = null;
+        dragonfix$malisisCustomDoorAnalysis = null;
+        dragonfix$openComputersMicrocontrollerAnalysis = null;
+        dragonfix$doorAnalysis = null;
     }
 
     @Inject(
@@ -159,6 +193,23 @@ public abstract class PendingBlockMixin
             ((PendingBlockMachineInventoryBridge) cir.getReturnValue())
                 .dragonfix$setEnderIOSoulBinderAnalysis(analysis.clone());
         }
+
+        analysis = dragonfix$malisisCustomDoorAnalysis;
+        if (analysis != null) {
+            ((PendingBlockMalisisDoorsBridge) cir.getReturnValue())
+                .dragonfix$setMalisisCustomDoorAnalysis(analysis.clone());
+        }
+
+        analysis = dragonfix$openComputersMicrocontrollerAnalysis;
+        if (analysis != null) {
+            ((PendingBlockOpenComputersBridge) cir.getReturnValue())
+                .dragonfix$setOpenComputersMicrocontrollerAnalysis(analysis.clone());
+        }
+
+        analysis = dragonfix$doorAnalysis;
+        if (analysis != null) {
+            ((PendingBlockDoorBridge) cir.getReturnValue()).dragonfix$setDoorAnalysis(analysis.clone());
+        }
     }
 
     @Inject(method = "analyze", at = @At("RETURN"), remap = false)
@@ -181,6 +232,15 @@ public abstract class PendingBlockMixin
         }
         if (te != null && (flags & dragonfix$ANALYZE_CB) != 0) {
             dragonfix$carpentersBlocksAnalysis = CarpentersBlocksAnalysisResult.analyze(te);
+        }
+        if (te != null && Loader.isModLoaded("malisisdoors")) {
+            dragonfix$malisisCustomDoorAnalysis = MalisisCustomDoorAnalysisResult.analyze(te);
+        }
+        if (te != null && Loader.isModLoaded("OpenComputers")) {
+            dragonfix$openComputersMicrocontrollerAnalysis = OpenComputersMicrocontrollerAnalysisResult.analyze(te);
+            if (dragonfix$openComputersMicrocontrollerAnalysis != null) {
+                inventory = null;
+            }
         }
     }
 
@@ -244,6 +304,15 @@ public abstract class PendingBlockMixin
         if (dragonfix$enderIOSoulBinderAnalysis != null) {
             dragonfix$enderIOSoulBinderAnalysis.migrate();
         }
+        if (dragonfix$malisisCustomDoorAnalysis != null) {
+            dragonfix$malisisCustomDoorAnalysis.migrate();
+        }
+        if (dragonfix$openComputersMicrocontrollerAnalysis != null) {
+            dragonfix$openComputersMicrocontrollerAnalysis.migrate();
+        }
+        if (dragonfix$doorAnalysis != null) {
+            dragonfix$doorAnalysis.migrate();
+        }
     }
 
     @Inject(method = "hashCode", at = @At("RETURN"), cancellable = true, remap = false)
@@ -263,6 +332,14 @@ public abstract class PendingBlockMixin
         cir.setReturnValue(
             31 * cir.getReturnValue()
                 + (dragonfix$enderIOSoulBinderAnalysis == null ? 0 : dragonfix$enderIOSoulBinderAnalysis.hashCode()));
+        cir.setReturnValue(
+            31 * cir.getReturnValue()
+                + (dragonfix$malisisCustomDoorAnalysis == null ? 0 : dragonfix$malisisCustomDoorAnalysis.hashCode()));
+        cir.setReturnValue(
+            31 * cir.getReturnValue() + (dragonfix$openComputersMicrocontrollerAnalysis == null ? 0
+                : dragonfix$openComputersMicrocontrollerAnalysis.hashCode()));
+        cir.setReturnValue(
+            31 * cir.getReturnValue() + (dragonfix$doorAnalysis == null ? 0 : dragonfix$doorAnalysis.hashCode()));
     }
 
     @Inject(method = "equals", at = @At("RETURN"), cancellable = true, remap = false)
@@ -314,6 +391,35 @@ public abstract class PendingBlockMixin
         } else {
             cir.setReturnValue(dragonfix$enderIOSoulBinderAnalysis.equals(otherEnderIO));
         }
+
+        if (!cir.getReturnValueZ()) return;
+
+        ITileAnalysisIntegration otherMalisisDoor = ((PendingBlockMalisisDoorsBridge) obj)
+            .dragonfix$getMalisisCustomDoorAnalysis();
+        if (dragonfix$malisisCustomDoorAnalysis == null) {
+            cir.setReturnValue(otherMalisisDoor == null);
+        } else {
+            cir.setReturnValue(dragonfix$malisisCustomDoorAnalysis.equals(otherMalisisDoor));
+        }
+
+        if (!cir.getReturnValueZ()) return;
+
+        ITileAnalysisIntegration otherMicrocontroller = ((PendingBlockOpenComputersBridge) obj)
+            .dragonfix$getOpenComputersMicrocontrollerAnalysis();
+        if (dragonfix$openComputersMicrocontrollerAnalysis == null) {
+            cir.setReturnValue(otherMicrocontroller == null);
+        } else {
+            cir.setReturnValue(dragonfix$openComputersMicrocontrollerAnalysis.equals(otherMicrocontroller));
+        }
+
+        if (!cir.getReturnValueZ()) return;
+
+        ITileAnalysisIntegration otherDoor = ((PendingBlockDoorBridge) obj).dragonfix$getDoorAnalysis();
+        if (dragonfix$doorAnalysis == null) {
+            cir.setReturnValue(otherDoor == null);
+        } else {
+            cir.setReturnValue(dragonfix$doorAnalysis.equals(otherDoor));
+        }
     }
 
     @Override
@@ -364,6 +470,39 @@ public abstract class PendingBlockMixin
     @Override
     public void dragonfix$setEnderIOSoulBinderAnalysis(ITileAnalysisIntegration analysis) {
         dragonfix$enderIOSoulBinderAnalysis = analysis;
+    }
+
+    @Override
+    public ITileAnalysisIntegration dragonfix$getMalisisCustomDoorAnalysis() {
+        return dragonfix$malisisCustomDoorAnalysis;
+    }
+
+    @Override
+    public void dragonfix$setMalisisCustomDoorAnalysis(ITileAnalysisIntegration analysis) {
+        dragonfix$malisisCustomDoorAnalysis = analysis;
+    }
+
+    @Override
+    public ITileAnalysisIntegration dragonfix$getOpenComputersMicrocontrollerAnalysis() {
+        return dragonfix$openComputersMicrocontrollerAnalysis;
+    }
+
+    @Override
+    public void dragonfix$setOpenComputersMicrocontrollerAnalysis(ITileAnalysisIntegration analysis) {
+        dragonfix$openComputersMicrocontrollerAnalysis = analysis;
+        if (analysis != null) {
+            inventory = null;
+        }
+    }
+
+    @Override
+    public ITileAnalysisIntegration dragonfix$getDoorAnalysis() {
+        return dragonfix$doorAnalysis;
+    }
+
+    @Override
+    public void dragonfix$setDoorAnalysis(ITileAnalysisIntegration analysis) {
+        dragonfix$doorAnalysis = analysis;
     }
 
     @Unique

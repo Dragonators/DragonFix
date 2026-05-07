@@ -42,9 +42,12 @@ DragonFix 是一个面向 Minecraft 1.7.10 / Forge 的轻量级修复模组。
   - 修复 Avaritiaddons 梦魇工作台右侧 ghost 标记区的复制/恢复。
   - 修复 AE2 物质聚合器存储组件槽位的复制/恢复。
   - 修复 Ender IO 灵魂绑定器电容槽位的复制/恢复。
+  - 修复 OpenComputers 微控制器在 MatterManipulator 持久选区粘贴时组件列表未同步写回方块物品，或组件使用不稳定数字物品 ID 导致 CPU/内存等组件丢失的问题。
   - 修复 LittleTiles 与 ArchitectureCraft 方块在 MatterManipulator 预览提示中无法按实际材料/小方块形状显示的问题。
   - 修复 ArchitectureCraft 真实形状预览可能超出 MatterManipulator 原始 hint VBO 预分配容量，导致整批预览不渲染的问题。
   - 修复 ArchitectureCraft 方块在 MatterManipulator 复制结构旋转/镜像后未同步更新朝向与偏移的问题。
+  - 修复 MatterManipulator 将门上半部分分析成 air 并按单格方块粘贴，导致门检查高度、缺失上半部分并掉落的问题。
+  - 修复 MalisisDoors 自定义门在 MatterManipulator 持久选区粘贴时缺少门材质 NBT 导致服务端报错的问题。
   - 复用 MatterManipulator 选区 BoxRenderer 的 VBO，减少每帧渲染选区时的缓冲对象创建。
   - 增加 MatterManipulator 持久选区文件功能，可将分析后的 `PendingBlock` 数据保存为 `.mmschematic` 并跨存档加载粘贴。
 

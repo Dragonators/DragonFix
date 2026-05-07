@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
 
 import com.dragonfix.DragonFix;
@@ -101,14 +102,7 @@ public final class PersistentSchematicNetwork {
 
                 sendLoadRequestToServer(normalizedFileName, contentId);
             } catch (Exception e) {
-                runOnClientThread(() -> {
-                    EntityPlayer player = MMMod.proxy.getThePlayer();
-                    if (player != null) {
-                        MMUtils.sendErrorToPlayer(
-                            player,
-                            "Could not read Matter Manipulator schematic: " + e.getMessage());
-                    }
-                });
+                sendClientError("Could not read Matter Manipulator schematic: " + e.getMessage());
                 DragonFix.LOG.warn("Could not read Matter Manipulator schematic for upload", e);
             }
         });
@@ -204,12 +198,30 @@ public final class PersistentSchematicNetwork {
         ClientThread.run(action);
     }
 
+    public static void sendClientInfo(String message) {
+        if (message == null) return;
+        runOnClientThread(() -> sendClientChat(MMUtils.GRAY + message));
+    }
+
+    public static void sendClientError(String message) {
+        if (message == null) return;
+        runOnClientThread(() -> sendClientChat(MMUtils.RED + message));
+    }
+
     @SideOnly(Side.CLIENT)
     private static class ClientThread {
 
         static void run(Runnable action) {
             net.minecraft.client.Minecraft.getMinecraft()
                 .func_152344_a(action);
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    private static void sendClientChat(String message) {
+        EntityPlayer player = MMMod.proxy.getThePlayer();
+        if (player != null && message != null) {
+            player.addChatComponentMessage(new ChatComponentText(message));
         }
     }
 

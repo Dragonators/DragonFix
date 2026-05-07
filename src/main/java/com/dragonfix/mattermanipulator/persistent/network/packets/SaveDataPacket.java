@@ -10,10 +10,8 @@ import com.dragonfix.mattermanipulator.persistent.PersistentSchematic;
 import com.dragonfix.mattermanipulator.persistent.network.PersistentSchematicNetwork;
 import com.dragonfix.mattermanipulator.persistent.network.SchematicTransfer;
 import com.google.common.io.ByteArrayDataInput;
-import com.recursive_pineapple.matter_manipulator.MMMod;
 import com.recursive_pineapple.matter_manipulator.common.items.manipulator.MMState;
 import com.recursive_pineapple.matter_manipulator.common.networking.MMPacket;
-import com.recursive_pineapple.matter_manipulator.common.utils.MMUtils;
 
 import io.netty.buffer.ByteBuf;
 
@@ -54,9 +52,6 @@ public class SaveDataPacket extends SchematicChunkPacket {
 
     @Override
     public void process(IBlockAccess world) {
-        EntityPlayer player = MMMod.proxy.getThePlayer();
-        if (player == null) return;
-
         UUID transferId = transferId();
         String schematicFileName = fileName;
         int schematicBlocks = blocks;
@@ -72,22 +67,12 @@ public class SaveDataPacket extends SchematicChunkPacket {
                 if (schematicBytes == null) return;
 
                 PersistentSchematic.saveBytes(schematicFileName, schematicBytes);
-                PersistentSchematicNetwork.runOnClientThread(() -> {
-                    EntityPlayer currentPlayer = MMMod.proxy.getThePlayer();
-                    if (currentPlayer != null) {
-                        PersistentSchematic.sendSaveResult(currentPlayer, schematicFileName, schematicBlocks);
-                    }
-                });
+                PersistentSchematicNetwork
+                    .sendClientInfo(PersistentSchematic.saveResultMessage(schematicFileName, schematicBlocks));
             } catch (Exception e) {
                 DragonFix.LOG.warn("Could not save Matter Manipulator schematic on client", e);
-                PersistentSchematicNetwork.runOnClientThread(() -> {
-                    EntityPlayer currentPlayer = MMMod.proxy.getThePlayer();
-                    if (currentPlayer != null) {
-                        MMUtils.sendErrorToPlayer(
-                            currentPlayer,
-                            "Could not save Matter Manipulator schematic: " + e.getMessage());
-                    }
-                });
+                PersistentSchematicNetwork
+                    .sendClientError("Could not save Matter Manipulator schematic: " + e.getMessage());
             }
         });
     }

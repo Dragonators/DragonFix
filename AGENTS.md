@@ -40,6 +40,7 @@ DragonFix 是一个独立的轻量级修复型模组，类似 RandomFix，用于
 - ./gradlew clean build
 15. 每次增加 Mixin 修复时，必须同步更新 README.md 的当前修复列表。
 16. 发布或推送修复时，必须确认目标 Git tag 指向最终提交，并同步推送 main 与 tag 到远程。
+17. 若为第三方类通过 Mixin 增加会影响持久化、传输、hashCode/equals、clone 或 migrate 的字段，必须同步检查并更新对应的显式序列化/反序列化逻辑，例如 PersistentSchematic 中的手写 Gson TypeAdapter，避免新增字段被静默遗漏。
 
 代码风格：
 - 使用 Java。

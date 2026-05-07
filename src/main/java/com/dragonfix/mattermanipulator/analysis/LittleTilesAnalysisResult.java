@@ -33,7 +33,7 @@ public class LittleTilesAnalysisResult implements ITileAnalysisIntegration {
     }
 
     public static LittleTilesAnalysisResult analyze(TileEntity te) {
-        if (!isLittleTilesTileEntity(te)) return null;
+        if (!(te instanceof TileEntityLittleTiles)) return null;
 
         LittleTilesAnalysisResult result = new LittleTilesAnalysisResult();
         result.tileData = new NBTTagCompound();
@@ -42,15 +42,11 @@ public class LittleTilesAnalysisResult implements ITileAnalysisIntegration {
         return result;
     }
 
-    private static boolean isLittleTilesTileEntity(TileEntity te) {
-        return te instanceof TileEntityLittleTiles;
-    }
-
     @Override
     public boolean apply(IBlockApplyContext ctx) {
         TileEntity te = ctx.getTileEntity();
 
-        if (!isLittleTilesTileEntity(te)) {
+        if (!(te instanceof TileEntityLittleTiles)) {
             ctx.error("LittleTiles tile entity is missing");
             return false;
         }
