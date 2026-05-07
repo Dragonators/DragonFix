@@ -64,6 +64,14 @@ public abstract class MMConfigPersistentSchematicMixin implements PersistentSche
     private UUID dragonfix$persistentPasteId;
 
     @Unique
+    @SerializedName("dragonfixPersistentPasteRestore")
+    private int dragonfix$persistentPasteRestoreState = RESTORE_NONE;
+
+    @Unique
+    @SerializedName("dragonfixPersistentPasteRestoreStartedMs")
+    private long dragonfix$persistentPasteRestoreStartedMs;
+
+    @Unique
     @SerializedName("dragonfixNormalA")
     private Location dragonfix$normalCoordA;
 
@@ -173,10 +181,33 @@ public abstract class MMConfigPersistentSchematicMixin implements PersistentSche
     }
 
     @Override
+    public int dragonfix$getPersistentPasteRestoreState() {
+        return dragonfix$persistentPasteRestoreState;
+    }
+
+    @Override
+    public void dragonfix$setPersistentPasteRestoreState(int state) {
+        dragonfix$persistentPasteRestoreState = state;
+    }
+
+    @Override
+    public long dragonfix$getPersistentPasteRestoreStartedMs() {
+        return dragonfix$persistentPasteRestoreStartedMs;
+    }
+
+    @Override
+    public void dragonfix$setPersistentPasteRestoreStartedMs(long startedMs) {
+        dragonfix$persistentPasteRestoreStartedMs = startedMs;
+    }
+
+    @Override
     public void dragonfix$capturePersistentSchematic(PersistentSchematicMode mode) {
         if (mode == PersistentSchematicMode.PASTE) {
             dragonfix$persistentPasteFile = dragonfix$persistentSchematicFile;
             dragonfix$persistentPasteId = dragonfix$persistentSchematicId;
+            dragonfix$persistentPasteRestoreState = dragonfix$persistentPasteFile == null
+                || dragonfix$persistentPasteFile.isEmpty() ? RESTORE_NONE : RESTORE_PENDING;
+            dragonfix$persistentPasteRestoreStartedMs = 0L;
         }
     }
 
@@ -193,6 +224,9 @@ public abstract class MMConfigPersistentSchematicMixin implements PersistentSche
                 dragonfix$persistentPasteFile = dragonfix$persistentSchematicFile;
                 dragonfix$persistentPasteId = id;
             }
+            dragonfix$persistentPasteRestoreState = dragonfix$persistentSchematicFile == null
+                || dragonfix$persistentSchematicFile.isEmpty() ? RESTORE_NONE : RESTORE_PENDING;
+            dragonfix$persistentPasteRestoreStartedMs = 0L;
             return;
         }
 
@@ -270,6 +304,8 @@ public abstract class MMConfigPersistentSchematicMixin implements PersistentSche
         dragonfix$persistentPasteId = null;
         dragonfix$persistentSchematicFile = "";
         dragonfix$persistentSchematicId = null;
+        dragonfix$persistentPasteRestoreState = RESTORE_NONE;
+        dragonfix$persistentPasteRestoreStartedMs = 0L;
     }
 
     @Override
@@ -278,6 +314,8 @@ public abstract class MMConfigPersistentSchematicMixin implements PersistentSche
         dragonfix$persistentArraySpan = null;
         dragonfix$persistentPasteFile = "";
         dragonfix$persistentPasteId = null;
+        dragonfix$persistentPasteRestoreState = RESTORE_NONE;
+        dragonfix$persistentPasteRestoreStartedMs = 0L;
     }
 
     @Unique

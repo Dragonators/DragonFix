@@ -3,20 +3,26 @@ package com.dragonfix.mixin.mixins.mattermanipulator;
 import java.util.List;
 
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.StatCollector;
+import net.minecraft.world.World;
 
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.dragonfix.mattermanipulator.bridge.PersistentSchematicConfigBridge;
 import com.dragonfix.mattermanipulator.helper.MatterManipulatorStateAccess;
 import com.dragonfix.mattermanipulator.persistent.PersistentSchematicMode;
+import com.dragonfix.mattermanipulator.persistent.client.PersistentSchematicClientRestore;
 import com.dragonfix.mattermanipulator.persistent.client.PersistentSchematicClientState;
 import com.dragonfix.mattermanipulator.persistent.client.PersistentSchematicGui;
 import com.dragonfix.mattermanipulator.persistent.network.PersistentSchematicNetwork;
@@ -39,6 +45,33 @@ import cpw.mods.fml.common.FMLCommonHandler;
 @SuppressWarnings("ResultOfMethodCallIgnored")
 @Mixin(value = ItemMatterManipulator.class, remap = false)
 public abstract class ItemMatterManipulatorPersistentClientMixin {
+
+    @Shadow(remap = false)
+    public abstract void refillPower(ItemStack stack, MMState state);
+
+    @Shadow(remap = false)
+    public static MMState getState(ItemStack itemStack) {
+        throw new AssertionError();
+    }
+
+    /**
+     * @author DragonFix
+     * @reason .
+     */
+    @Overwrite(remap = false)
+    public void onUpdate(ItemStack stack, World worldIn, Entity entityIn, int p_77663_4_, boolean p_77663_5_) {
+        if (worldIn.getTotalWorldTime() % 500 == 0) {
+            MMState state = getState(stack);
+
+            refillPower(stack, state);
+        }
+    }
+
+    @Inject(method = "getState", at = @At("RETURN"), remap = false)
+    private static void dragonfix$restorePersistentPasteOnStateInit(ItemStack itemStack,
+        CallbackInfoReturnable<MMState> cir) {
+        PersistentSchematicClientRestore.tryInitialize(itemStack, cir.getReturnValue());
+    }
 
     @Inject(
         method = { "lambda$addCommonOptions$7", "lambda$addCommonOptions$8", "lambda$addCommonOptions$10",

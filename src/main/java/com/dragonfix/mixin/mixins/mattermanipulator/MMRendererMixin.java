@@ -31,7 +31,6 @@ import com.dragonfix.mattermanipulator.bridge.PendingBlockLittleTilesBridge;
 import com.dragonfix.mattermanipulator.bridge.PersistentSchematicConfigBridge;
 import com.dragonfix.mattermanipulator.helper.MatterManipulatorStateAccess;
 import com.dragonfix.mattermanipulator.persistent.PersistentSchematic;
-import com.dragonfix.mattermanipulator.persistent.PersistentSchematicState;
 import com.dragonfix.mattermanipulator.persistent.network.PersistentSchematicNetwork;
 import com.gtnewhorizon.gtnhlib.util.AboveHotbarHUD;
 import com.gtnewhorizon.gtnhlib.util.CoordinatePacker;
@@ -137,10 +136,8 @@ public abstract class MMRendererMixin {
         if (!bridge.dragonfix$isPersistentSchematicCopy() && !bridge.dragonfix$isPersistentSchematicPaste()) return;
 
         if (bridge.dragonfix$isPersistentSchematicPaste() && dragonfix$isStalePersistentSchematicPaste(bridge)) {
-            PersistentSchematicState.resetPasteSession(state);
-            MatterManipulatorStateAccess.setState(held, state);
-            PersistentSchematicNetwork.sendResetPasteSessionToServer();
             dragonfix$clearStaleHints();
+            ci.cancel();
             return;
         }
 

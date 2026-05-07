@@ -3,10 +3,8 @@ package com.dragonfix;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.dragonfix.mattermanipulator.persistent.PersistentSchematicSessionHandler;
 import com.dragonfix.mattermanipulator.persistent.network.PersistentSchematicNetwork;
 
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 
@@ -39,9 +37,6 @@ public class DragonFix {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        FMLCommonHandler.instance()
-            .bus()
-            .register(new PersistentSchematicSessionHandler());
         PersistentSchematicNetwork.init();
         LOG.info("{} loaded at version {}", NAME, Tags.VERSION);
     }

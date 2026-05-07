@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
@@ -145,6 +146,47 @@ public final class PersistentSchematicNetwork {
 
     public static boolean isClientLoadedSchematic(UUID id) {
         return id != null && clientLoadedSchematics.contains(id);
+    }
+
+    public static boolean restoreClientLoadedSchematic(String fileName, @Nullable UUID expectedId,
+        Consumer<UUID> onSuccess, Runnable onFailure) {
+        if (fileName == null || fileName.isEmpty()) return false;
+        if (expectedId != null && isClientLoadedSchematic(expectedId)) return true;
+
+        String normalizedFileName = PersistentSchematic.normalizeFileName(fileName);
+        ioExecutor
+            .execute(() -> restoreClientLoadedSchematicAsync(normalizedFileName, expectedId, onSuccess, onFailure));
+
+        return true;
+    }
+
+    private static void restoreClientLoadedSchematicAsync(String fileName, @Nullable UUID expectedId,
+        Consumer<UUID> onSuccess, Runnable onFailure) {
+        try {
+            byte[] bytes = PersistentSchematic.readBytes(fileName);
+            UUID contentId = contentId(bytes);
+
+            if (expectedId != null && !expectedId.equals(contentId)) {
+                completeFailedRestore(onFailure);
+                return;
+            }
+
+            rememberClientLoadedSchematic(contentId);
+            SchematicTransfer.rememberPendingUpload(contentId, fileName, bytes);
+            sendLoadRequestToServer(fileName, contentId);
+            completeSuccessfulRestore(contentId, onSuccess);
+        } catch (Exception e) {
+            DragonFix.LOG.warn("Could not restore Matter Manipulator schematic upload from local file", e);
+            completeFailedRestore(onFailure);
+        }
+    }
+
+    private static void completeSuccessfulRestore(UUID contentId, Consumer<UUID> onSuccess) {
+        runOnClientThread(() -> onSuccess.accept(contentId));
+    }
+
+    private static void completeFailedRestore(Runnable onFailure) {
+        runOnClientThread(onFailure);
     }
 
     public static @Nullable PersistentSchematic getAvailableSchematic(UUID id, String fileName, World world)

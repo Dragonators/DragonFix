@@ -6,6 +6,11 @@ import com.dragonfix.mattermanipulator.persistent.PersistentSchematicMode;
 
 public interface PersistentSchematicConfigBridge {
 
+    int RESTORE_NONE = 0;
+    int RESTORE_PENDING = 1;
+    int RESTORE_RESTORING = 2;
+    int RESTORE_READY = 3;
+
     PersistentSchematicMode dragonfix$getPersistentSchematicMode();
 
     void dragonfix$setPersistentSchematicMode(PersistentSchematicMode mode);
@@ -17,6 +22,14 @@ public interface PersistentSchematicConfigBridge {
     UUID dragonfix$getPersistentSchematicId();
 
     void dragonfix$setPersistentSchematicId(UUID id);
+
+    int dragonfix$getPersistentPasteRestoreState();
+
+    void dragonfix$setPersistentPasteRestoreState(int state);
+
+    long dragonfix$getPersistentPasteRestoreStartedMs();
+
+    void dragonfix$setPersistentPasteRestoreStartedMs(long startedMs);
 
     void dragonfix$capturePersistentSchematic(PersistentSchematicMode mode);
 
