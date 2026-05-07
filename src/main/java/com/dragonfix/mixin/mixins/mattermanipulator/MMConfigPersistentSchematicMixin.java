@@ -17,6 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.dragonfix.mattermanipulator.bridge.PersistentSchematicConfigBridge;
 import com.dragonfix.mattermanipulator.persistent.PersistentSchematic;
+import com.dragonfix.mattermanipulator.persistent.PersistentSchematicConfigData;
 import com.dragonfix.mattermanipulator.persistent.PersistentSchematicMode;
 import com.dragonfix.mattermanipulator.persistent.network.PersistentSchematicNetwork;
 import com.google.gson.annotations.SerializedName;
@@ -44,77 +45,21 @@ public abstract class MMConfigPersistentSchematicMixin implements PersistentSche
     public Vector3i arraySpan;
 
     @Unique
-    @SerializedName("dragonfixPersistentMode")
-    private PersistentSchematicMode dragonfix$persistentSchematicMode = PersistentSchematicMode.NONE;
-
-    @Unique
-    @SerializedName("dragonfixSchematicFile")
-    private String dragonfix$persistentSchematicFile = "";
-
-    @Unique
-    @SerializedName("dragonfixSchematicId")
-    private UUID dragonfix$persistentSchematicId;
-
-    @Unique
-    @SerializedName("dragonfixPersistentPasteFile")
-    private String dragonfix$persistentPasteFile = "";
-
-    @Unique
-    @SerializedName("dragonfixPersistentPasteId")
-    private UUID dragonfix$persistentPasteId;
-
-    @Unique
-    @SerializedName("dragonfixPersistentPasteRestore")
-    private int dragonfix$persistentPasteRestoreState = RESTORE_NONE;
-
-    @Unique
-    @SerializedName("dragonfixPersistentPasteRestoreStartedMs")
-    private long dragonfix$persistentPasteRestoreStartedMs;
-
-    @Unique
-    @SerializedName("dragonfixNormalA")
-    private Location dragonfix$normalCoordA;
-
-    @Unique
-    @SerializedName("dragonfixNormalB")
-    private Location dragonfix$normalCoordB;
-
-    @Unique
-    @SerializedName("dragonfixNormalC")
-    private Location dragonfix$normalCoordC;
-
-    @Unique
-    @SerializedName("dragonfixNormalArray")
-    private Vector3i dragonfix$normalArraySpan;
-
-    @Unique
-    @SerializedName("dragonfixPersistentCopyA")
-    private Location dragonfix$persistentCopyA;
-
-    @Unique
-    @SerializedName("dragonfixPersistentCopyB")
-    private Location dragonfix$persistentCopyB;
-
-    @Unique
-    @SerializedName("dragonfixPersistentPaste")
-    private Location dragonfix$persistentPaste;
-
-    @Unique
-    @SerializedName("dragonfixPersistentArray")
-    private Vector3i dragonfix$persistentArraySpan;
+    @SerializedName("dragonfixPersistent")
+    private PersistentSchematicConfigData dragonfix$persistent = new PersistentSchematicConfigData();
 
     @Inject(method = "getPasteVisualDeltas", at = @At("HEAD"), cancellable = true, remap = false)
     private void dragonfix$getPersistentPasteVisualDeltas(World world, boolean doTransform,
         CallbackInfoReturnable<MMConfig.VoxelAABB> cir) {
-        if (dragonfix$persistentSchematicMode != PersistentSchematicMode.PASTE) return;
+        PersistentSchematicConfigData data = dragonfix$data();
+        if (data.mode != PersistentSchematicMode.PASTE) return;
         if (world == null) {
             cir.setReturnValue(null);
             return;
         }
 
         try {
-            PersistentSchematic schematic = PersistentSchematicNetwork
-                .getAvailableSchematic(dragonfix$persistentSchematicId, dragonfix$persistentSchematicFile, world);
+            PersistentSchematic schematic = PersistentSchematicNetwork.getAvailableSchematic(data.id, data.file, world);
             if (schematic == null) {
                 cir.setReturnValue(null);
                 return;
@@ -132,166 +77,167 @@ public abstract class MMConfigPersistentSchematicMixin implements PersistentSche
 
     @Inject(method = "hashCode", at = @At("RETURN"), cancellable = true, remap = false)
     private void dragonfix$includePersistentSchematicInHashCode(CallbackInfoReturnable<Integer> cir) {
-        cir.setReturnValue(
-            31 * cir.getReturnValue() + Objects.hash(
-                dragonfix$persistentSchematicMode,
-                dragonfix$persistentSchematicFile,
-                dragonfix$persistentSchematicId));
+        PersistentSchematicConfigData data = dragonfix$data();
+        cir.setReturnValue(31 * cir.getReturnValue() + Objects.hash(data.mode, data.file, data.id));
     }
 
     @Inject(method = "equals", at = @At("RETURN"), cancellable = true, remap = false)
     private void dragonfix$includePersistentSchematicInEquals(Object obj, CallbackInfoReturnable<Boolean> cir) {
         if (!cir.getReturnValueZ()) return;
         PersistentSchematicConfigBridge other = (PersistentSchematicConfigBridge) obj;
+        PersistentSchematicConfigData data = dragonfix$data();
         cir.setReturnValue(
-            dragonfix$persistentSchematicMode == other.dragonfix$getPersistentSchematicMode()
-                && Objects.equals(dragonfix$persistentSchematicFile, other.dragonfix$getPersistentSchematicFile())
-                && Objects.equals(dragonfix$persistentSchematicId, other.dragonfix$getPersistentSchematicId()));
+            data.mode == other.dragonfix$getPersistentSchematicMode()
+                && Objects.equals(data.file, other.dragonfix$getPersistentSchematicFile())
+                && Objects.equals(data.id, other.dragonfix$getPersistentSchematicId()));
     }
 
     @Override
     public PersistentSchematicMode dragonfix$getPersistentSchematicMode() {
-        return dragonfix$persistentSchematicMode == null ? PersistentSchematicMode.NONE
-            : dragonfix$persistentSchematicMode;
+        return dragonfix$data().mode == null ? PersistentSchematicMode.NONE : dragonfix$data().mode;
     }
 
     @Override
     public void dragonfix$setPersistentSchematicMode(PersistentSchematicMode mode) {
-        dragonfix$persistentSchematicMode = mode == null ? PersistentSchematicMode.NONE : mode;
+        dragonfix$data().mode = mode == null ? PersistentSchematicMode.NONE : mode;
     }
 
     @Override
     public String dragonfix$getPersistentSchematicFile() {
-        return dragonfix$persistentSchematicFile;
+        return dragonfix$data().file;
     }
 
     @Override
     public void dragonfix$setPersistentSchematicFile(String fileName) {
-        dragonfix$persistentSchematicFile = fileName == null ? "" : fileName;
+        dragonfix$data().file = fileName == null ? "" : fileName;
     }
 
     @Override
     public UUID dragonfix$getPersistentSchematicId() {
-        return dragonfix$persistentSchematicId;
+        return dragonfix$data().id;
     }
 
     @Override
     public void dragonfix$setPersistentSchematicId(UUID id) {
-        dragonfix$persistentSchematicId = id;
+        dragonfix$data().id = id;
     }
 
     @Override
     public int dragonfix$getPersistentPasteRestoreState() {
-        return dragonfix$persistentPasteRestoreState;
+        return dragonfix$data().pasteRestore;
     }
 
     @Override
     public void dragonfix$setPersistentPasteRestoreState(int state) {
-        dragonfix$persistentPasteRestoreState = state;
+        dragonfix$data().pasteRestore = state;
     }
 
     @Override
     public long dragonfix$getPersistentPasteRestoreStartedMs() {
-        return dragonfix$persistentPasteRestoreStartedMs;
+        return dragonfix$data().pasteRestoreStartedMs;
     }
 
     @Override
     public void dragonfix$setPersistentPasteRestoreStartedMs(long startedMs) {
-        dragonfix$persistentPasteRestoreStartedMs = startedMs;
+        dragonfix$data().pasteRestoreStartedMs = startedMs;
     }
 
     @Override
     public void dragonfix$capturePersistentSchematic(PersistentSchematicMode mode) {
         if (mode == PersistentSchematicMode.PASTE) {
-            dragonfix$persistentPasteFile = dragonfix$persistentSchematicFile;
-            dragonfix$persistentPasteId = dragonfix$persistentSchematicId;
-            dragonfix$persistentPasteRestoreState = dragonfix$persistentPasteFile == null
-                || dragonfix$persistentPasteFile.isEmpty() ? RESTORE_NONE : RESTORE_PENDING;
-            dragonfix$persistentPasteRestoreStartedMs = 0L;
+            PersistentSchematicConfigData data = dragonfix$data();
+            data.pasteFile = data.file;
+            data.pasteId = data.id;
+            data.pasteRestore = data.pasteFile == null || data.pasteFile.isEmpty() ? RESTORE_NONE : RESTORE_PENDING;
+            data.pasteRestoreStartedMs = 0L;
         }
     }
 
     @Override
     public void dragonfix$activatePersistentSchematic(PersistentSchematicMode mode, String fileName, UUID id) {
+        PersistentSchematicConfigData data = dragonfix$data();
         if (mode == PersistentSchematicMode.PASTE) {
             if (fileName == null || fileName.isEmpty()) {
-                dragonfix$persistentSchematicFile = dragonfix$persistentPasteFile == null ? ""
-                    : dragonfix$persistentPasteFile;
-                dragonfix$persistentSchematicId = dragonfix$persistentPasteId;
+                data.file = data.pasteFile == null ? "" : data.pasteFile;
+                data.id = data.pasteId;
             } else {
-                dragonfix$persistentSchematicFile = PersistentSchematic.normalizeFileName(fileName);
-                dragonfix$persistentSchematicId = id;
-                dragonfix$persistentPasteFile = dragonfix$persistentSchematicFile;
-                dragonfix$persistentPasteId = id;
+                data.file = PersistentSchematic.normalizeFileName(fileName);
+                data.id = id;
+                data.pasteFile = data.file;
+                data.pasteId = id;
             }
-            dragonfix$persistentPasteRestoreState = dragonfix$persistentSchematicFile == null
-                || dragonfix$persistentSchematicFile.isEmpty() ? RESTORE_NONE : RESTORE_PENDING;
-            dragonfix$persistentPasteRestoreStartedMs = 0L;
+            data.pasteRestore = data.file == null || data.file.isEmpty() ? RESTORE_NONE : RESTORE_PENDING;
+            data.pasteRestoreStartedMs = 0L;
             return;
         }
 
-        dragonfix$persistentSchematicFile = fileName == null || fileName.isEmpty() ? ""
-            : PersistentSchematic.normalizeFileName(fileName);
-        dragonfix$persistentSchematicId = id;
+        data.file = fileName == null || fileName.isEmpty() ? "" : PersistentSchematic.normalizeFileName(fileName);
+        data.id = id;
     }
 
     @Override
     public void dragonfix$captureNormalSelection() {
-        dragonfix$normalCoordA = dragonfix$copy(coordA);
-        dragonfix$normalCoordB = dragonfix$copy(coordB);
-        dragonfix$normalCoordC = dragonfix$copy(coordC);
-        dragonfix$normalArraySpan = dragonfix$copy(arraySpan);
+        PersistentSchematicConfigData data = dragonfix$data();
+        data.normalCoordA = dragonfix$copy(coordA);
+        data.normalCoordB = dragonfix$copy(coordB);
+        data.normalCoordC = dragonfix$copy(coordC);
+        data.normalArraySpan = dragonfix$copy(arraySpan);
     }
 
     @Override
     public void dragonfix$capturePersistentSelection(PersistentSchematicMode mode) {
+        PersistentSchematicConfigData data = dragonfix$data();
         if (mode == PersistentSchematicMode.COPY) {
-            dragonfix$persistentCopyA = dragonfix$copy(coordA);
-            dragonfix$persistentCopyB = dragonfix$copy(coordB);
+            data.persistentCopyA = dragonfix$copy(coordA);
+            data.persistentCopyB = dragonfix$copy(coordB);
         } else if (mode == PersistentSchematicMode.PASTE) {
-            dragonfix$persistentPaste = dragonfix$copy(coordC);
-            dragonfix$persistentArraySpan = dragonfix$copy(arraySpan);
+            data.persistentPaste = dragonfix$copy(coordC);
+            data.persistentArraySpan = dragonfix$copy(arraySpan);
         }
     }
 
     @Override
     public void dragonfix$syncPersistentCopyFromNormalSelection() {
-        dragonfix$persistentCopyA = dragonfix$copy(coordA);
-        dragonfix$persistentCopyB = dragonfix$copy(coordB);
+        PersistentSchematicConfigData data = dragonfix$data();
+        data.persistentCopyA = dragonfix$copy(coordA);
+        data.persistentCopyB = dragonfix$copy(coordB);
     }
 
     @Override
     public void dragonfix$activateNormalSelection(boolean syncPersistentCopy) {
+        PersistentSchematicConfigData data = dragonfix$data();
         if (syncPersistentCopy) {
-            dragonfix$normalCoordA = dragonfix$copy(dragonfix$persistentCopyA);
-            dragonfix$normalCoordB = dragonfix$copy(dragonfix$persistentCopyB);
+            data.normalCoordA = dragonfix$copy(data.persistentCopyA);
+            data.normalCoordB = dragonfix$copy(data.persistentCopyB);
         }
 
-        coordA = dragonfix$copy(dragonfix$normalCoordA);
-        coordB = dragonfix$copy(dragonfix$normalCoordB);
-        coordC = dragonfix$copy(dragonfix$normalCoordC);
-        arraySpan = dragonfix$copy(dragonfix$normalArraySpan);
+        coordA = dragonfix$copy(data.normalCoordA);
+        coordB = dragonfix$copy(data.normalCoordB);
+        coordC = dragonfix$copy(data.normalCoordC);
+        arraySpan = dragonfix$copy(data.normalArraySpan);
     }
 
     @Override
     public void dragonfix$activatePersistentSelection(PersistentSchematicMode mode) {
+        PersistentSchematicConfigData data = dragonfix$data();
         if (mode == PersistentSchematicMode.COPY) {
-            coordA = dragonfix$copy(dragonfix$persistentCopyA);
-            coordB = dragonfix$copy(dragonfix$persistentCopyB);
+            coordA = dragonfix$copy(data.persistentCopyA);
+            coordB = dragonfix$copy(data.persistentCopyB);
             coordC = null;
             arraySpan = null;
         } else if (mode == PersistentSchematicMode.PASTE) {
             coordA = null;
             coordB = null;
-            coordC = dragonfix$copy(dragonfix$persistentPaste);
-            arraySpan = dragonfix$copy(dragonfix$persistentArraySpan);
+            coordC = dragonfix$copy(data.persistentPaste);
+            arraySpan = dragonfix$copy(data.persistentArraySpan);
         }
     }
 
     @Override
     public void dragonfix$resetPersistentPasteSelection() {
-        dragonfix$persistentPaste = null;
-        dragonfix$persistentArraySpan = null;
+        PersistentSchematicConfigData data = dragonfix$data();
+        data.persistentPaste = null;
+        data.persistentArraySpan = null;
         coordA = null;
         coordB = null;
         coordC = null;
@@ -300,22 +246,42 @@ public abstract class MMConfigPersistentSchematicMixin implements PersistentSche
 
     @Override
     public void dragonfix$resetPersistentPasteSchematic() {
-        dragonfix$persistentPasteFile = "";
-        dragonfix$persistentPasteId = null;
-        dragonfix$persistentSchematicFile = "";
-        dragonfix$persistentSchematicId = null;
-        dragonfix$persistentPasteRestoreState = RESTORE_NONE;
-        dragonfix$persistentPasteRestoreStartedMs = 0L;
+        PersistentSchematicConfigData data = dragonfix$data();
+        data.pasteFile = "";
+        data.pasteId = null;
+        data.file = "";
+        data.id = null;
+        data.pasteRestore = RESTORE_NONE;
+        data.pasteRestoreStartedMs = 0L;
     }
 
     @Override
     public void dragonfix$clearStoredPersistentPasteSession() {
-        dragonfix$persistentPaste = null;
-        dragonfix$persistentArraySpan = null;
-        dragonfix$persistentPasteFile = "";
-        dragonfix$persistentPasteId = null;
-        dragonfix$persistentPasteRestoreState = RESTORE_NONE;
-        dragonfix$persistentPasteRestoreStartedMs = 0L;
+        PersistentSchematicConfigData data = dragonfix$data();
+        data.persistentPaste = null;
+        data.persistentArraySpan = null;
+        data.pasteFile = "";
+        data.pasteId = null;
+        data.pasteRestore = RESTORE_NONE;
+        data.pasteRestoreStartedMs = 0L;
+    }
+
+    @Unique
+    private PersistentSchematicConfigData dragonfix$data() {
+        if (dragonfix$persistent == null) {
+            dragonfix$persistent = new PersistentSchematicConfigData();
+        }
+        if (dragonfix$persistent.mode == null) {
+            dragonfix$persistent.mode = PersistentSchematicMode.NONE;
+        }
+        if (dragonfix$persistent.file == null) {
+            dragonfix$persistent.file = "";
+        }
+        if (dragonfix$persistent.pasteFile == null) {
+            dragonfix$persistent.pasteFile = "";
+        }
+
+        return dragonfix$persistent;
     }
 
     @Unique
