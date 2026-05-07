@@ -11,16 +11,13 @@ import net.minecraft.world.World;
 
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.dragonfix.mattermanipulator.bridge.PersistentSchematicConfigBridge;
-import com.dragonfix.mattermanipulator.helper.MatterManipulatorStateAccess;
 import com.dragonfix.mattermanipulator.persistent.PersistentSchematicMode;
 import com.dragonfix.mattermanipulator.persistent.client.PersistentSchematicClientRestore;
 import com.dragonfix.mattermanipulator.persistent.client.PersistentSchematicClientState;
@@ -46,31 +43,22 @@ import cpw.mods.fml.common.FMLCommonHandler;
 @Mixin(value = ItemMatterManipulator.class, remap = false)
 public abstract class ItemMatterManipulatorPersistentClientMixin {
 
-    @Shadow(remap = false)
-    public abstract void refillPower(ItemStack stack, MMState state);
-
-    @Shadow(remap = false)
-    public static MMState getState(ItemStack itemStack) {
-        throw new AssertionError();
+    @Inject(method = { "onUpdate", "func_77663_a" }, at = @At("HEAD"), remap = false, cancellable = true, require = 1)
+    private void dragonfix$restorePersistentPasteOnClientUpdate(ItemStack stack, World worldIn, Entity entityIn,
+        int p_77663_4_, boolean p_77663_5_, CallbackInfo ci) {
+        if (worldIn.getTotalWorldTime() % 200 == 0) PersistentSchematicClientRestore.getInitializedState(stack);
+        ci.cancel();
     }
 
-    /**
-     * @author DragonFix
-     * @reason .
-     */
-    @Overwrite(remap = false)
-    public void onUpdate(ItemStack stack, World worldIn, Entity entityIn, int p_77663_4_, boolean p_77663_5_) {
-        if (worldIn.getTotalWorldTime() % 500 == 0) {
-            MMState state = getState(stack);
-
-            refillPower(stack, state);
-        }
-    }
-
-    @Inject(method = "getState", at = @At("RETURN"), remap = false)
-    private static void dragonfix$restorePersistentPasteOnStateInit(ItemStack itemStack,
-        CallbackInfoReturnable<MMState> cir) {
-        PersistentSchematicClientRestore.tryInitialize(itemStack, cir.getReturnValue());
+    @Redirect(
+        method = "getMenuOptions",
+        at = @At(
+            value = "INVOKE",
+            target = "Lcom/recursive_pineapple/matter_manipulator/common/items/manipulator/ItemMatterManipulator;getState(Lnet/minecraft/item/ItemStack;)Lcom/recursive_pineapple/matter_manipulator/common/items/manipulator/MMState;"),
+        remap = false,
+        require = 1)
+    private MMState dragonfix$getInitializedMenuState(ItemStack itemStack) {
+        return PersistentSchematicClientRestore.getInitializedState(itemStack);
     }
 
     @Inject(
@@ -148,10 +136,14 @@ public abstract class ItemMatterManipulatorPersistentClientMixin {
         }
     }
 
-    @org.spongepowered.asm.mixin.injection.Inject(method = "addInformation", at = @At("TAIL"), remap = false)
+    @org.spongepowered.asm.mixin.injection.Inject(
+        method = { "addInformation", "func_77624_a" },
+        at = @At("TAIL"),
+        remap = false,
+        require = 1)
     private void dragonfix$addPersistentSchematicTooltip(ItemStack itemStack, EntityPlayer player, List<String> desc,
         boolean advancedItemTooltips, CallbackInfo ci) {
-        MMState state = MatterManipulatorStateAccess.getState(itemStack);
+        MMState state = PersistentSchematicClientRestore.getInitializedState(itemStack);
         PersistentSchematicConfigBridge bridge = (PersistentSchematicConfigBridge) state.config;
 
         if (bridge.dragonfix$isPersistentSchematicCopy()) {

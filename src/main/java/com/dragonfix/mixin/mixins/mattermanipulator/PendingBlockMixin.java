@@ -1,13 +1,16 @@
 package com.dragonfix.mixin.mixins.mattermanipulator;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 
+import net.minecraft.inventory.IInventory;
 import net.minecraft.tileentity.TileEntity;
 
 import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -30,12 +33,16 @@ import com.dragonfix.mattermanipulator.bridge.PendingBlockLittleTilesBridge;
 import com.dragonfix.mattermanipulator.bridge.PendingBlockMachineInventoryBridge;
 import com.dragonfix.mattermanipulator.bridge.PendingBlockMalisisDoorsBridge;
 import com.dragonfix.mattermanipulator.bridge.PendingBlockOpenComputersBridge;
+import com.recursive_pineapple.matter_manipulator.common.building.AEAnalysisResult;
+import com.recursive_pineapple.matter_manipulator.common.building.ArchitectureCraftAnalysisResult;
 import com.recursive_pineapple.matter_manipulator.common.building.CopyableProperty;
+import com.recursive_pineapple.matter_manipulator.common.building.GTAnalysisResult;
 import com.recursive_pineapple.matter_manipulator.common.building.ITileAnalysisIntegration;
 import com.recursive_pineapple.matter_manipulator.common.building.ImmutableBlockSpec;
 import com.recursive_pineapple.matter_manipulator.common.building.InventoryAnalysis;
 import com.recursive_pineapple.matter_manipulator.common.building.PendingBlock;
 import com.recursive_pineapple.matter_manipulator.common.items.manipulator.Transform;
+import com.recursive_pineapple.matter_manipulator.common.utils.Mods;
 
 import cpw.mods.fml.common.Loader;
 
@@ -80,6 +87,21 @@ public abstract class PendingBlockMixin
     @Shadow(remap = false)
     public InventoryAnalysis inventory;
 
+    @Shadow(remap = false)
+    public ITileAnalysisIntegration gt;
+
+    @Shadow(remap = false)
+    public ITileAnalysisIntegration ae;
+
+    @Shadow(remap = false)
+    public ITileAnalysisIntegration arch;
+
+    @Shadow(remap = false)
+    public int renderOrder;
+
+    @Shadow(remap = false)
+    public int buildOrder;
+
     @Unique
     private ITileAnalysisIntegration dragonfix$littleTilesAnalysis;
 
@@ -107,49 +129,68 @@ public abstract class PendingBlockMixin
     @Unique
     private String dragonfix$rotationBeforeTransform;
 
-    @Inject(method = "getIntegrations", at = @At("RETURN"), remap = false)
-    private void dragonfix$addLittleTilesIntegration(CallbackInfoReturnable<List<ITileAnalysisIntegration>> cir) {
+    /**
+     * @author DragonFix
+     * @reason Include DragonFix-managed tile integrations in every original integration consumer.
+     */
+    @Overwrite(remap = false)
+    private List<ITileAnalysisIntegration> getIntegrations() {
+        List<ITileAnalysisIntegration> integrations = new ArrayList<>();
+
+        if (gt != null) {
+            integrations.add(gt);
+        }
+        if (ae != null) {
+            integrations.add(ae);
+        }
+        if (arch != null) {
+            integrations.add(arch);
+        }
         if (mp != null) {
-            cir.getReturnValue()
-                .add(mp);
+            integrations.add(mp);
         }
         if (dragonfix$avaritiaddonsExtremeAutoCrafterAnalysis != null) {
-            cir.getReturnValue()
-                .add(dragonfix$avaritiaddonsExtremeAutoCrafterAnalysis);
+            integrations.add(dragonfix$avaritiaddonsExtremeAutoCrafterAnalysis);
         }
         if (dragonfix$ae2CondenserAnalysis != null) {
-            cir.getReturnValue()
-                .add(dragonfix$ae2CondenserAnalysis);
+            integrations.add(dragonfix$ae2CondenserAnalysis);
         }
         if (dragonfix$enderIOSoulBinderAnalysis != null) {
-            cir.getReturnValue()
-                .add(dragonfix$enderIOSoulBinderAnalysis);
+            integrations.add(dragonfix$enderIOSoulBinderAnalysis);
         }
         if (dragonfix$littleTilesAnalysis != null) {
-            cir.getReturnValue()
-                .add(dragonfix$littleTilesAnalysis);
+            integrations.add(dragonfix$littleTilesAnalysis);
         }
         if (dragonfix$carpentersBlocksAnalysis != null) {
-            cir.getReturnValue()
-                .add(dragonfix$carpentersBlocksAnalysis);
+            integrations.add(dragonfix$carpentersBlocksAnalysis);
         }
         if (dragonfix$malisisCustomDoorAnalysis != null) {
-            cir.getReturnValue()
-                .add(dragonfix$malisisCustomDoorAnalysis);
+            integrations.add(dragonfix$malisisCustomDoorAnalysis);
         }
         if (dragonfix$openComputersMicrocontrollerAnalysis != null) {
-            cir.getReturnValue()
-                .add(dragonfix$openComputersMicrocontrollerAnalysis);
+            integrations.add(dragonfix$openComputersMicrocontrollerAnalysis);
         }
         if (dragonfix$doorAnalysis != null) {
-            cir.getReturnValue()
-                .add(dragonfix$doorAnalysis);
+            integrations.add(dragonfix$doorAnalysis);
         }
+
+        return integrations;
     }
 
-    @Inject(method = "reset", at = @At("HEAD"), remap = false)
-    private void dragonfix$resetLittleTilesIntegration(CallbackInfoReturnable<PendingBlock> cir) {
+    /**
+     * @author DragonFix
+     * @reason Clear DragonFix-managed integrations together with MM's own pending-block analysis state.
+     */
+    @Overwrite(remap = false)
+    public PendingBlock reset() {
+        spec = null;
+        gt = null;
+        ae = null;
+        arch = null;
         mp = null;
+        inventory = null;
+        renderOrder = 0;
+        buildOrder = 0;
         dragonfix$avaritiaddonsExtremeAutoCrafterAnalysis = null;
         dragonfix$ae2CondenserAnalysis = null;
         dragonfix$enderIOSoulBinderAnalysis = null;
@@ -158,6 +199,8 @@ public abstract class PendingBlockMixin
         dragonfix$malisisCustomDoorAnalysis = null;
         dragonfix$openComputersMicrocontrollerAnalysis = null;
         dragonfix$doorAnalysis = null;
+
+        return (PendingBlock) (Object) this;
     }
 
     @Inject(
@@ -212,8 +255,27 @@ public abstract class PendingBlockMixin
         }
     }
 
-    @Inject(method = "analyze", at = @At("RETURN"), remap = false)
-    private void dragonfix$analyzeLittleTiles(TileEntity te, int flags, CallbackInfoReturnable<PendingBlock> cir) {
+    /**
+     * @author DragonFix
+     * @reason Analyze DragonFix-supported tile data in the same pass as MM's built-in integrations.
+     */
+    @Overwrite(remap = false)
+    public PendingBlock analyze(TileEntity te, int flags) {
+        if (te != null) {
+            if ((flags & PendingBlock.ANALYZE_GT) != 0 && Mods.GregTech.isModLoaded()) {
+                gt = GTAnalysisResult.analyze(te);
+            }
+            if ((flags & PendingBlock.ANALYZE_AE) != 0 && Mods.AppliedEnergistics2.isModLoaded()) {
+                ae = AEAnalysisResult.analyze(te);
+            }
+            if ((flags & PendingBlock.ANALYZE_ARCH) != 0 && Mods.ArchitectureCraft.isModLoaded()) {
+                arch = ArchitectureCraftAnalysisResult.analyze(te);
+            }
+            if ((flags & dragonfix$ANALYZE_INV) != 0 && te instanceof IInventory inventoryTile) {
+                inventory = InventoryAnalysis.fromInventory(inventoryTile, false);
+            }
+        }
+
         if (te != null && (flags & dragonfix$ANALYZE_MP) != 0 && Loader.isModLoaded("ForgeMultipart")) {
             mp = DragonFixMultipartAnalysisResult.analyze(te);
         }
@@ -242,6 +304,8 @@ public abstract class PendingBlockMixin
                 inventory = null;
             }
         }
+
+        return (PendingBlock) (Object) this;
     }
 
     @Inject(method = "transform*", at = @At("HEAD"), remap = false)
@@ -287,8 +351,24 @@ public abstract class PendingBlockMixin
         spec = spec.withProperties(properties);
     }
 
-    @Inject(method = "migrate", at = @At("TAIL"), remap = false)
-    private void dragonfix$migrateLittleTilesIntegration(CallbackInfoReturnable<PendingBlock> cir) {
+    /**
+     * @author DragonFix
+     * @reason Migrate DragonFix-managed integrations with MM's built-in integration data.
+     */
+    @Overwrite(remap = false)
+    public PendingBlock migrate() {
+        if (gt != null) {
+            gt.migrate();
+        }
+        if (ae != null) {
+            ae.migrate();
+        }
+        if (arch != null) {
+            arch.migrate();
+        }
+        if (mp != null) {
+            mp.migrate();
+        }
         if (dragonfix$littleTilesAnalysis != null) {
             dragonfix$littleTilesAnalysis.migrate();
         }
@@ -313,6 +393,8 @@ public abstract class PendingBlockMixin
         if (dragonfix$doorAnalysis != null) {
             dragonfix$doorAnalysis.migrate();
         }
+
+        return (PendingBlock) (Object) this;
     }
 
     @Inject(method = "hashCode", at = @At("RETURN"), cancellable = true, remap = false)

@@ -9,6 +9,7 @@ import net.minecraft.world.World;
 
 import org.joml.Vector3i;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -48,30 +49,44 @@ public abstract class MMConfigPersistentSchematicMixin implements PersistentSche
     @SerializedName("dragonfixPersistent")
     private PersistentSchematicConfigData dragonfix$persistent = new PersistentSchematicConfigData();
 
-    @Inject(method = "getPasteVisualDeltas", at = @At("HEAD"), cancellable = true, remap = false)
-    private void dragonfix$getPersistentPasteVisualDeltas(World world, boolean doTransform,
-        CallbackInfoReturnable<MMConfig.VoxelAABB> cir) {
+    /**
+     * @author DragonFix
+     * @reason Persistent paste mode obtains visual bounds from the stored schematic instead of normal copy corners.
+     */
+    @Overwrite(remap = false)
+    public MMConfig.VoxelAABB getPasteVisualDeltas(World world, boolean doTransform) {
         PersistentSchematicConfigData data = dragonfix$data();
-        if (data.mode != PersistentSchematicMode.PASTE) return;
+        if (data.mode != PersistentSchematicMode.PASTE) {
+            if (!Location.areCompatible(coordA, coordB, coordC)) return null;
+            if (world != null && coordA.worldId != world.provider.dimensionId) return null;
+
+            MMConfig.VoxelAABB aabb = new MMConfig.VoxelAABB(coordA.toVec(), coordB.toVec());
+            aabb.moveOrigin(coordC.toVec());
+
+            if (arraySpan != null) {
+                aabb.scale(arraySpan.x, arraySpan.y, arraySpan.z);
+            }
+
+            if (doTransform && transform != null) {
+                transform.apply(aabb);
+            }
+
+            return aabb;
+        }
+
         if (world == null) {
-            cir.setReturnValue(null);
-            return;
+            return null;
         }
 
         try {
             PersistentSchematic schematic = PersistentSchematicNetwork.getAvailableSchematic(data.id, data.file, world);
             if (schematic == null) {
-                cir.setReturnValue(null);
-                return;
+                return null;
             }
-            cir.setReturnValue(
-                schematic.getPasteVisualDeltas(
-                    world.provider.dimensionId,
-                    coordC,
-                    doTransform ? transform : null,
-                    arraySpan));
+            return schematic
+                .getPasteVisualDeltas(world.provider.dimensionId, coordC, doTransform ? transform : null, arraySpan);
         } catch (Exception ignored) {
-            cir.setReturnValue(null);
+            return null;
         }
     }
 
@@ -166,7 +181,7 @@ public abstract class MMConfigPersistentSchematicMixin implements PersistentSche
                 data.pasteFile = data.file;
                 data.pasteId = id;
             }
-            data.pasteRestore = data.file == null || data.file.isEmpty() ? RESTORE_NONE : RESTORE_PENDING;
+            data.pasteRestore = data.file.isEmpty() ? RESTORE_NONE : RESTORE_PENDING;
             data.pasteRestoreStartedMs = 0L;
             return;
         }

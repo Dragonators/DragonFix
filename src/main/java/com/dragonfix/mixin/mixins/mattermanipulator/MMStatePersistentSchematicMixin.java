@@ -6,10 +6,8 @@ import java.util.List;
 import net.minecraft.world.World;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.dragonfix.DragonFix;
 import com.dragonfix.mattermanipulator.bridge.PersistentSchematicConfigBridge;
@@ -30,21 +28,50 @@ public abstract class MMStatePersistentSchematicMixin {
     @Shadow(remap = false)
     public abstract Transform getTransform();
 
-    @Inject(method = "getPendingBlocks", at = @At("HEAD"), cancellable = true, remap = false)
-    private void dragonfix$getPersistentSchematicBlocks(ManipulatorTier tier, World world,
-        CallbackInfoReturnable<List<PendingBlock>> cir) {
+    @Shadow(remap = false)
+    private List<PendingBlock> getAnalysis(World world) {
+        throw new AssertionError();
+    }
+
+    @Shadow(remap = false)
+    private List<PendingBlock> getGeomPendingBlocks(World world) {
+        throw new AssertionError();
+    }
+
+    @Shadow(remap = false)
+    private List<PendingBlock> getExchangeBlocks(ManipulatorTier tier, World world) {
+        throw new AssertionError();
+    }
+
+    @Shadow(remap = false)
+    private List<PendingBlock> getCableBlocks(World world) {
+        throw new AssertionError();
+    }
+
+    /**
+     * @author DragonFix
+     * @reason Persistent schematic copy/paste needs a separate pending-block source, while normal modes keep MM's
+     *         original dispatch.
+     */
+    @Overwrite(remap = false)
+    public List<PendingBlock> getPendingBlocks(ManipulatorTier tier, World world) {
         PersistentSchematicConfigBridge bridge = (PersistentSchematicConfigBridge) config;
 
         if (bridge.dragonfix$isPersistentSchematicCopy()) {
-            cir.setReturnValue(new ArrayList<>());
-            return;
+            return new ArrayList<>();
         }
 
-        if (!bridge.dragonfix$isPersistentSchematicPaste()) return;
+        if (!bridge.dragonfix$isPersistentSchematicPaste()) {
+            return switch (config.placeMode) {
+                case COPYING, MOVING -> getAnalysis(world);
+                case GEOMETRY -> getGeomPendingBlocks(world);
+                case EXCHANGING -> getExchangeBlocks(tier, world);
+                case CABLES -> getCableBlocks(world);
+            };
+        }
 
         if (world == null || config.coordC == null || !config.coordC.isInWorld(world)) {
-            cir.setReturnValue(new ArrayList<>());
-            return;
+            return new ArrayList<>();
         }
 
         try {
@@ -53,18 +80,13 @@ public abstract class MMStatePersistentSchematicMixin {
                 bridge.dragonfix$getPersistentSchematicFile(),
                 world);
             if (schematic == null) {
-                cir.setReturnValue(new ArrayList<>());
-                return;
+                return new ArrayList<>();
             }
-            cir.setReturnValue(
-                schematic.getPendingBlocks(
-                    world.provider.dimensionId,
-                    config.coordC.toVec(),
-                    getTransform(),
-                    config.arraySpan));
+            return schematic
+                .getPendingBlocks(world.provider.dimensionId, config.coordC.toVec(), getTransform(), config.arraySpan);
         } catch (Exception e) {
             DragonFix.LOG.warn("Could not load persistent Matter Manipulator schematic", e);
-            cir.setReturnValue(new ArrayList<>());
+            return new ArrayList<>();
         }
     }
 }

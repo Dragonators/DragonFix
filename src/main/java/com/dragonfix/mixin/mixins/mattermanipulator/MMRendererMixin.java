@@ -17,6 +17,7 @@ import org.joml.Vector3i;
 import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -145,9 +146,13 @@ public abstract class MMRendererMixin {
         ci.cancel();
     }
 
-    @Inject(method = "drawHints", at = @At("HEAD"), cancellable = true, remap = false)
-    private static void dragonfix$drawHints(RenderWorldLastEvent event, MMState state, EntityPlayer player,
-        Location playerLocation, int maxRange, CallbackInfo ci) {
+    /**
+     * @author DragonFix
+     * @reason Add multipart, LittleTiles, and ArchitectureCraft preview paths directly in the hint renderer.
+     */
+    @Overwrite(remap = false)
+    private static void drawHints(RenderWorldLastEvent event, MMState state, EntityPlayer player,
+        Location playerLocation, int maxRange) {
         int buildable = maxRange * maxRange;
         int i = 0;
         BlockSpec pooled = new BlockSpec();
@@ -254,8 +259,6 @@ public abstract class MMRendererMixin {
                     ERROR);
             }
         }
-
-        ci.cancel();
     }
 
     @Unique
@@ -442,13 +445,7 @@ public abstract class MMRendererMixin {
             lastDrawer = manipulator;
             needsHintDraw = false;
 
-            dragonfix$drawHints(
-                event,
-                state,
-                player,
-                playerLocation,
-                manipulator.tier.maxRange,
-                new CallbackInfo("drawHints", true));
+            drawHints(event, state, player, playerLocation, manipulator.tier.maxRange);
         }
     }
 

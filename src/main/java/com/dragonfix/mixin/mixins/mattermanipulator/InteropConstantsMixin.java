@@ -3,10 +3,8 @@ package com.dragonfix.mixin.mixins.mattermanipulator;
 import net.minecraft.block.Block;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.recursive_pineapple.matter_manipulator.common.building.InteropConstants;
 
@@ -21,12 +19,15 @@ public abstract class InteropConstantsMixin {
     @Unique
     private static boolean dragonfix$lookedUpLittleTilesBlock;
 
-    @Inject(method = "isFree", at = @At("RETURN"), cancellable = true, remap = false)
-    private static void dragonfix$treatLittleTilesAsFree(Block block, int metadata,
-        CallbackInfoReturnable<Boolean> cir) {
-        if (!cir.getReturnValueZ() && metadata == 0 && block == dragonfix$getLittleTilesBlock()) {
-            cir.setReturnValue(true);
-        }
+    /**
+     * @author DragonFix
+     * @reason Treat LittleTiles' container block as replaceable without a post-return injection path.
+     */
+    @Overwrite(remap = false)
+    public static boolean isFree(Block block, int metadata) {
+        return block == net.minecraft.init.Blocks.air || InteropConstants.FMP_BLOCK.matches(block, metadata)
+            || InteropConstants.AE_BLOCK_CABLE.matches(block, metadata)
+            || metadata == 0 && block == dragonfix$getLittleTilesBlock();
     }
 
     @Unique

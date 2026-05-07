@@ -3,16 +3,20 @@ package com.dragonfix.mixin.mixins.mattermanipulator;
 import net.minecraft.item.ItemStack;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.dragonfix.mattermanipulator.DragonFixComputerComponentItemProvider;
 import com.dragonfix.mattermanipulator.helper.SpecialInventorySlots;
 import com.recursive_pineapple.matter_manipulator.common.building.InventoryAnalysis;
+import com.recursive_pineapple.matter_manipulator.common.building.PortableItemStack;
+import com.recursive_pineapple.matter_manipulator.common.building.providers.AECellItemProvider;
+import com.recursive_pineapple.matter_manipulator.common.building.providers.BatteryItemProvider;
 import com.recursive_pineapple.matter_manipulator.common.building.providers.IItemProvider;
+import com.recursive_pineapple.matter_manipulator.common.building.providers.PatternItemProvider;
 import com.recursive_pineapple.matter_manipulator.common.utils.InventoryAdapter;
+import com.recursive_pineapple.matter_manipulator.common.utils.Mods;
 
 import cpw.mods.fml.common.Loader;
 
@@ -30,15 +34,33 @@ import cpw.mods.fml.common.Loader;
 @Mixin(value = InventoryAnalysis.class, remap = false)
 public abstract class InventoryAnalysisMixin {
 
-    @Inject(method = "getProviderFor", at = @At("HEAD"), cancellable = true, remap = false)
-    private static void dragonfix$getOpenComputersProvider(ItemStack stack, boolean fuzzy,
-        CallbackInfoReturnable<IItemProvider> cir) {
-        if (stack == null || stack.getItem() == null || !Loader.isModLoaded("OpenComputers")) return;
+    /**
+     * @author DragonFix
+     * @reason Fold OpenComputers and special provider handling into the original provider selection order.
+     */
+    @Overwrite(remap = false)
+    private static IItemProvider getProviderFor(ItemStack stack, boolean fuzzy) {
+        if (stack == null || stack.getItem() == null) return null;
 
-        IItemProvider component = DragonFixComputerComponentItemProvider.fromStack(stack);
-        if (component != null) {
-            cir.setReturnValue(component);
+        if (Loader.isModLoaded("OpenComputers")) {
+            IItemProvider component = DragonFixComputerComponentItemProvider.fromStack(stack);
+            if (component != null) return component;
         }
+
+        if (Mods.AppliedEnergistics2.isModLoaded()) {
+            if (!fuzzy) {
+                IItemProvider cell = AECellItemProvider.fromWorkbenchItem(stack);
+                if (cell != null) return cell;
+            }
+
+            IItemProvider pattern = PatternItemProvider.fromPattern(stack);
+            if (pattern != null) return pattern;
+        }
+
+        IItemProvider battery = BatteryItemProvider.fromStack(stack);
+        if (battery != null) return battery;
+
+        return fuzzy ? new PortableItemStack(stack) : PortableItemStack.withNBT(stack);
     }
 
     @Redirect(

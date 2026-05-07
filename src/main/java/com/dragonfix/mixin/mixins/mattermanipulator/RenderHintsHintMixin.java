@@ -6,11 +6,9 @@ import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.dragonfix.mattermanipulator.DragonFixRenderHints;
 import com.dragonfix.mattermanipulator.bridge.RenderHintsHintBridge;
@@ -42,36 +40,42 @@ public abstract class RenderHintsHintMixin implements RenderHintsHintBridge {
     @Unique
     private int dragonfix$quadCount = 6;
 
-    @Inject(method = "draw", at = @At("HEAD"), cancellable = true, remap = false)
-    private void dragonfix$drawSizedHint(Tessellator tes, double eyeX, double eyeY, double eyeZ, int eyeXint,
-        int eyeYint, int eyeZint, CallbackInfo ci) {
+    /**
+     * @author DragonFix
+     * @reason Support custom and non-half-block hint rendering without routing through the original cube path first.
+     */
+    @Overwrite(remap = false)
+    public void draw(Tessellator tes, double eyeX, double eyeY, double eyeZ, int eyeXint, int eyeYint, int eyeZint) {
         if (dragonfix$customRenderer != null) {
             dragonfix$customRenderer.draw(tes, eyeX, eyeY, eyeZ, eyeXint, eyeYint, eyeZint);
-            ci.cancel();
             return;
         }
 
-        if (dragonfix$bounds == null) {
-            return;
-        }
+        DragonFixRenderHints.Bounds bounds = dragonfix$bounds;
+        double minX = bounds == null ? 0.25 : bounds.minX;
+        double minY = bounds == null ? 0.25 : bounds.minY;
+        double minZ = bounds == null ? 0.25 : bounds.minZ;
+        double maxX = bounds == null ? 0.75 : bounds.maxX;
+        double maxY = bounds == null ? 0.75 : bounds.maxY;
+        double maxZ = bounds == null ? 0.75 : bounds.maxZ;
 
         World world = Minecraft.getMinecraft().theWorld;
         int brightness = world.blockExists(x, 0, z) ? world.getLightBrightnessForSkyBlocks(x, y, z, 0) : 0;
         tes.setBrightness(brightness);
         tes.setColorRGBA(tint[0], tint[1], tint[2], 150);
 
-        double x1 = (x - eyeXint) + dragonfix$bounds.minX;
-        double y1 = (y - eyeYint) + dragonfix$bounds.minY;
-        double z1 = (z - eyeZint) + dragonfix$bounds.minZ;
-        double x2 = (x - eyeXint) + dragonfix$bounds.maxX;
-        double y2 = (y - eyeYint) + dragonfix$bounds.maxY;
-        double z2 = (z - eyeZint) + dragonfix$bounds.maxZ;
-        double worldX1 = x + dragonfix$bounds.minX;
-        double worldY1 = y + dragonfix$bounds.minY;
-        double worldZ1 = z + dragonfix$bounds.minZ;
-        double worldX2 = x + dragonfix$bounds.maxX;
-        double worldY2 = y + dragonfix$bounds.maxY;
-        double worldZ2 = z + dragonfix$bounds.maxZ;
+        double x1 = (x - eyeXint) + minX;
+        double y1 = (y - eyeYint) + minY;
+        double z1 = (z - eyeZint) + minZ;
+        double x2 = (x - eyeXint) + maxX;
+        double y2 = (y - eyeYint) + maxY;
+        double z2 = (z - eyeZint) + maxZ;
+        double worldX1 = x + minX;
+        double worldY1 = y + minY;
+        double worldZ1 = z + minZ;
+        double worldX2 = x + maxX;
+        double worldY2 = y + maxY;
+        double worldZ2 = z + maxZ;
 
         for (int pass = 0; pass < 2; pass++) {
             boolean unobstructedPass = pass == 1;
@@ -139,7 +143,6 @@ public abstract class RenderHintsHintMixin implements RenderHintsHintBridge {
             }
         }
 
-        ci.cancel();
     }
 
     @Override

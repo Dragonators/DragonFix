@@ -45,54 +45,33 @@ public abstract class BlockPropertyRegistryMixin {
             public Orientation getValue(World world, int x, int y, int z) {
                 if (!(world.getTileEntity(x, y, z) instanceof Rotatable rotatable)) return Orientation.NONE;
 
-                switch (rotatable.yaw()) {
-                    case NORTH:
-                        switch (rotatable.pitch()) {
-                            case UP:
-                                return Orientation.UP_SOUTH;
-                            case DOWN:
-                                return Orientation.DOWN_NORTH;
-                            case NORTH:
-                                return Orientation.NORTH_UP;
-                            default:
-                                return Orientation.NONE;
-                        }
-                    case SOUTH:
-                        switch (rotatable.pitch()) {
-                            case UP:
-                                return Orientation.UP_NORTH;
-                            case DOWN:
-                                return Orientation.DOWN_SOUTH;
-                            case NORTH:
-                                return Orientation.SOUTH_UP;
-                            default:
-                                return Orientation.NONE;
-                        }
-                    case WEST:
-                        switch (rotatable.pitch()) {
-                            case UP:
-                                return Orientation.UP_EAST;
-                            case DOWN:
-                                return Orientation.DOWN_WEST;
-                            case NORTH:
-                                return Orientation.WEST_UP;
-                            default:
-                                return Orientation.NONE;
-                        }
-                    case EAST:
-                        switch (rotatable.pitch()) {
-                            case UP:
-                                return Orientation.UP_WEST;
-                            case DOWN:
-                                return Orientation.DOWN_EAST;
-                            case NORTH:
-                                return Orientation.EAST_UP;
-                            default:
-                                return Orientation.NONE;
-                        }
-                    default:
-                        return Orientation.NONE;
-                }
+                return switch (rotatable.yaw()) {
+                    case NORTH -> switch (rotatable.pitch()) {
+                            case UP -> Orientation.UP_SOUTH;
+                            case DOWN -> Orientation.DOWN_NORTH;
+                            case NORTH -> Orientation.NORTH_UP;
+                            default -> Orientation.NONE;
+                        };
+                    case SOUTH -> switch (rotatable.pitch()) {
+                            case UP -> Orientation.UP_NORTH;
+                            case DOWN -> Orientation.DOWN_SOUTH;
+                            case NORTH -> Orientation.SOUTH_UP;
+                            default -> Orientation.NONE;
+                        };
+                    case WEST -> switch (rotatable.pitch()) {
+                            case UP -> Orientation.UP_EAST;
+                            case DOWN -> Orientation.DOWN_WEST;
+                            case NORTH -> Orientation.WEST_UP;
+                            default -> Orientation.NONE;
+                        };
+                    case EAST -> switch (rotatable.pitch()) {
+                            case UP -> Orientation.UP_WEST;
+                            case DOWN -> Orientation.DOWN_EAST;
+                            case NORTH -> Orientation.EAST_UP;
+                            default -> Orientation.NONE;
+                        };
+                    default -> Orientation.NONE;
+                };
             }
 
             @Override

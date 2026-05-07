@@ -24,6 +24,12 @@ public final class PersistentSchematicClientRestore {
 
     private PersistentSchematicClientRestore() {}
 
+    public static MMState getInitializedState(ItemStack stack) {
+        MMState state = MatterManipulatorStateAccess.getState(stack);
+        tryInitialize(stack, state);
+        return state;
+    }
+
     public static void tryInitialize(ItemStack stack, MMState state) {
         if (stack == null || state == null || !isHeldStack(stack)) return;
 
