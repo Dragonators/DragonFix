@@ -24,10 +24,12 @@ public final class BiomesOPlentyPlacementHelper {
     }
 
     public static boolean canPlaceWorldDecor(Block block, World world, int x, int y, int z, int metadata) {
-        World heightWorld = world instanceof ProxiedWorldBridge bridge ? bridge.dragonfix$getWrappedWorld() : world;
-        if (y <= 0 || y >= heightWorld.getHeight()) return false;
+        World validationWorld = world instanceof ProxiedWorldBridge bridge ? bridge.dragonfix$getWrappedWorld() : world;
+        if (y <= 0 || y >= validationWorld.getHeight()) return false;
         if (!canReplace(world, x, y, z)) return false;
-        return ((BOPBlockWorldDecor) block).isValidPosition(world, x, y, z, metadata);
+
+        // BOP world decor checks read World.provider; Matter Manipulator's ProxiedWorld leaves it null.
+        return ((BOPBlockWorldDecor) block).isValidPosition(validationWorld, x, y, z, metadata);
     }
 
     private static boolean canReplace(World world, int x, int y, int z) {
