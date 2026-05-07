@@ -1,6 +1,7 @@
 package com.dragonfix.mixin.mixins.mattermanipulator;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -46,7 +47,7 @@ public abstract class MMConfigPersistentSchematicMixin implements PersistentSche
 
     @Unique
     @SerializedName("dragonfixSchematicId")
-    private String dragonfix$persistentSchematicId = "";
+    private UUID dragonfix$persistentSchematicId;
 
     @Inject(method = "getPasteVisualDeltas", at = @At("HEAD"), cancellable = true, remap = false)
     private void dragonfix$getPersistentPasteVisualDeltas(World world, boolean doTransform,
@@ -116,12 +117,12 @@ public abstract class MMConfigPersistentSchematicMixin implements PersistentSche
     }
 
     @Override
-    public String dragonfix$getPersistentSchematicId() {
+    public UUID dragonfix$getPersistentSchematicId() {
         return dragonfix$persistentSchematicId;
     }
 
     @Override
-    public void dragonfix$setPersistentSchematicId(String id) {
-        dragonfix$persistentSchematicId = id == null ? "" : id;
+    public void dragonfix$setPersistentSchematicId(UUID id) {
+        dragonfix$persistentSchematicId = id;
     }
 }

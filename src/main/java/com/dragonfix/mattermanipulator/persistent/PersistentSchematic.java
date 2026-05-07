@@ -19,7 +19,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -74,6 +73,7 @@ import com.recursive_pineapple.matter_manipulator.common.utils.MMUtils;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.GameRegistry.UniqueIdentifier;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 public class PersistentSchematic {
@@ -94,7 +94,7 @@ public class PersistentSchematic {
         .registerTypeAdapter(IItemProvider.class, itemProviders())
         .create();
 
-    private static final Map<String, CacheEntry> CACHE = new Object2ObjectOpenHashMap<>();
+    private static final Object2ObjectMap<String, CacheEntry> CACHE = new Object2ObjectOpenHashMap<>();
 
     public int dataVersion = DATA_VERSION;
     public Vector3i deltas;
@@ -308,7 +308,9 @@ public class PersistentSchematic {
 
             if (arraySpan == null) return transformedBase;
 
-            ArrayList<PendingBlock> out = new ArrayList<>(transformedBase.size() * arrayVolume(arraySpan));
+            Vector3i arraySize = new MMConfig.VoxelAABB(new Vector3i(0), new Vector3i(arraySpan)).size();
+            ArrayList<PendingBlock> out = new ArrayList<>(
+                transformedBase.size() * arraySize.x * arraySize.y * arraySize.z);
 
             for (int y = Math.min(arraySpan.y, 0); y <= Math.max(arraySpan.y, 0); y++) {
                 for (int z = Math.min(arraySpan.z, 0); z <= Math.max(arraySpan.z, 0); z++) {
@@ -375,34 +377,23 @@ public class PersistentSchematic {
     }
 
     public static void sendSaveResult(EntityPlayer player, String name, int blocks) {
-        sendInfo(
+        MMUtils.sendInfoToPlayer(
             player,
             String.format("Saved Matter Manipulator schematic '%s' (%d blocks).", normalizeFileName(name), blocks));
     }
 
     public static void sendLoadResult(EntityPlayer player, String name, PersistentSchematic schematic) {
-        sendInfo(
+        sendLoadResult(player, name, schematic, false);
+    }
+
+    public static void sendLoadResult(EntityPlayer player, String name, PersistentSchematic schematic,
+        boolean fromCache) {
+        MMUtils.sendInfoToPlayer(
             player,
             String.format(
                 "Loaded Matter Manipulator schematic '%s' (%s).",
                 normalizeFileName(name),
-                schematic.describe()));
-    }
-
-    public static void sendError(EntityPlayer player, String message) {
-        if (player != null && message != null) {
-            player.addChatComponentMessage(new ChatComponentText(MMUtils.RED + message));
-        }
-    }
-
-    private static void sendInfo(EntityPlayer player, String message) {
-        if (player != null && message != null) {
-            player.addChatComponentMessage(new ChatComponentText(MMUtils.GRAY + message));
-        }
-    }
-
-    private static int arrayVolume(Vector3i span) {
-        return (Math.abs(span.x) + 1) * (Math.abs(span.y) + 1) * (Math.abs(span.z) + 1);
+                schematic.describe() + (fromCache ? ", from cache" : "")));
     }
 
     private static JsonElement encodeArrays(JsonElement element) {
@@ -504,26 +495,27 @@ public class PersistentSchematic {
 
     private static class RuntimeTypeAdapter<T> implements JsonSerializer<T>, JsonDeserializer<T> {
 
-        private final Map<String, Class<? extends T>> byId = new Object2ObjectOpenHashMap<>();
-        private final Map<Class<?>, String> byClass = new Object2ObjectOpenHashMap<>();
+        private final Object2ObjectMap<String, RegisteredType<T>> byId = new Object2ObjectOpenHashMap<>();
+        private final Object2ObjectMap<Class<?>, RegisteredType<T>> byClass = new Object2ObjectOpenHashMap<>();
 
         RuntimeTypeAdapter<T> register(String id, Class<? extends T> type) {
-            byId.put(id, type);
-            byClass.put(type, id);
+            RegisteredType<T> registered = new RegisteredType<>(id, type);
+            byId.put(id, registered);
+            byClass.put(type, registered);
             return this;
         }
 
         @Override
         public JsonElement serialize(T src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject out = new JsonObject();
-            String id = byClass.get(src.getClass());
+            RegisteredType<T> registered = byClass.get(src.getClass());
 
-            if (id == null) throw new JsonParseException(
+            if (registered == null) throw new JsonParseException(
                 "Unsupported schematic data type: " + src.getClass()
                     .getName());
 
-            out.addProperty("type", id);
-            out.add("data", context.serialize(src, src.getClass()));
+            out.addProperty("type", registered.id);
+            out.add("data", context.serialize(src, registered.type));
             return out;
         }
 
@@ -532,12 +524,15 @@ public class PersistentSchematic {
             JsonObject obj = json.getAsJsonObject();
             String id = obj.get("type")
                 .getAsString();
-            Class<? extends T> type = byId.get(id);
+            RegisteredType<T> registered = byId.get(id);
 
-            if (type == null) throw new JsonParseException("Unsupported schematic data type: " + id);
+            if (registered == null) throw new JsonParseException("Unsupported schematic data type: " + id);
 
-            return context.deserialize(obj.get("data"), type);
+            return context.deserialize(obj.get("data"), registered.type);
         }
+
+        @Desugar
+        private record RegisteredType<T> (String id, Class<? extends T> type) {}
     }
 
     private static class ImmutableBlockSpecAdapter

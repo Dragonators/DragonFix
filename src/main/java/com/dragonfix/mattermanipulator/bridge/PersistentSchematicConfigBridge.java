@@ -1,5 +1,7 @@
 package com.dragonfix.mattermanipulator.bridge;
 
+import java.util.UUID;
+
 import com.dragonfix.mattermanipulator.persistent.PersistentSchematicMode;
 
 public interface PersistentSchematicConfigBridge {
@@ -12,9 +14,9 @@ public interface PersistentSchematicConfigBridge {
 
     void dragonfix$setPersistentSchematicFile(String fileName);
 
-    String dragonfix$getPersistentSchematicId();
+    UUID dragonfix$getPersistentSchematicId();
 
-    void dragonfix$setPersistentSchematicId(String id);
+    void dragonfix$setPersistentSchematicId(UUID id);
 
     default boolean dragonfix$isPersistentSchematicCopy() {
         return dragonfix$getPersistentSchematicMode() == PersistentSchematicMode.COPY;

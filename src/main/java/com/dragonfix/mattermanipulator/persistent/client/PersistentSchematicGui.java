@@ -149,11 +149,9 @@ public final class PersistentSchematicGui {
                     new Row().widgets(
                         new VanillaButtonWidget().setDisplayString(file)
                             .setOnClick((clickData, widget) -> {
-                                if (PersistentSchematicNetwork.sendLoadToServer(file)) {
-                                    PersistentSchematicClientState.setMode(PersistentSchematicMode.PASTE, file);
-                                    buildContext.getPlayer()
-                                        .closeScreen();
-                                }
+                                PersistentSchematicNetwork.sendLoadToServer(file);
+                                buildContext.getPlayer()
+                                    .closeScreen();
                             })
                             .setSynced(false, false)
                             .setSize(220, 18))

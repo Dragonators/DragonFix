@@ -30,7 +30,7 @@ public final class PersistentSchematicClientState {
         PersistentSchematicConfigBridge bridge = (PersistentSchematicConfigBridge) state.config;
 
         bridge.dragonfix$setPersistentSchematicMode(mode);
-        bridge.dragonfix$setPersistentSchematicId("");
+        bridge.dragonfix$setPersistentSchematicId(null);
 
         if (fileName != null) {
             bridge.dragonfix$setPersistentSchematicFile(PersistentSchematic.normalizeFileName(fileName));

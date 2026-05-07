@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.world.World;
 
 import com.recursive_pineapple.matter_manipulator.common.building.PendingBlock;
+import com.recursive_pineapple.matter_manipulator.common.utils.MMUtils;
 
 import gcewing.architecture.client.render.ShapeRenderDispatch;
 import gcewing.architecture.client.render.target.RenderTargetBase;
@@ -134,7 +135,7 @@ public final class ArchitectureCraftPreviewRenderer {
             return -1;
         }
 
-        return Math.max(6, (target.vertexCount() + 3) / 4);
+        return Math.max(6, MMUtils.ceilDiv(target.vertexCount(), 4));
     }
 
     private static final class ArchitectureCraftHintRenderer implements DragonFixRenderHints.CustomRenderer {

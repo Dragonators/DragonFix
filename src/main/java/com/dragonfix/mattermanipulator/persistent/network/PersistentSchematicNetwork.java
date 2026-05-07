@@ -1,54 +1,66 @@
 package com.dragonfix.mattermanipulator.persistent.network;
 
 import java.io.IOException;
-import java.util.Map;
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
 import com.dragonfix.DragonFix;
+import com.dragonfix.mattermanipulator.bridge.PersistentSchematicConfigBridge;
+import com.dragonfix.mattermanipulator.helper.MatterManipulatorStateAccess;
 import com.dragonfix.mattermanipulator.persistent.PersistentSchematic;
 import com.dragonfix.mattermanipulator.persistent.PersistentSchematicMode;
+import com.dragonfix.mattermanipulator.persistent.network.packets.LoadPacket;
+import com.dragonfix.mattermanipulator.persistent.network.packets.LoadRequestPacket;
+import com.dragonfix.mattermanipulator.persistent.network.packets.LoadResponsePacket;
+import com.dragonfix.mattermanipulator.persistent.network.packets.ModePacket;
+import com.dragonfix.mattermanipulator.persistent.network.packets.SaveDataPacket;
+import com.dragonfix.mattermanipulator.persistent.network.packets.SavePacket;
+import com.gtnewhorizon.gtnhlib.util.ServerThreadUtil;
 import com.recursive_pineapple.matter_manipulator.MMMod;
+import com.recursive_pineapple.matter_manipulator.common.items.manipulator.MMState;
+import com.recursive_pineapple.matter_manipulator.common.items.manipulator.MMState.PlaceMode;
+import com.recursive_pineapple.matter_manipulator.common.networking.MMPacket;
 import com.recursive_pineapple.matter_manipulator.common.networking.Network;
+import com.recursive_pineapple.matter_manipulator.common.utils.MMUtils;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 public final class PersistentSchematicNetwork {
 
-    static final byte PACKET_MODE = 0;
-    static final byte PACKET_SAVE = 1;
-    static final byte PACKET_LOAD = 2;
-    static final byte PACKET_SAVE_DATA = 3;
-    static final int CHUNK_BYTES = 12 * 1024;
-    static final int MAX_SCHEMATIC_BYTES = 64 * 1024 * 1024;
-    private static final int MAX_UPLOADED_SCHEMATICS = 4;
-    private static final long TRANSFER_TIMEOUT_MS = 5L * 60L * 1000L;
-    private static final long UPLOADED_SCHEMATIC_TTL_MS = 30L * 60L * 1000L;
-    private static final long CLEANUP_INTERVAL_MS = 30L * 1000L;
+    public static final byte PACKET_MODE = 0;
+    public static final byte PACKET_SAVE = 1;
+    public static final byte PACKET_LOAD = 2;
+    public static final byte PACKET_SAVE_DATA = 3;
+    public static final byte PACKET_LOAD_REQUEST = 4;
+    public static final byte PACKET_LOAD_RESPONSE = 5;
+    private static final long CLEANUP_INTERVAL_MS = 5 * 60L * 1000L;
 
-    private static Network channel;
-    static final ScheduledExecutorService ioExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
+    public static Network channel;
+    public static final ScheduledExecutorService ioExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
         Thread thread = new Thread(r, "DragonFix MM schematic IO");
         thread.setDaemon(true);
         return thread;
     });
-    static final Map<String, UploadedSchematic> uploadedSchematics = new Object2ObjectOpenHashMap<>();
-    static final Map<String, ChunkTransfer> incomingLoadTransfers = new Object2ObjectOpenHashMap<>();
-    static final Map<String, ChunkTransfer> incomingSaveTransfers = new Object2ObjectOpenHashMap<>();
+    private static final PersistentSchematicCache uploadedSchematicCache = new PersistentSchematicCache();
 
     private PersistentSchematicNetwork() {}
 
     public static void init() {
         if (channel == null) {
-            channel = new Network("DragonFixMM", PersistentSchematicPackets.types());
+            channel = new Network("DragonFixMM", packetTypes());
             ioExecutor.scheduleWithFixedDelay(
                 PersistentSchematicNetwork::cleanupSafely,
                 CLEANUP_INTERVAL_MS,
@@ -57,57 +69,64 @@ public final class PersistentSchematicNetwork {
         }
     }
 
+    private static MMPacket[] packetTypes() {
+        return new MMPacket[] { new ModePacket(), new SavePacket(), new LoadPacket(), new SaveDataPacket(),
+            new LoadRequestPacket(), new LoadResponsePacket() };
+    }
+
     public static void sendModeToServer(PersistentSchematicMode mode) {
         init();
-        PersistentSchematicPackets.ModePacket packet = new PersistentSchematicPackets.ModePacket();
+        ModePacket packet = new ModePacket();
         packet.mode = mode;
         channel.sendToServer(packet);
     }
 
     public static void sendSaveToServer(String fileName) {
         init();
-        PersistentSchematicPackets.SavePacket packet = new PersistentSchematicPackets.SavePacket();
+        SavePacket packet = new SavePacket();
         packet.fileName = fileName;
         channel.sendToServer(packet);
     }
 
-    public static boolean sendLoadToServer(String fileName) {
+    public static void sendLoadToServer(String fileName) {
         init();
         String normalizedFileName = PersistentSchematic.normalizeFileName(fileName);
 
         ioExecutor.execute(() -> {
             try {
-                sendChunksToServer(normalizedFileName, PersistentSchematic.readBytes(normalizedFileName));
+                byte[] bytes = PersistentSchematic.readBytes(normalizedFileName);
+                UUID contentId = contentId(bytes);
+
+                SchematicTransfer.rememberPendingUpload(contentId, normalizedFileName, bytes);
+
+                sendLoadRequestToServer(normalizedFileName, contentId);
             } catch (Exception e) {
                 runOnClientThread(() -> {
                     EntityPlayer player = MMMod.proxy.getThePlayer();
                     if (player != null) {
-                        PersistentSchematic
-                            .sendError(player, "Could not read Matter Manipulator schematic: " + e.getMessage());
+                        MMUtils.sendErrorToPlayer(
+                            player,
+                            "Could not read Matter Manipulator schematic: " + e.getMessage());
                     }
                 });
                 DragonFix.LOG.warn("Could not read Matter Manipulator schematic for upload", e);
             }
         });
-        return true;
     }
 
-    public static PersistentSchematic getUploadedSchematic(String id) {
-        synchronized (uploadedSchematics) {
-            if (id != null && !id.isEmpty()) {
-                UploadedSchematic uploaded = uploadedSchematics.get(id);
-
-                if (uploaded != null) {
-                    uploaded.touch(System.currentTimeMillis());
-                    return uploaded.schematic;
-                }
-            }
-
-            return null;
-        }
+    public static PersistentSchematic getUploadedSchematic(UUID id) {
+        return uploadedSchematicCache.get(id);
     }
 
-    public static PersistentSchematic getAvailableSchematic(String id, String fileName, World world)
+    public static PersistentSchematic getUploadedSchematic(UUID id, UUID ownerId) {
+        return uploadedSchematicCache.get(id, ownerId);
+    }
+
+    public static void cacheUploadedSchematic(UUID id, UUID ownerId, PersistentSchematic schematic) {
+        uploadedSchematicCache.put(id, ownerId, schematic);
+    }
+
+    public static @Nullable PersistentSchematic getAvailableSchematic(UUID id, String fileName, World world)
         throws IOException {
         PersistentSchematic schematic = getUploadedSchematic(id);
         if (schematic != null) return schematic;
@@ -128,86 +147,60 @@ public final class PersistentSchematicNetwork {
     private static void cleanupCaches() {
         long now = System.currentTimeMillis();
 
-        synchronized (incomingLoadTransfers) {
-            cleanupExpiredTransfers(incomingLoadTransfers, now);
-        }
-        synchronized (incomingSaveTransfers) {
-            cleanupExpiredTransfers(incomingSaveTransfers, now);
-        }
-        synchronized (uploadedSchematics) {
-            cleanupUploadedSchematics(now);
-        }
+        SchematicTransfer.cleanup(now);
+        uploadedSchematicCache.cleanup(now);
     }
 
-    private static void cleanupExpiredTransfers(Map<String, ChunkTransfer> transfers, long now) {
-        transfers.entrySet()
-            .removeIf(entry -> now - entry.getValue().lastUpdatedMs > TRANSFER_TIMEOUT_MS);
-    }
-
-    static void cleanupUploadedSchematics(long now) {
-        uploadedSchematics.entrySet()
-            .removeIf(entry -> now - entry.getValue().lastAccessMs > UPLOADED_SCHEMATIC_TTL_MS);
-
-        while (uploadedSchematics.size() > MAX_UPLOADED_SCHEMATICS) {
-            String oldestKey = null;
-            long oldestAccess = Long.MAX_VALUE;
-
-            for (Map.Entry<String, UploadedSchematic> entry : uploadedSchematics.entrySet()) {
-                long lastAccess = entry.getValue().lastAccessMs;
-
-                if (lastAccess < oldestAccess) {
-                    oldestAccess = lastAccess;
-                    oldestKey = entry.getKey();
-                }
-            }
-
-            if (oldestKey == null) return;
-            uploadedSchematics.remove(oldestKey);
-        }
-    }
-
-    private static void sendChunksToServer(String fileName, byte[] bytes) {
-        UUID transferId = UUID.randomUUID();
-        int chunkCount = chunkCount(bytes.length);
-
-        for (int i = 0; i < chunkCount; i++) {
-            PersistentSchematicPackets.LoadPacket packet = new PersistentSchematicPackets.LoadPacket();
-            fillChunkPacket(packet, fileName, transferId, bytes, i, chunkCount);
-            channel.sendToServer(packet);
-        }
-    }
-
-    static void sendChunksToPlayer(String fileName, byte[] bytes, int blocks, EntityPlayerMP player) {
-        UUID transferId = UUID.randomUUID();
-        int chunkCount = chunkCount(bytes.length);
-
-        for (int i = 0; i < chunkCount; i++) {
-            PersistentSchematicPackets.SaveDataPacket packet = new PersistentSchematicPackets.SaveDataPacket();
-            fillChunkPacket(packet, fileName, transferId, bytes, i, chunkCount);
-            packet.blocks = blocks;
-            channel.sendToPlayer(packet, player);
-        }
-    }
-
-    private static void fillChunkPacket(PersistentSchematicPackets.SchematicChunkPacket packet, String fileName,
-        UUID transferId, byte[] bytes, int chunkIndex, int chunkCount) {
-        int offset = chunkIndex * CHUNK_BYTES;
-        int length = Math.min(CHUNK_BYTES, bytes.length - offset);
+    private static void sendLoadRequestToServer(String fileName, UUID contentId) {
+        LoadRequestPacket packet = new LoadRequestPacket();
         packet.fileName = fileName;
-        packet.transferMost = transferId.getMostSignificantBits();
-        packet.transferLeast = transferId.getLeastSignificantBits();
-        packet.totalLength = bytes.length;
-        packet.chunkIndex = chunkIndex;
-        packet.chunkCount = chunkCount;
-        packet.bytes = new byte[length];
-        System.arraycopy(bytes, offset, packet.bytes, 0, length);
+        packet.contentMost = contentId.getMostSignificantBits();
+        packet.contentLeast = contentId.getLeastSignificantBits();
+        channel.sendToServer(packet);
     }
 
-    static int chunkCount(int length) {
-        return Math.max(1, (length + CHUNK_BYTES - 1) / CHUNK_BYTES);
+    static UUID contentId(byte[] bytes) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256")
+                .digest(bytes);
+            ByteBuffer buffer = ByteBuffer.wrap(digest);
+            return new UUID(buffer.getLong(), buffer.getLong());
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 is not available", e);
+        }
     }
 
-    static void runOnClientThread(Runnable action) {
+    public static UUID playerId(EntityPlayer player) {
+        UUID id = player.getGameProfile()
+            .getId();
+        return id == null ? UUID.nameUUIDFromBytes(
+            player.getCommandSenderName()
+                .getBytes(java.nio.charset.StandardCharsets.UTF_8))
+            : id;
+    }
+
+    public static void bindUploadedSchematic(EntityPlayerMP player, UUID id, String fileName) {
+        ItemStack held = player.inventory.getCurrentItem();
+        if (!MatterManipulatorStateAccess.isMatterManipulator(held)) return;
+
+        MMState state = MatterManipulatorStateAccess.getState(held);
+        PersistentSchematicConfigBridge config = (PersistentSchematicConfigBridge) state.config;
+        config.dragonfix$setPersistentSchematicMode(PersistentSchematicMode.PASTE);
+        config.dragonfix$setPersistentSchematicFile(PersistentSchematic.normalizeFileName(fileName));
+        config.dragonfix$setPersistentSchematicId(id);
+        state.config.placeMode = PlaceMode.COPYING;
+        MatterManipulatorStateAccess.setState(held, state);
+    }
+
+    public static void runOnServerThread(Runnable action) {
+        try {
+            ServerThreadUtil.addScheduledTask(action);
+        } catch (IllegalStateException e) {
+            DragonFix.LOG.warn("Could not schedule Matter Manipulator schematic server task", e);
+        }
+    }
+
+    public static void runOnClientThread(Runnable action) {
         ClientThread.run(action);
     }
 
