@@ -21,6 +21,21 @@ public final class PersistentSchematicState {
     public static void enterMode(MMState state, @Nullable World world, PersistentSchematicMode mode,
         @Nullable String fileName, @Nullable UUID schematicId) {
         PersistentSchematicConfigBridge bridge = (PersistentSchematicConfigBridge) state.config;
+        PersistentSchematicMode previousMode = bridge.dragonfix$getPersistentSchematicMode();
+
+        boolean activatePersistentSelection = previousMode != mode;
+
+        if (previousMode == PersistentSchematicMode.NONE && mode != PersistentSchematicMode.NONE) {
+            bridge.dragonfix$captureNormalSelection();
+
+            if (mode == PersistentSchematicMode.COPY) {
+                bridge.dragonfix$syncPersistentCopyFromNormalSelection();
+            }
+        } else if (previousMode != PersistentSchematicMode.NONE && previousMode != mode) {
+            bridge.dragonfix$capturePersistentSelection(previousMode);
+        } else if (previousMode == mode && mode != PersistentSchematicMode.NONE) {
+            bridge.dragonfix$capturePersistentSelection(mode);
+        }
 
         bridge.dragonfix$setPersistentSchematicMode(mode);
         bridge.dragonfix$setPersistentSchematicId(schematicId);
@@ -31,10 +46,16 @@ public final class PersistentSchematicState {
             bridge.dragonfix$setPersistentSchematicFile(PersistentSchematic.normalizeFileName(fileName));
         }
 
-        if (mode == PersistentSchematicMode.NONE) return;
+        if (mode == PersistentSchematicMode.NONE) {
+            bridge.dragonfix$activateNormalSelection(false);
+            return;
+        }
 
         state.config.placeMode = PlaceMode.COPYING;
         state.config.action = null;
+        if (activatePersistentSelection) {
+            bridge.dragonfix$activatePersistentSelection(mode);
+        }
 
         if (mode == PersistentSchematicMode.COPY && !hasCopySelection(state, world)) {
             state.config.action = PendingAction.MARK_COPY_A;
@@ -80,12 +101,26 @@ public final class PersistentSchematicState {
         bridge.dragonfix$setPersistentSchematicMode(PersistentSchematicMode.PASTE);
         bridge.dragonfix$setPersistentSchematicFile("");
         bridge.dragonfix$setPersistentSchematicId(null);
+        bridge.dragonfix$resetPersistentPasteSelection();
         state.config.placeMode = PlaceMode.COPYING;
         state.config.action = PendingAction.MARK_PASTE;
-        state.config.coordC = null;
-        state.config.arraySpan = null;
 
         return changed;
+    }
+
+    public static boolean leaveMode(MMState state, boolean syncPersistentCopy) {
+        PersistentSchematicConfigBridge bridge = (PersistentSchematicConfigBridge) state.config;
+        PersistentSchematicMode previousMode = bridge.dragonfix$getPersistentSchematicMode();
+
+        if (previousMode == PersistentSchematicMode.NONE) return false;
+
+        bridge.dragonfix$capturePersistentSelection(previousMode);
+        bridge.dragonfix$activateNormalSelection(syncPersistentCopy && previousMode == PersistentSchematicMode.COPY);
+        bridge.dragonfix$setPersistentSchematicMode(PersistentSchematicMode.NONE);
+        bridge.dragonfix$setPersistentSchematicFile("");
+        bridge.dragonfix$setPersistentSchematicId(null);
+        state.config.action = null;
+        return true;
     }
 
 }

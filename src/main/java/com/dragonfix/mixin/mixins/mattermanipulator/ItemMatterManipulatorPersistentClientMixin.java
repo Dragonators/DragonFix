@@ -41,14 +41,21 @@ import cpw.mods.fml.common.FMLCommonHandler;
 public abstract class ItemMatterManipulatorPersistentClientMixin {
 
     @Inject(
-        method = { "lambda$addCommonOptions$7", "lambda$addCommonOptions$8", "lambda$addCommonOptions$9",
-            "lambda$addCommonOptions$10", "lambda$addCommonOptions$11" },
+        method = { "lambda$addCommonOptions$7", "lambda$addCommonOptions$8", "lambda$addCommonOptions$10",
+            "lambda$addCommonOptions$11" },
         at = @At("HEAD"),
         remap = false)
     @Dynamic("Targets ItemMatterManipulator's compiler-generated addCommonOptions click handlers.")
     private static void dragonfix$clearPersistentModeWhenSelectingNormalMode(CallbackInfo ci) {
-        PersistentSchematicClientState.setMode(PersistentSchematicMode.NONE, null);
+        PersistentSchematicClientState.leaveMode(false);
         PersistentSchematicNetwork.sendModeToServer(PersistentSchematicMode.NONE);
+    }
+
+    @Inject(method = "lambda$addCommonOptions$9", at = @At("HEAD"), remap = false)
+    @Dynamic("Targets ItemMatterManipulator's compiler-generated addCommonOptions copying click handler.")
+    private static void dragonfix$syncPersistentCopyWhenSelectingNormalCopy(CallbackInfo ci) {
+        PersistentSchematicClientState.leaveMode(true);
+        PersistentSchematicNetwork.sendModeToServer(PersistentSchematicMode.NONE, true);
     }
 
     @org.spongepowered.asm.mixin.injection.Inject(method = "addCommonOptions", at = @At("TAIL"), remap = false)

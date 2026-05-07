@@ -79,9 +79,14 @@ public final class PersistentSchematicNetwork {
     }
 
     public static void sendModeToServer(PersistentSchematicMode mode) {
+        sendModeToServer(mode, false);
+    }
+
+    public static void sendModeToServer(PersistentSchematicMode mode, boolean syncPersistentCopy) {
         init();
         ModePacket packet = new ModePacket();
         packet.mode = mode;
+        packet.syncPersistentCopy = syncPersistentCopy;
         channel.sendToServer(packet);
     }
 

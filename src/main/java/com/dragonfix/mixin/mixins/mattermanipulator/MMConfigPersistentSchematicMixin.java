@@ -28,6 +28,12 @@ import com.recursive_pineapple.matter_manipulator.common.items.manipulator.Trans
 public abstract class MMConfigPersistentSchematicMixin implements PersistentSchematicConfigBridge {
 
     @Shadow(remap = false)
+    public Location coordA;
+
+    @Shadow(remap = false)
+    public Location coordB;
+
+    @Shadow(remap = false)
     public Location coordC;
 
     @Shadow(remap = false)
@@ -48,6 +54,38 @@ public abstract class MMConfigPersistentSchematicMixin implements PersistentSche
     @Unique
     @SerializedName("dragonfixSchematicId")
     private UUID dragonfix$persistentSchematicId;
+
+    @Unique
+    @SerializedName("dragonfixNormalA")
+    private Location dragonfix$normalCoordA;
+
+    @Unique
+    @SerializedName("dragonfixNormalB")
+    private Location dragonfix$normalCoordB;
+
+    @Unique
+    @SerializedName("dragonfixNormalC")
+    private Location dragonfix$normalCoordC;
+
+    @Unique
+    @SerializedName("dragonfixNormalArray")
+    private Vector3i dragonfix$normalArraySpan;
+
+    @Unique
+    @SerializedName("dragonfixPersistentCopyA")
+    private Location dragonfix$persistentCopyA;
+
+    @Unique
+    @SerializedName("dragonfixPersistentCopyB")
+    private Location dragonfix$persistentCopyB;
+
+    @Unique
+    @SerializedName("dragonfixPersistentPaste")
+    private Location dragonfix$persistentPaste;
+
+    @Unique
+    @SerializedName("dragonfixPersistentArray")
+    private Vector3i dragonfix$persistentArraySpan;
 
     @Inject(method = "getPasteVisualDeltas", at = @At("HEAD"), cancellable = true, remap = false)
     private void dragonfix$getPersistentPasteVisualDeltas(World world, boolean doTransform,
@@ -124,5 +162,78 @@ public abstract class MMConfigPersistentSchematicMixin implements PersistentSche
     @Override
     public void dragonfix$setPersistentSchematicId(UUID id) {
         dragonfix$persistentSchematicId = id;
+    }
+
+    @Override
+    public void dragonfix$captureNormalSelection() {
+        dragonfix$normalCoordA = dragonfix$copy(coordA);
+        dragonfix$normalCoordB = dragonfix$copy(coordB);
+        dragonfix$normalCoordC = dragonfix$copy(coordC);
+        dragonfix$normalArraySpan = dragonfix$copy(arraySpan);
+    }
+
+    @Override
+    public void dragonfix$capturePersistentSelection(PersistentSchematicMode mode) {
+        if (mode == PersistentSchematicMode.COPY) {
+            dragonfix$persistentCopyA = dragonfix$copy(coordA);
+            dragonfix$persistentCopyB = dragonfix$copy(coordB);
+        } else if (mode == PersistentSchematicMode.PASTE) {
+            dragonfix$persistentPaste = dragonfix$copy(coordC);
+            dragonfix$persistentArraySpan = dragonfix$copy(arraySpan);
+        }
+    }
+
+    @Override
+    public void dragonfix$syncPersistentCopyFromNormalSelection() {
+        dragonfix$persistentCopyA = dragonfix$copy(coordA);
+        dragonfix$persistentCopyB = dragonfix$copy(coordB);
+    }
+
+    @Override
+    public void dragonfix$activateNormalSelection(boolean syncPersistentCopy) {
+        if (syncPersistentCopy) {
+            dragonfix$normalCoordA = dragonfix$copy(dragonfix$persistentCopyA);
+            dragonfix$normalCoordB = dragonfix$copy(dragonfix$persistentCopyB);
+        }
+
+        coordA = dragonfix$copy(dragonfix$normalCoordA);
+        coordB = dragonfix$copy(dragonfix$normalCoordB);
+        coordC = dragonfix$copy(dragonfix$normalCoordC);
+        arraySpan = dragonfix$copy(dragonfix$normalArraySpan);
+    }
+
+    @Override
+    public void dragonfix$activatePersistentSelection(PersistentSchematicMode mode) {
+        if (mode == PersistentSchematicMode.COPY) {
+            coordA = dragonfix$copy(dragonfix$persistentCopyA);
+            coordB = dragonfix$copy(dragonfix$persistentCopyB);
+            coordC = null;
+            arraySpan = null;
+        } else if (mode == PersistentSchematicMode.PASTE) {
+            coordA = null;
+            coordB = null;
+            coordC = dragonfix$copy(dragonfix$persistentPaste);
+            arraySpan = dragonfix$copy(dragonfix$persistentArraySpan);
+        }
+    }
+
+    @Override
+    public void dragonfix$resetPersistentPasteSelection() {
+        dragonfix$persistentPaste = null;
+        dragonfix$persistentArraySpan = null;
+        coordA = null;
+        coordB = null;
+        coordC = null;
+        arraySpan = null;
+    }
+
+    @Unique
+    private static Location dragonfix$copy(Location location) {
+        return location == null ? null : location.clone();
+    }
+
+    @Unique
+    private static Vector3i dragonfix$copy(Vector3i vector) {
+        return vector == null ? null : new Vector3i(vector);
     }
 }

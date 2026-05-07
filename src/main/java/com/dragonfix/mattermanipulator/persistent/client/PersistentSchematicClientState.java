@@ -18,6 +18,20 @@ public final class PersistentSchematicClientState {
     private PersistentSchematicClientState() {}
 
     public static void setMode(PersistentSchematicMode mode, String fileName) {
+        updateState((state, player) -> {
+            if (mode == PersistentSchematicMode.NONE) {
+                PersistentSchematicState.leaveMode(state, false);
+            } else {
+                PersistentSchematicState.enterMode(state, player.worldObj, mode, fileName, null);
+            }
+        });
+    }
+
+    public static void leaveMode(boolean syncPersistentCopy) {
+        updateState((state, player) -> PersistentSchematicState.leaveMode(state, syncPersistentCopy));
+    }
+
+    private static void updateState(StateUpdate update) {
         EntityPlayer player = Minecraft.getMinecraft().thePlayer;
         if (player == null) return;
 
@@ -25,7 +39,12 @@ public final class PersistentSchematicClientState {
         if (!MatterManipulatorStateAccess.isMatterManipulator(held)) return;
 
         MMState state = MatterManipulatorStateAccess.getState(held);
-        PersistentSchematicState.enterMode(state, player.worldObj, mode, fileName, null);
+        update.apply(state, player);
         MatterManipulatorStateAccess.setState(held, state);
+    }
+
+    private interface StateUpdate {
+
+        void apply(MMState state, EntityPlayer player);
     }
 }

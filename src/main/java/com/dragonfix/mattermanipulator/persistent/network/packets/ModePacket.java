@@ -15,6 +15,7 @@ public class ModePacket extends ServerPacket {
 
     public PersistentSchematicMode mode = PersistentSchematicMode.NONE;
     public boolean resetPasteSession;
+    public boolean syncPersistentCopy;
 
     @Override
     public byte getPacketID() {
@@ -25,6 +26,7 @@ public class ModePacket extends ServerPacket {
     public void encode(ByteBuf buffer) {
         buffer.writeByte(mode.ordinal());
         buffer.writeBoolean(resetPasteSession);
+        buffer.writeBoolean(syncPersistentCopy);
     }
 
     @Override
@@ -34,6 +36,7 @@ public class ModePacket extends ServerPacket {
         packet.mode = ordinal < 0 || ordinal >= PersistentSchematicMode.values().length ? PersistentSchematicMode.NONE
             : PersistentSchematicMode.values()[ordinal];
         packet.resetPasteSession = buffer.readBoolean();
+        packet.syncPersistentCopy = buffer.readBoolean();
         return packet;
     }
 
@@ -44,6 +47,10 @@ public class ModePacket extends ServerPacket {
             return;
         }
 
-        PersistentSchematicState.enterMode(state, player.worldObj, mode, null, null);
+        if (mode == PersistentSchematicMode.NONE) {
+            PersistentSchematicState.leaveMode(state, syncPersistentCopy);
+        } else {
+            PersistentSchematicState.enterMode(state, player.worldObj, mode, null, null);
+        }
     }
 }
