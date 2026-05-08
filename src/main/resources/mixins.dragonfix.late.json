@@ -11,6 +11,7 @@
     "mattermanipulator.BlockAnalyzerMixin",
     "mattermanipulator.BlockPropertyRegistryMixin",
     "mattermanipulator.BlockSpecAccessor",
+    "mattermanipulator.BlockSpecMixin",
     "mattermanipulator.ItemMatterManipulatorPersistentCommonMixin",
     "mattermanipulator.InteropConstantsMixin",
     "mattermanipulator.InventoryAnalysisMixin",

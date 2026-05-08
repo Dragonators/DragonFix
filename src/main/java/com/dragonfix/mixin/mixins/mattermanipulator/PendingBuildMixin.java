@@ -16,6 +16,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraftforge.fluids.FluidStack;
 
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,6 +30,8 @@ import com.dragonfix.mattermanipulator.bridge.PendingBlockLittleTilesBridge;
 import com.dragonfix.mattermanipulator.bridge.PendingBlockMachineInventoryBridge;
 import com.dragonfix.mattermanipulator.bridge.PendingBlockMalisisDoorsBridge;
 import com.dragonfix.mattermanipulator.bridge.PendingBlockOpenComputersBridge;
+import com.dragonfix.mattermanipulator.helper.MatterManipulatorFluidSourceConsumer;
+import com.dragonfix.mattermanipulator.helper.MatterManipulatorFluidSourceHelper;
 import com.dragonfix.mattermanipulator.helper.MatterManipulatorPlacementHelper;
 import com.gtnewhorizon.gtnhlib.util.CoordinatePacker;
 import com.recursive_pineapple.matter_manipulator.common.building.AEAnalysisResult;
@@ -147,6 +150,12 @@ public abstract class PendingBuildMixin extends AbstractBuildable {
                 continue;
             }
 
+            if (MatterManipulatorFluidSourceHelper.isDisplayOnlyFlow(next)) {
+                pendingBlocks.removeFirst();
+                dragonfix$deferredShuffleCount = 0;
+                continue;
+            }
+
             Block existingBlock = world.getBlock(x, y, z);
 
             if (next.spec.isAir() && existingBlock.isAir(world, x, y, z)) {
@@ -169,7 +178,7 @@ public abstract class PendingBuildMixin extends AbstractBuildable {
                 continue;
             }
 
-            if (!toPlace.isEmpty() && !next.spec.isEquivalent(toPlace.get(0).spec)) {
+            if (!toPlace.isEmpty() && !MatterManipulatorFluidSourceConsumer.canBatchTogether(next, toPlace.get(0))) {
                 break;
             }
 
@@ -320,11 +329,30 @@ public abstract class PendingBuildMixin extends AbstractBuildable {
 
         PendingBlock first = toPlace.get(0);
 
-        ItemStack perBlock = first.getStack();
+        FluidStack perSourceFluid = MatterManipulatorFluidSourceHelper.getFluidStack(first, 1000);
+        ItemStack perBlock = perSourceFluid == null ? first.getStack() : null;
         long total = 0;
         BigItemStack extracted = null;
 
-        if (!first.isFree()) {
+        if (perSourceFluid != null) {
+            total = toPlace.size() * 1000L;
+
+            if (!MatterManipulatorFluidSourceConsumer.tryConsume(this, perSourceFluid, total)) {
+                MMUtils.sendWarningToPlayer(
+                    player,
+                    StatCollector.translateToLocalFormatted("mm.info.warning.could_not_find", toPlace.size()));
+                MMUtils.sendWarningToPlayer(
+                    player,
+                    String.format("  %s x %d L", perSourceFluid.getLocalizedName(), total));
+
+                for (PendingBlock pending : toPlace) {
+                    pendingBlocks.add(pending);
+                    visited.remove(CoordinatePacker.pack(pending.x, pending.y, pending.z));
+                }
+
+                toPlace.clear();
+            }
+        } else if (!first.isFree()) {
             total = toPlace.size() * (long) perBlock.stackSize;
 
             List<BigItemStack> extractedStacks = tryConsumeItems(
@@ -400,6 +428,7 @@ public abstract class PendingBuildMixin extends AbstractBuildable {
                         metadata);
                 } else {
                     if (!MatterManipulatorPlacementHelper.setBlock(world, x, y, z, block, metadata, 3)) {
+                        MatterManipulatorFluidSourceConsumer.refund(this, pending);
                         continue;
                     }
 

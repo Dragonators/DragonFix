@@ -10,4 +10,7 @@ public interface BlockSpecAccessor {
 
     @Accessor("metadata")
     int dragonfix$getMetadata();
+
+    @Accessor("metadata")
+    void dragonfix$setMetadata(int metadata);
 }

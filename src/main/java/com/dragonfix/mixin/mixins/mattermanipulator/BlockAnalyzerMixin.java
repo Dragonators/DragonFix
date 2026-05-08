@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 import com.dragonfix.mattermanipulator.analysis.DoorAnalysisResult;
 import com.dragonfix.mattermanipulator.bridge.PendingBlockDoorBridge;
 import com.dragonfix.mattermanipulator.helper.BiomesOPlentyPlacementHelper;
+import com.dragonfix.mattermanipulator.helper.MatterManipulatorFluidSourceHelper;
 import com.recursive_pineapple.matter_manipulator.GlobalMMConfig.DebugConfig;
 import com.recursive_pineapple.matter_manipulator.MMMod;
 import com.recursive_pineapple.matter_manipulator.common.building.BlockAnalyzer;
@@ -51,6 +52,9 @@ public abstract class BlockAnalyzerMixin {
             if (BiomesOPlentyPlacementHelper.isGeneratedUpperHalf(block, meta)) continue;
 
             BlockSpec spec = BlockSpec.fromBlock(null, world, voxel.x, voxel.y, voxel.z);
+            if (MatterManipulatorFluidSourceHelper.isSupportedFluid(block)) {
+                ((BlockSpecAccessor) spec).dragonfix$setMetadata(meta);
+            }
 
             if (spec.skipWhenCopying()) {
                 continue;

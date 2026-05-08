@@ -8,8 +8,8 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
+import com.dragonfix.mattermanipulator.helper.MatterManipulatorFluidSourceHelper;
 import com.recursive_pineapple.matter_manipulator.common.building.InteropConstants;
-import com.recursive_pineapple.matter_manipulator.common.utils.Mods;
 
 import cpw.mods.fml.common.registry.GameRegistry;
 
@@ -26,10 +26,11 @@ public abstract class InteropConstantsMixin {
      * @author DragonFix
      * @reason MatterManipulator 0.0.51 skips the ForgeMultipart container block before tile analysis can capture parts.
      */
+    @SuppressWarnings("ConstantValue")
     @Overwrite(remap = false)
     public static boolean skipWhenCopying(Block block, int metadata) {
         return block.getMaterial() instanceof MaterialLiquid
-            || Mods.GregTech.isModLoaded() && dragonfix$isGTRenderer(block)
+            && !MatterManipulatorFluidSourceHelper.isSupportedFluid(block) || dragonfix$isGTRenderer(block)
             || InteropConstants.BRIGHT_AIR.matches(block, metadata)
             || InteropConstants.ARCANE_LAMP_LIGHT.matches(block, metadata);
     }
@@ -42,7 +43,8 @@ public abstract class InteropConstantsMixin {
     public static boolean isFree(Block block, int metadata) {
         return block == net.minecraft.init.Blocks.air || InteropConstants.FMP_BLOCK.matches(block, metadata)
             || InteropConstants.AE_BLOCK_CABLE.matches(block, metadata)
-            || metadata == 0 && block == dragonfix$getLittleTilesBlock();
+            || metadata == 0 && block == dragonfix$getLittleTilesBlock()
+            || MatterManipulatorFluidSourceHelper.isSupportedFluid(block);
     }
 
     @Unique
