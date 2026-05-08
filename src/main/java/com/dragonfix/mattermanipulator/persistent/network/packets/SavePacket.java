@@ -1,5 +1,7 @@
 package com.dragonfix.mattermanipulator.persistent.network.packets;
 
+import java.util.UUID;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 
@@ -37,11 +39,15 @@ public class SavePacket extends FileNamePacket {
 
         PersistentSchematicNetwork.ioExecutor.execute(() -> {
             try {
-                SchematicTransfer.sendChunksToPlayer(
-                    schematicFileName,
-                    PersistentSchematic.toBytes(schematic),
-                    blocks,
-                    targetPlayer);
+                byte[] schematicBytes = PersistentSchematic.toBytes(schematic);
+                UUID contentId = PersistentSchematicNetwork.contentId(schematicBytes);
+                UUID ownerId = PersistentSchematicNetwork.playerId(targetPlayer);
+
+                PersistentSchematicNetwork.cacheUploadedSchematic(contentId, ownerId, schematic);
+                PersistentSchematicNetwork.runOnServerThread(
+                    () -> PersistentSchematicState
+                        .refreshHeldPasteSchematic(targetPlayer, schematicFileName, contentId));
+                SchematicTransfer.sendChunksToPlayer(schematicFileName, schematicBytes, blocks, targetPlayer);
             } catch (Exception e) {
                 DragonFix.LOG.warn("Could not serialize Matter Manipulator schematic for client", e);
                 MMUtils.sendErrorToPlayer(

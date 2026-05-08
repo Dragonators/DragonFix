@@ -67,6 +67,9 @@ public class SaveDataPacket extends SchematicChunkPacket {
                 if (schematicBytes == null) return;
 
                 PersistentSchematic.saveBytes(schematicFileName, schematicBytes);
+                UUID contentId = PersistentSchematicNetwork.contentId(schematicBytes);
+                PersistentSchematicNetwork.rememberClientLoadedSchematic(contentId);
+                PersistentSchematicNetwork.refreshClientHeldPasteSchematic(schematicFileName, contentId);
                 PersistentSchematicNetwork
                     .sendClientInfo(PersistentSchematic.saveResultMessage(schematicFileName, schematicBlocks));
             } catch (Exception e) {

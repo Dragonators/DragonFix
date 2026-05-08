@@ -281,6 +281,29 @@ public abstract class MMConfigPersistentSchematicMixin implements PersistentSche
         data.pasteRestoreStartedMs = 0L;
     }
 
+    @Override
+    public boolean dragonfix$refreshPersistentPasteSchematic(String fileName, UUID id) {
+        String normalizedFileName = PersistentSchematic.normalizeFileName(fileName);
+        PersistentSchematicConfigData data = dragonfix$data();
+        boolean changed = false;
+
+        if (normalizedFileName.equals(data.pasteFile)) {
+            changed = !Objects.equals(data.pasteId, id);
+            data.pasteId = id;
+            data.pasteRestore = id == null ? RESTORE_PENDING : RESTORE_READY;
+            data.pasteRestoreStartedMs = 0L;
+        }
+
+        if (data.mode == PersistentSchematicMode.PASTE && normalizedFileName.equals(data.file)) {
+            changed |= !Objects.equals(data.id, id);
+            data.id = id;
+            data.pasteRestore = id == null ? RESTORE_PENDING : RESTORE_READY;
+            data.pasteRestoreStartedMs = 0L;
+        }
+
+        return changed;
+    }
+
     @Unique
     private PersistentSchematicConfigData dragonfix$data() {
         if (dragonfix$persistent == null) {

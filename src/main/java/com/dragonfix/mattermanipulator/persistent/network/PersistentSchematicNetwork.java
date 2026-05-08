@@ -144,6 +144,10 @@ public final class PersistentSchematicNetwork {
         }
     }
 
+    public static void refreshClientHeldPasteSchematic(String fileName, UUID id) {
+        ClientThread.refreshHeldPasteSchematic(fileName, id);
+    }
+
     public static boolean isClientLoadedSchematic(UUID id) {
         return id != null && clientLoadedSchematics.contains(id);
     }
@@ -222,7 +226,7 @@ public final class PersistentSchematicNetwork {
         channel.sendToServer(packet);
     }
 
-    static UUID contentId(byte[] bytes) {
+    public static UUID contentId(byte[] bytes) {
         try {
             byte[] digest = MessageDigest.getInstance("SHA-256")
                 .digest(bytes);
@@ -279,6 +283,13 @@ public final class PersistentSchematicNetwork {
         static void run(Runnable action) {
             net.minecraft.client.Minecraft.getMinecraft()
                 .func_152344_a(action);
+        }
+
+        static void refreshHeldPasteSchematic(String fileName, UUID id) {
+            run(() -> {
+                EntityPlayer player = MMMod.proxy.getThePlayer();
+                PersistentSchematicState.refreshHeldPasteSchematic(player, fileName, id);
+            });
         }
     }
 

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
@@ -97,6 +98,9 @@ public abstract class MMRendererMixin {
 
     @Shadow(remap = false)
     private static boolean needsAnalysis;
+
+    @Unique
+    private static UUID dragonfix$lastPersistentSchematicId;
 
     @Shadow(remap = false)
     private static long statusExpiration;
@@ -427,6 +431,15 @@ public abstract class MMRendererMixin {
         needsAnalysis = needsAnalysis || (now - lastAnalysisMS) >= ANALYSIS_INTERVAL_MS
             || lastDrawer != manipulator
             || !Objects.equals(lastAnalyzedConfig, state.config);
+
+        UUID persistentSchematicId = ((PersistentSchematicConfigBridge) state.config)
+            .dragonfix$getPersistentSchematicId();
+        if (!Objects.equals(persistentSchematicId, dragonfix$lastPersistentSchematicId)) {
+            dragonfix$lastPersistentSchematicId = persistentSchematicId;
+            dragonfix$clearStaleHints();
+            needsAnalysis = true;
+            needsHintDraw = true;
+        }
         needsHintDraw = needsHintDraw || needsAnalysis
             || (lastPlayerPosition != null && lastPlayerPosition.distanceTo(playerLocation) > 2
                 && manipulator.tier.maxRange != -1);

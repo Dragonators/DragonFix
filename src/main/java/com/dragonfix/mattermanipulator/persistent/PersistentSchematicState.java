@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
@@ -91,6 +92,24 @@ public final class PersistentSchematicState {
         PersistentSchematicConfigBridge bridge = (PersistentSchematicConfigBridge) state.config;
         bridge.dragonfix$clearStoredPersistentPasteSession();
         return true;
+    }
+
+    public static boolean refreshPasteSchematicStack(ItemStack stack, String fileName, UUID schematicId) {
+        if (!MatterManipulatorStateAccess.isMatterManipulator(stack)) return false;
+
+        MMState state = MatterManipulatorStateAccess.getState(stack);
+        if (!refreshPasteSchematic(state, fileName, schematicId)) return false;
+        MatterManipulatorStateAccess.setState(stack, state);
+        return true;
+    }
+
+    public static boolean refreshHeldPasteSchematic(EntityPlayer player, String fileName, UUID schematicId) {
+        return player != null && refreshPasteSchematicStack(player.getHeldItem(), fileName, schematicId);
+    }
+
+    public static boolean refreshPasteSchematic(MMState state, String fileName, UUID schematicId) {
+        PersistentSchematicConfigBridge bridge = (PersistentSchematicConfigBridge) state.config;
+        return bridge.dragonfix$refreshPersistentPasteSchematic(fileName, schematicId);
     }
 
     public static boolean resetPasteSession(MMState state) {

@@ -51,6 +51,8 @@ public interface PersistentSchematicConfigBridge {
 
     void dragonfix$clearStoredPersistentPasteSession();
 
+    boolean dragonfix$refreshPersistentPasteSchematic(String fileName, UUID id);
+
     default boolean dragonfix$isPersistentSchematicCopy() {
         return dragonfix$getPersistentSchematicMode() == PersistentSchematicMode.COPY;
     }

@@ -60,6 +60,7 @@ DragonFix 是一个面向 Minecraft 1.7.10 / Forge 的轻量级修复模组。
   - 修复 AE2 编码样板在 MatterManipulator 持久选区文件中使用不稳定数字物品 ID，导致跨存档粘贴后样板无效的问题。
   - 修复 MatterManipulator 安装 AE2 升级卡时可能把已提取的升级卡数量归零，导致 ME 接口、存储总线等方块或部件无法恢复升级卡的问题。
   - 为 MatterManipulator 复制/粘贴水和岩浆源方块增加支持，并在生存模式下从本次建造已回收的流体、AE 流体、液滴或桶中消耗对应流体；同时保存流动水/岩浆用于预览，但不实际粘贴非源流体。
+  - 修复 MatterManipulator 持久粘贴加载的同名 `.mmschematic` 被持久复制覆盖后，客户端仍保留旧预览渲染缓存的问题。
   - 复用 MatterManipulator 选区 BoxRenderer 的 VBO，减少每帧渲染选区时的缓冲对象创建。
   - 增加 MatterManipulator 持久选区文件功能，可将分析后的 `PendingBlock` 数据保存为 `.mmschematic` 并跨存档加载粘贴。
 
