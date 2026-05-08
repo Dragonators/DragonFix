@@ -2,6 +2,7 @@ package com.dragonfix.mattermanipulator;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -59,6 +60,20 @@ public class DragonFixComputerComponentItemProvider implements IItemProvider {
     public static DragonFixComputerComponentItemProvider fromStack(ItemStack stack) {
         if (stack == null || API.items.get(stack) == null || !isHandledComponent(stack)) return null;
         return new DragonFixComputerComponentItemProvider(withoutAddress(stack));
+    }
+
+    public static boolean areEquivalentForRestore(ItemStack expected, ItemStack candidate) {
+        if (expected == null || candidate == null) return expected == candidate;
+
+        boolean expectedHandled = API.items.get(expected) != null && isHandledComponent(expected);
+        boolean candidateHandled = API.items.get(candidate) != null && isHandledComponent(candidate);
+
+        if (expectedHandled || candidateHandled) {
+            return expectedHandled && candidateHandled
+                && Objects.equals(API.items.get(expected), API.items.get(candidate));
+        }
+
+        return ItemStack.areItemStacksEqual(expected, candidate);
     }
 
     private static void addFuzzyComponent(String name) {
@@ -129,6 +144,7 @@ public class DragonFixComputerComponentItemProvider implements IItemProvider {
         return stripped;
     }
 
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public IItemProvider clone() {
         return new DragonFixComputerComponentItemProvider(component);
@@ -148,7 +164,7 @@ public class DragonFixComputerComponentItemProvider implements IItemProvider {
 
     @Override
     public int hashCode() {
-        return component.getItemDamage() == EEPROM.getItemDamage() ? java.util.Objects.hashCode(component)
+        return component.getItemDamage() == EEPROM.getItemDamage() ? Objects.hashCode(component)
             : API.items.get(component)
                 .hashCode();
     }

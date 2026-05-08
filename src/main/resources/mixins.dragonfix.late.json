@@ -15,6 +15,7 @@
     "mattermanipulator.ItemMatterManipulatorPersistentCommonMixin",
     "mattermanipulator.InteropConstantsMixin",
     "mattermanipulator.InventoryAnalysisMixin",
+    "mattermanipulator.MMInventoryMixin",
     "mattermanipulator.MMConfigPersistentSchematicMixin",
     "mattermanipulator.MMStatePersistentSchematicMixin",
     "mattermanipulator.MMUtilsPersistentSchematicMixin",

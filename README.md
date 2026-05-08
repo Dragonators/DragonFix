@@ -46,6 +46,7 @@ DragonFix 是一个面向 Minecraft 1.7.10 / Forge 的轻量级修复模组。
   - 修复 OpenComputers 可旋转方块复制/粘贴时朝向未按 MM 变换同步的问题。
   - 修复 OpenComputers 组件带地址或数据 NBT 时，复制/粘贴库存可能错误要求原始带地址物品的问题。
   - 修复 OpenComputers 无法粘贴 APU 系列组件的问题。
+  - 修复 MatterManipulator 生存模式粘贴 OpenComputers 微控制器时，因要求微控制器物品 NBT 完全一致而找不到等价物品的问题；现在微控制器按同等级机箱与等价内部组件消耗，组件数据由粘贴结果恢复。
   - 修复 Avaritiaddons 梦魇工作台右侧标记区的复制/恢复。
   - 修复 AE2 物质聚合器存储组件槽位的复制/恢复。
   - 修复 Ender IO 灵魂绑定器电容槽位的复制/恢复。
