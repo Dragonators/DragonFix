@@ -27,7 +27,14 @@ public final class MatterManipulatorPlacementHelper {
         if (DoorPlacementHelper.isDoor(block) && (metadata & 8) == 0) {
             return DoorPlacementHelper.setBlock(world, x, y, z, block, metadata, flags);
         }
+        if (BiomesOPlentyPlacementHelper.shouldPlaceDirectly(block, metadata)) {
+            return BiomesOPlentyPlacementHelper.setBlockDirectly(world, x, y, z, block, metadata);
+        }
 
         return world.setBlock(x, y, z, block, metadata, flags);
+    }
+
+    public static boolean shouldPlaceDirectly(Block block, int metadata) {
+        return BiomesOPlentyPlacementHelper.shouldPlaceDirectly(block, metadata);
     }
 }

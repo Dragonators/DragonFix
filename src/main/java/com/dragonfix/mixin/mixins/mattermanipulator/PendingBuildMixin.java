@@ -413,7 +413,8 @@ public abstract class PendingBuildMixin extends AbstractBuildable {
             if (!pending.spec.isAir()) {
                 Block block = pending.getBlock();
 
-                if (pending.getItem() instanceof ItemBlock itemBlock) {
+                if (pending.getItem() instanceof ItemBlock itemBlock
+                    && !MatterManipulatorPlacementHelper.shouldPlaceDirectly(block, metadata)) {
                     itemBlock.placeBlockAt(
                         perBlock,
                         player,

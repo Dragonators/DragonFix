@@ -7,6 +7,7 @@ import com.dragonfix.mattermanipulator.bridge.ProxiedWorldBridge;
 
 import biomesoplenty.common.blocks.BlockBOPFlower;
 import biomesoplenty.common.blocks.BlockBOPFoliage;
+import biomesoplenty.common.blocks.BlockBOPLilypad;
 import biomesoplenty.common.blocks.BlockBOPPlant;
 import biomesoplenty.common.blocks.templates.BOPBlockWorldDecor;
 
@@ -16,6 +17,15 @@ public final class BiomesOPlentyPlacementHelper {
 
     public static boolean isWorldDecor(Block block) {
         return block instanceof BOPBlockWorldDecor;
+    }
+
+    public static boolean shouldPlaceDirectly(Block block, int metadata) {
+        return block instanceof BlockBOPLilypad || block instanceof BlockBOPFoliage && metadata == 0
+            || block instanceof BlockBOPPlant && metadata == 14;
+    }
+
+    public static boolean setBlockDirectly(World world, int x, int y, int z, Block block, int metadata) {
+        return world.setBlock(x, y, z, block, metadata, 2);
     }
 
     public static boolean isGeneratedUpperHalf(Block block, int metadata) {
