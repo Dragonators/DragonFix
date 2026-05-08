@@ -9,8 +9,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants.NBT;
 
-import com.dragonfix.mattermanipulator.DragonFixComputerComponentItemProvider;
-
 import li.cil.oc.api.API;
 
 @SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -37,7 +35,7 @@ public final class OpenComputersMicrocontrollerItemHelper {
         if (expectedComponents.size() != candidateComponents.size()) return false;
 
         for (int i = 0; i < expectedComponents.size(); i++) {
-            if (!DragonFixComputerComponentItemProvider
+            if (!OpenComputersComponentItemHelper
                 .areEquivalentForRestore(expectedComponents.get(i), candidateComponents.get(i))) return false;
         }
 
