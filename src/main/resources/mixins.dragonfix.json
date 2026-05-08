@@ -5,6 +5,7 @@
   "package": "com.dragonfix.mixin.mixins",
   "refmap": "mixins.dragonfix.refmap.json",
   "mixins": [
+    "ae2.AEStackMixin",
     "forge.FMLProxyPacketPayloadMixin",
     "minecraft.C17PacketCustomPayloadMixin"
   ],
