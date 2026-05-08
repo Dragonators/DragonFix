@@ -1,9 +1,13 @@
 package com.dragonfix.mixin.mixins.mattermanipulator;
 
+import net.minecraft.block.Block;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -13,9 +17,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import com.dragonfix.mattermanipulator.bridge.ArchitectureCraftOrientationBridge;
 import com.recursive_pineapple.matter_manipulator.common.building.ArchitectureCraftAnalysisResult;
 import com.recursive_pineapple.matter_manipulator.common.building.BlockAnalyzer.IBlockApplyContext;
+import com.recursive_pineapple.matter_manipulator.common.building.PortableItemStack;
 import com.recursive_pineapple.matter_manipulator.common.items.manipulator.Transform;
 
+import gcewing.architecture.ArchitectureCraft;
+import gcewing.architecture.common.shape.Shape;
 import gcewing.architecture.common.tile.TileShape;
+import gcewing.architecture.compat.IBlockState;
+import gcewing.architecture.compat.MetaBlockState;
 import gcewing.architecture.compat.Trans3;
 import gcewing.architecture.compat.Vector3;
 
@@ -39,6 +48,15 @@ public abstract class ArchitectureCraftAnalysisResultTransformMixin implements A
 
     @Unique
     private double dragonfix$offsetX;
+
+    @Shadow(remap = false)
+    public PortableItemStack cladding;
+
+    @Shadow(remap = false)
+    public PortableItemStack material;
+
+    @Shadow(remap = false)
+    public int shape;
 
     @Inject(method = "analyze", at = @At("RETURN"), remap = false)
     private static void dragonfix$captureOrientation(TileEntity te,
@@ -88,17 +106,134 @@ public abstract class ArchitectureCraftAnalysisResultTransformMixin implements A
         }
     }
 
-    @Inject(method = "apply", at = @At("RETURN"), remap = false)
-    private void dragonfix$applyOrientation(IBlockApplyContext ctx, CallbackInfoReturnable<Boolean> cir) {
-        if (!cir.getReturnValue()) return;
-
+    /**
+     * @author DragonFix
+     * @reason Restore ArchitectureCraft shape data after real material requirements have been handled separately.
+     */
+    @Overwrite(remap = false)
+    public boolean apply(IBlockApplyContext ctx) {
         TileEntity te = ctx.getTileEntity();
-        if (!(te instanceof TileShape tileShape)) return;
+        if (!(te instanceof TileShape tileShape)) return false;
 
+        IBlockState targetBase = dragonfix$toMaterialState(material);
+        if (targetBase == null) return false;
+        tileShape.baseBlockState = targetBase;
+
+        Shape targetShape = Shape.forId(shape);
+        if (targetShape == null) return false;
+
+        if (!dragonfix$isSameSecondaryMaterial(tileShape.shape, tileShape.secondaryBlockState, targetShape, cladding)) {
+            dragonfix$giveSecondaryMaterial(ctx, tileShape.shape, tileShape.secondaryBlockState);
+            if (!dragonfix$consumeSecondaryMaterial(ctx, targetShape, cladding, true)) return false;
+        }
+
+        if (cladding == null) {
+            tileShape.secondaryBlockState = null;
+        } else {
+            Block block = cladding.getBlock();
+            if (block == null) return false;
+
+            tileShape.secondaryBlockState = new MetaBlockState(block, cladding.getMeta());
+        }
+
+        tileShape.shape = targetShape;
         tileShape.setSide(dragonfix$side);
         tileShape.setTurn(dragonfix$turn);
         tileShape.setOffsetX(dragonfix$offsetX);
         tileShape.markChanged();
+        return true;
+    }
+
+    /**
+     * @author DragonFix
+     * @reason ArchitectureCraft shape items and their cut-from base materials are free, but real secondary materials
+     *         are not.
+     */
+    @Overwrite(remap = false)
+    public boolean getRequiredItemsForExistingBlock(IBlockApplyContext context) {
+        if (context.getTileEntity() instanceof TileShape tileShape) {
+            Shape targetShape = Shape.forId(shape);
+            if (!dragonfix$isSameSecondaryMaterial(
+                tileShape.shape,
+                tileShape.secondaryBlockState,
+                targetShape,
+                cladding)) {
+                dragonfix$giveSecondaryMaterial(context, tileShape.shape, tileShape.secondaryBlockState);
+                return dragonfix$consumeSecondaryMaterial(context, targetShape, cladding, false);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @author DragonFix
+     * @reason ArchitectureCraft shape items and their cut-from base materials are free, but real secondary materials
+     *         are not.
+     */
+    @Overwrite(remap = false)
+    public boolean getRequiredItemsForNewBlock(IBlockApplyContext context) {
+        return dragonfix$consumeSecondaryMaterial(context, Shape.forId(shape), cladding, false);
+    }
+
+    @Unique
+    private static boolean dragonfix$consumeSecondaryMaterial(IBlockApplyContext context, Shape shape,
+        PortableItemStack portable, boolean warn) {
+        ItemStack stack = dragonfix$getSecondaryMaterialStack(shape, portable);
+        return stack == null || dragonfix$consumeMaterial(context, stack, warn);
+    }
+
+    @Unique
+    private static boolean dragonfix$consumeMaterial(IBlockApplyContext context, ItemStack stack, boolean warn) {
+        if (context.tryConsumeItems(stack)) return true;
+        if (warn) context.warn("Could not find material: " + stack.getDisplayName());
+        return false;
+    }
+
+    @Unique
+    private static boolean dragonfix$isSameSecondaryMaterial(Shape existingShape, IBlockState existing,
+        Shape expectedShape, PortableItemStack expected) {
+        return dragonfix$isSameStack(
+            dragonfix$getSecondaryMaterialStack(existingShape, existing),
+            dragonfix$getSecondaryMaterialStack(expectedShape, expected));
+    }
+
+    @Unique
+    private static boolean dragonfix$isSameStack(ItemStack a, ItemStack b) {
+        if (a == b) return true;
+        if (a == null || b == null) return false;
+        return a.getItem() == b.getItem() && a.getItemDamage() == b.getItemDamage();
+    }
+
+    @Unique
+    private static void dragonfix$giveSecondaryMaterial(IBlockApplyContext context, Shape shape, IBlockState state) {
+        ItemStack stack = dragonfix$getSecondaryMaterialStack(shape, state);
+        if (stack != null) context.givePlayerItems(stack);
+    }
+
+    @Unique
+    private static ItemStack dragonfix$getSecondaryMaterialStack(Shape shape, PortableItemStack portable) {
+        Block block = portable == null ? null : portable.getBlock();
+        return block == null ? null
+            : dragonfix$getSecondaryMaterialStack(shape, new MetaBlockState(block, portable.getMeta()));
+    }
+
+    @Unique
+    private static ItemStack dragonfix$getSecondaryMaterialStack(Shape shape, IBlockState state) {
+        if (shape == null || state == null) return null;
+        if (shape.kind.acceptsCladding()) return null;
+
+        ItemStack stack = shape.kind.newSecondaryMaterialStack(state);
+        if (stack == null || stack.getItem() == ArchitectureCraft.content.itemCladding) return null;
+        return stack;
+    }
+
+    @Unique
+    private static IBlockState dragonfix$toMaterialState(PortableItemStack portable) {
+        Block block = portable == null ? null : portable.getBlock();
+        return block == null ? null : new MetaBlockState(block, portable.getMeta());
     }
 
     @Inject(method = "hashCode", at = @At("RETURN"), cancellable = true, remap = false)

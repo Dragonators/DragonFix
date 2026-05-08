@@ -42,6 +42,7 @@ DragonFix 是一个面向 Minecraft 1.7.10 / Forge 的轻量级修复模组。
   - 为 Carpenter's Blocks 方块补充复制、旋转和建造时的 data/covers 适配。
   - 为 ForgeMultipart / Project Red multipart 方块补充复制、旋转、物品消耗、建造和预览适配。
   - 修复 Forge Microblocks 的 ForgeMultipart 容器方块在区域分析阶段被当作跳过方块的问题；同时让 multipart 在普通支撑方块之后建造。
+  - 生存模式下调整 Forge Microblocks 按免费结构恢复，ArchitectureCraft shape item 与切割基础材料本身免费但仍会消耗/返还真实嵌入材料。
   - 修复 Biomes O' Plenty 植物在 MatterManipulator 建造预检流程中的问题，包括代理世界缺少 provider 时可能崩溃的问题。
   - 修复 OpenComputers 可旋转方块复制/粘贴时朝向未按 MM 变换同步的问题。
   - 修复 OpenComputers 组件带地址或数据 NBT 时，复制/粘贴库存可能错误要求原始带地址物品的问题。

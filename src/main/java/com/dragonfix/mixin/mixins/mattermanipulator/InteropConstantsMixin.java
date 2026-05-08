@@ -12,6 +12,7 @@ import com.dragonfix.mattermanipulator.helper.MatterManipulatorFluidSourceHelper
 import com.recursive_pineapple.matter_manipulator.common.building.InteropConstants;
 
 import cpw.mods.fml.common.registry.GameRegistry;
+import gcewing.architecture.ArchitectureCraft;
 
 @Mixin(value = InteropConstants.class, remap = false)
 public abstract class InteropConstantsMixin {
@@ -44,7 +45,25 @@ public abstract class InteropConstantsMixin {
         return block == net.minecraft.init.Blocks.air || InteropConstants.FMP_BLOCK.matches(block, metadata)
             || InteropConstants.AE_BLOCK_CABLE.matches(block, metadata)
             || metadata == 0 && block == dragonfix$getLittleTilesBlock()
+            || dragonfix$isArchitectureCraftShape(block)
             || MatterManipulatorFluidSourceHelper.isSupportedFluid(block);
+    }
+
+    /**
+     * @author DragonFix
+     * @reason ArchitectureCraft shape blocks are restored as free containers; their real materials are accounted by
+     *         ArchitectureCraftAnalysisResult instead.
+     */
+    @Overwrite(remap = false)
+    public static boolean shouldDropItem(Block block, int metadata) {
+        return !dragonfix$isGTRenderer(block) && !InteropConstants.BRIGHT_AIR.matches(block, metadata)
+            && !InteropConstants.ARCANE_LAMP_LIGHT.matches(block, metadata)
+            && !dragonfix$isArchitectureCraftShape(block);
+    }
+
+    @Unique
+    private static boolean dragonfix$isArchitectureCraftShape(Block block) {
+        return block == ArchitectureCraft.content.blockShape || block == ArchitectureCraft.content.blockShapeSE;
     }
 
     @Unique

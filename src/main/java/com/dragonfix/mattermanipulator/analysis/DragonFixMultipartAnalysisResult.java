@@ -156,8 +156,10 @@ public class DragonFixMultipartAnalysisResult implements ITileAnalysisIntegratio
 
         List<TMultiPart> existingParts = new ArrayList<>(existingTile.jPartList());
         for (TMultiPart existingPart : existingParts) {
-            for (ItemStack drop : existingPart.getDrops()) {
-                ctx.givePlayerItems(drop.copy());
+            if (!isMicroblock(existingPart)) {
+                for (ItemStack drop : existingPart.getDrops()) {
+                    ctx.givePlayerItems(drop.copy());
+                }
             }
             existingTile.remPart(existingPart);
         }
@@ -187,6 +189,7 @@ public class DragonFixMultipartAnalysisResult implements ITileAnalysisIntegratio
     }
 
     private static boolean tryConsumePartItems(IBlockApplyContext ctx, PartData data) {
+        if (isMicroblock(data)) return true;
         if (data.drops == null) return true;
 
         List<ItemStack> consumed = new ArrayList<>();
@@ -241,6 +244,7 @@ public class DragonFixMultipartAnalysisResult implements ITileAnalysisIntegratio
     }
 
     private static void refundPartItems(IBlockApplyContext ctx, PartData data) {
+        if (isMicroblock(data)) return;
         if (data.drops == null) return;
 
         for (PortableItemStack drop : data.drops) {
@@ -263,6 +267,8 @@ public class DragonFixMultipartAnalysisResult implements ITileAnalysisIntegratio
 
         if (te instanceof TileMultipart multipart) {
             for (TMultiPart part : multipart.jPartList()) {
+                if (isMicroblock(part)) continue;
+
                 for (ItemStack drop : part.getDrops()) {
                     context.givePlayerItems(drop.copy());
                 }
@@ -283,6 +289,7 @@ public class DragonFixMultipartAnalysisResult implements ITileAnalysisIntegratio
         if (parts == null) return;
 
         for (PartData data : parts) {
+            if (isMicroblock(data)) continue;
             if (data.drops == null) continue;
 
             for (PortableItemStack drop : data.drops) {
@@ -308,6 +315,15 @@ public class DragonFixMultipartAnalysisResult implements ITileAnalysisIntegratio
         }
 
         return null;
+    }
+
+    private static boolean isMicroblock(PartData data) {
+        return data != null && data.typeId != null && data.typeId.startsWith("mcr_");
+    }
+
+    private static boolean isMicroblock(TMultiPart part) {
+        return part != null && part.getType()
+            .startsWith("mcr_");
     }
 
     private static Block parseMaterialBlock(String materialName) {
