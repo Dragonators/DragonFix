@@ -137,6 +137,11 @@ dependencies {
     // AE2Things v1.2.14 is published as a GitHub release asset, not a resolvable Maven/JitPack artifact.
     compileOnly(files("libs/ae2thing-v1.2.14-dev.jar"))
 
+    // Signature dependency required for AE2Things GTUtil's AE2FC OrderStack parameter.
+    compileOnly("com.github.GTNewHorizons:AE2FluidCraft-Rework:1.4.120-gtnh:dev") {
+        transitive = false
+    }
+
     // Optional target for MyCTMLib GregTech CTM overlay offset fix.
     compileOnly("com.github.ABKQPO:MyCTMLib:1.2.7:dev") {
         transitive = false

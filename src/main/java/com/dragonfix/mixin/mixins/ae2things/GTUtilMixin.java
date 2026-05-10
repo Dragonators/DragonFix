@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import com.asdflj.ae2thing.nei.object.OrderStack;
+import com.glodblock.github.nei.object.OrderStack;
 
 import codechicken.nei.recipe.IRecipeHandler;
 import gregtech.api.enums.ItemList;
