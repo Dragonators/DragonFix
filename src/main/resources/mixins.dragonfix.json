@@ -15,6 +15,7 @@
     "angelica.ExternallyManagedUniformsMixin",
     "angelica.SelectionBoxRendererMixin",
     "angelica.TileOverrideMatchTilesMixin",
+    "angelica.TileOverrideNullBlockAccessMixin",
     "gtnhlib.ModelQuadMixin",
     "gtnhlib.VertexFormatMixin",
     "myctmlib.GTMultiTextureRenderMixin",
