@@ -35,7 +35,7 @@ public class DragonFix {
         + "required-after:BiomesOPlenty@[2.1.0,);"
         + "after:malisisdoors@[1.18.2-GTNH,);"
         + "after:programmablehatches@[0.1.3p55,);"
-        + "required-after:angelica@[2.1.30,);"
+        + "after:angelica@[2.1.30,);"
         + "after:MyCTMLib@[v1.2.5_28x,)";
     public static final Logger LOG = LogManager.getLogger(MODID);
 
