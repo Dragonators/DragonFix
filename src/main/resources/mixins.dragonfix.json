@@ -16,12 +16,6 @@
     "angelica.SelectionBoxRendererMixin",
     "angelica.TileOverrideMatchTilesMixin",
     "gtnhlib.ModelQuadMixin",
-    "gtnhlib.VertexFormatMixin",
-    "myctmlib.GTMultiTextureRenderMixin",
-    "myctmlib.GTRenderedTextureMixin",
-    "myctmlib.GTRendererBlockMixin",
-    "myctmlib.GTRendererCasingMixin",
-    "myctmlib.RenderBlocksOffsetMixin",
-    "myctmlib.SBRContextBaseMixin"
+    "gtnhlib.VertexFormatMixin"
   ]
 }

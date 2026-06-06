@@ -151,11 +151,6 @@ dependencies {
         transitive = false
     }
 
-    // Optional target for MyCTMLib GregTech CTM overlay offset fix.
-    compileOnly("com.github.ABKQPO:MyCTMLib:1.2.7:dev") {
-        transitive = false
-    }
-
     // Required target for Angelica shader compatibility fixes.
     compileOnly("com.github.GTNewHorizons:Angelica:2.1.30:dev") {
         transitive = false

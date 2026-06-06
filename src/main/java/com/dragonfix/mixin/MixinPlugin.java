@@ -11,8 +11,6 @@ import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
 public class MixinPlugin implements IMixinConfigPlugin {
 
-    private static final String MYCTMLIB_MARKER_CLASS = "com.github.wohaopa.MyCTMLib.Textures";
-    private static final String MYCTMLIB_MIXIN_PACKAGE = "com.dragonfix.mixin.mixins.myctmlib.";
     private static final String AE2THINGS_MARKER_CLASS = "com.asdflj.ae2thing.util.GTUtil";
     private static final String AE2THINGS_MIXIN_PACKAGE = "com.dragonfix.mixin.mixins.ae2things.";
 
@@ -26,9 +24,6 @@ public class MixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        if (mixinClassName.startsWith(MYCTMLIB_MIXIN_PACKAGE)) {
-            return isClassPresent(MYCTMLIB_MARKER_CLASS);
-        }
         if (mixinClassName.startsWith(AE2THINGS_MIXIN_PACKAGE)) {
             return isClassPresent(AE2THINGS_MARKER_CLASS);
         }

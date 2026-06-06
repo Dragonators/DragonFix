@@ -7,7 +7,6 @@ DragonFix 是一个面向 Minecraft 1.7.10 / Forge 的轻量级修复模组。
 ## 适用范围
 
 - GT New Horizons 2.8.4 + Angelica 2.x
-- MyCTMLib
 - Programmable Hatches / 可编程舱室
 
 新版 Angelica 可用于支持 Complementary Shaders 5.7.1 以及更多现代光影特性，但在旧版 1.7.10 模组生态中可能暴露额外兼容性问题。DragonFix 的目标就是把这些问题集中收敛到一个独立修复模组中。
@@ -23,8 +22,6 @@ DragonFix 是一个面向 Minecraft 1.7.10 / Forge 的轻量级修复模组。
   - 修复 ME Stocking Dual Input Hatch 复制/粘贴配置时读写方向错误的问题。
   - 修复 ME Stocking Dual Input Hatch 无法通过 Data Stick 保存和加载完整配置的问题，现在允许使用潜行左键复制配置本身
   - 修复无线控制覆盖板无法保存配置的问题。
-- MyCTMLib
-  - 修复 CTM 连接处可能出现黑色缝隙的问题。
 - OpenComputers + Angelica
   - 修复新版 Angelica 下 OpenComputers 屏幕文字显示异常的兼容性问题。
   - 修复客户端收到 OpenComputers 屏幕调色板颜色同步包时，因本地缓冲区仍为 1-bit 色深而记录 `color palette not supported` 坏包警告的问题。
