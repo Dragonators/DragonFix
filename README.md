@@ -28,6 +28,12 @@ DragonFix 是一个面向 Minecraft 1.7.10 / Forge 的轻量级修复模组。
 - OpenComputers + Angelica
   - 修复新版 Angelica 下 OpenComputers 屏幕文字显示异常的兼容性问题。
   - 修复客户端收到 OpenComputers 屏幕调色板颜色同步包时，因本地缓冲区仍为 1-bit 色深而记录 `color palette not supported` 坏包警告的问题。
+- Angelica
+  - 修复部分光影包重复记录 `angelica_ClipPlanesEnabled` 外部 uniform 类型不匹配错误的问题。
+  - 修复部分光影包自定义 uniform 与 Angelica 内置 uniform 重名时重复打印 `Variable shadows build in uniform` 异常栈的问题。
+  - 修复开启光影时，光影包自带的选择框描边功能无法接管 Angelica 选择框渲染的问题。
+  - 修复 Angelica 2.1.30 自动扫描 emissive 贴图时，遇到资源名包含 Windows 非法路径字符会中断资源加载的问题。
+  - 修复 CTM `matchTiles` 中带路径的图标名只按 `.png` 资源路径注册，无法命中运行时 exact icon name 的兼容性问题。
 - GalaxySpace
   - 修复下单 GalaxySpace 火箭相关物品时可能导致服务端 AE 崩溃的问题。
 - AE2

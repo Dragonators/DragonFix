@@ -78,7 +78,16 @@ dependencies {
     }
 
     // Target library for GTNHLib ModelQuad QuadView compatibility fix.
-    compileOnly("com.github.GTNewHorizons:GTNHLib:0.9.47:dev") {
+    compileOnly("com.github.GTNewHorizons:GTNHLib:0.11.4:dev") {
+        transitive = false
+    }
+
+    // Signature dependencies exposed by GTNHLib 0.11.x dependency metadata.
+    compileOnly("it.unimi.dsi:fastutil:8.5.15") {
+        transitive = false
+    }
+
+    compileOnly("org.joml:joml:1.10.8") {
         transitive = false
     }
 
@@ -144,6 +153,11 @@ dependencies {
 
     // Optional target for MyCTMLib GregTech CTM overlay offset fix.
     compileOnly("com.github.ABKQPO:MyCTMLib:1.2.7:dev") {
+        transitive = false
+    }
+
+    // Required target for Angelica shader compatibility fixes.
+    compileOnly("com.github.GTNewHorizons:Angelica:2.1.30:dev") {
         transitive = false
     }
 
