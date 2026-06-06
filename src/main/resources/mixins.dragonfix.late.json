@@ -33,6 +33,7 @@
     "mattermanipulator.ArchitectureCraftAnalysisResultMixin",
     "mattermanipulator.BoxRendererMixin",
     "mattermanipulator.ItemMatterManipulatorPersistentClientMixin",
+    "mattermanipulator.ItemMatterManipulatorSizeStorageMixin",
     "mattermanipulator.MMKeyInputsPersistentMixin",
     "mattermanipulator.MMRendererMixin",
     "mattermanipulator.RenderHintsAccessor",

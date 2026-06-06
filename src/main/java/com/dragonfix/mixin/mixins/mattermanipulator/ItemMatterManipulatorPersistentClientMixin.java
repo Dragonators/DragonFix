@@ -9,15 +9,19 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 
+import org.joml.Vector3i;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.dragonfix.mattermanipulator.bridge.PersistentSchematicConfigBridge;
+import com.dragonfix.mattermanipulator.helper.MatterManipulatorStateAccess;
 import com.dragonfix.mattermanipulator.persistent.PersistentSchematicMode;
 import com.dragonfix.mattermanipulator.persistent.client.PersistentSchematicClientRestore;
 import com.dragonfix.mattermanipulator.persistent.client.PersistentSchematicClientState;
@@ -28,10 +32,12 @@ import com.gtnewhorizons.modularui.api.screen.ModularWindow;
 import com.gtnewhorizons.modularui.api.screen.UIBuildContext;
 import com.gtnewhorizons.modularui.common.internal.wrapper.ModularGui;
 import com.gtnewhorizons.modularui.common.internal.wrapper.ModularUIContainer;
+import com.gtnewhorizons.modularui.common.widget.Row;
 import com.recursive_pineapple.matter_manipulator.client.gui.RadialMenuBuilder;
 import com.recursive_pineapple.matter_manipulator.client.gui.RadialMenuBuilder.RadialMenuOptionBuilder;
 import com.recursive_pineapple.matter_manipulator.client.gui.RadialMenuBuilder.RadialMenuOptionBuilderBranch;
 import com.recursive_pineapple.matter_manipulator.common.items.manipulator.ItemMatterManipulator;
+import com.recursive_pineapple.matter_manipulator.common.items.manipulator.MMConfig;
 import com.recursive_pineapple.matter_manipulator.common.items.manipulator.MMState;
 import com.recursive_pineapple.matter_manipulator.common.items.manipulator.MMState.PendingAction;
 import com.recursive_pineapple.matter_manipulator.common.networking.Messages;
@@ -42,6 +48,15 @@ import cpw.mods.fml.common.FMLCommonHandler;
 @SuppressWarnings("ResultOfMethodCallIgnored")
 @Mixin(value = ItemMatterManipulator.class, remap = false)
 public abstract class ItemMatterManipulatorPersistentClientMixin {
+
+    @Unique
+    private EntityPlayer dragonfix$coordinateEditorPlayer;
+
+    @Unique
+    private int dragonfix$coordinateEditorCoord;
+
+    @Unique
+    private int dragonfix$coordinateEditorComponent;
 
     @Inject(method = { "onUpdate", "func_77663_a" }, at = @At("HEAD"), remap = false, cancellable = true, require = 1)
     private void dragonfix$restorePersistentPasteOnClientUpdate(ItemStack stack, World worldIn, Entity entityIn,
@@ -251,5 +266,50 @@ public abstract class ItemMatterManipulatorPersistentClientMixin {
             new ModularUIContainer(new ModularUIContext(buildContext, null, true), window));
         FMLCommonHandler.instance()
             .showGuiScreen(screen);
+    }
+
+    @Inject(method = "makeCoordinateEditor", at = @At("HEAD"), remap = false)
+    private void dragonfix$captureCoordinateEditorContext(EntityPlayer player, int coord, int component,
+        CallbackInfoReturnable<Row> cir) {
+        dragonfix$coordinateEditorPlayer = player;
+        dragonfix$coordinateEditorCoord = coord;
+        dragonfix$coordinateEditorComponent = component;
+    }
+
+    @Inject(method = "makeCoordinateEditor", at = @At("RETURN"), remap = false)
+    private void dragonfix$clearCoordinateEditorContext(EntityPlayer player, int coord, int component,
+        CallbackInfoReturnable<Row> cir) {
+        dragonfix$coordinateEditorPlayer = null;
+        dragonfix$coordinateEditorCoord = 0;
+        dragonfix$coordinateEditorComponent = 0;
+    }
+
+    @ModifyArg(
+        method = "makeCoordinateEditor",
+        at = @At(
+            value = "INVOKE",
+            target = "Lcom/gtnewhorizons/modularui/common/widget/TextWidget;<init>(Ljava/lang/String;)V"),
+        index = 0,
+        remap = false,
+        require = 1)
+    private String dragonfix$showCopySelectionSize(String text) {
+        if (dragonfix$coordinateEditorCoord != -1 || !"N/A".equals(text)) return text;
+
+        EntityPlayer player = dragonfix$coordinateEditorPlayer;
+        if (player == null) return text;
+
+        MMState state = MatterManipulatorStateAccess.getState(player.getHeldItem());
+        MMConfig.VoxelAABB aabb = state.config.getCopyVisualDeltas(player.worldObj);
+        if (aabb == null) return text;
+
+        Vector3i size = aabb.size();
+        int value = switch (dragonfix$coordinateEditorComponent) {
+            case 0 -> size.x;
+            case 1 -> size.y;
+            case 2 -> size.z;
+            default -> throw new IllegalArgumentException("component");
+        };
+
+        return Integer.toString(value);
     }
 }
