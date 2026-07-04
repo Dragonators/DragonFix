@@ -17,6 +17,8 @@ public class MixinPlugin implements IMixinConfigPlugin {
     private static final String AE2THINGS_MIXIN_PACKAGE = "com.dragonfix.mixin.mixins.ae2things.";
     private static final String ANGELICA_MARKER_CLASS = "com.gtnewhorizons.angelica.AngelicaMod";
     private static final String ANGELICA_MIXIN_PACKAGE = "com.dragonfix.mixin.mixins.angelica.";
+    private static final String TST_MARKER_CLASS = "com.Nxer.TwistSpaceTechnology.TwistSpaceTechnology";
+    private static final String TST_MIXIN_PACKAGE = "com.dragonfix.mixin.mixins.tst.";
 
     @Override
     public void onLoad(String mixinPackage) {}
@@ -36,6 +38,9 @@ public class MixinPlugin implements IMixinConfigPlugin {
         }
         if (mixinClassName.startsWith(ANGELICA_MIXIN_PACKAGE)) {
             return isClassPresent(ANGELICA_MARKER_CLASS);
+        }
+        if (mixinClassName.startsWith(TST_MIXIN_PACKAGE)) {
+            return isClassPresent(TST_MARKER_CLASS);
         }
         return true;
     }

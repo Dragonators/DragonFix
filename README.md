@@ -41,6 +41,8 @@ DragonFix 是一个面向 Minecraft 1.7.10 / Forge 的轻量级修复模组。
   - 修复网络中某物品总数超过 long 上限时计数溢出为负数的问题。
 - AE2Things
   - 修复 GT 配方通过无线双接口终端追加非消耗品信息时，非集成电路物品只显示 damage 数字而无法区分物品名称的问题。
+- Twist Space Technology
+  - 修复注魔原料分配器回收非 Witching Gadgets 主基座物品时，错误调用 `IPrimordialCrafting#getReturnedPearls` 导致服务端 STDERR 刷屏的问题。
 - GregTech / GTNH
   - 修复 DTPF 在 convergence perfect OC 下额外催化剂仍按最大输入功率虚高计算的问题，使催化剂需求按实际可用 item/fluid 并行和有效 OC 收敛。
   - 修复实际并行受输入、输出或锁定限制时，subtick overclock 无法转化为额外吞吐却仍继续抬高运行功耗的问题。

@@ -36,7 +36,8 @@ public class DragonFix {
         + "after:malisisdoors@[1.18.2-GTNH,);"
         + "after:programmablehatches@[0.1.3p55,);"
         + "after:angelica@[2.1.30,);"
-        + "after:MyCTMLib@[v1.2.5_28x,)";
+        + "after:MyCTMLib@[v1.2.5_28x,);"
+        + "after:TwistSpaceTechnology@[0.7.15,)";
     public static final Logger LOG = LogManager.getLogger(MODID);
 
     @Mod.EventHandler
