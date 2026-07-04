@@ -6,6 +6,9 @@
   "mixins": [
     "ae2things.GTUtilMixin",
     "galaxyspace.ItemRocketMixin",
+    "gregtech.MTEPlasmaForgeMixin",
+    "gregtech.MTEPlasmaForgeProcessingLogicMixin",
+    "gregtech.OverclockCalculatorMixin",
     "mattermanipulator.AEAnalysisResultMixin",
     "mattermanipulator.ArchitectureCraftAnalysisResultTransformMixin",
     "mattermanipulator.BlockAnalyzerMixin",
